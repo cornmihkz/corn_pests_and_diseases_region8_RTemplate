@@ -1,0 +1,1439 @@
+---
+title: "corn_variety_edit"
+author: "Mihkail Cornell"
+date: "2023-09-05"
+output: html_document
+---
+
+```{r}
+library("dplyr")
+library("ggpubr")
+library(tidymodels)
+library(tidyverse)
+library(ggpubr)
+library(broom)
+library(AICcmodavg)
+set.seed(123)
+insect_raw$Variety %>% unique()
+```
+
+```Corn variety engineering```
+```{r}
+insect_variety_edit <-
+  insect_raw %>%
+  mutate(variety = case_when(str_detect(Variety, "^[OPV]+([_ ])+([WC]+|[WwHhIiTtEe]+)$") ~ "OPV White",
+                             str_detect(Variety, "^[OPV]+([ _]*)+[YyEeLlOoWw]+") ~ "OPV Yellow",
+                             str_detect(Variety, "^(M[ACHOacho]+)[_ ]*(F1)+") ~ "Macho F1",
+                             str_detect(Variety, "^(S+[WwEeEeTt])(\\s)*([CcOoRrNn]+)") ~ "Sweet Corn Hybrid",
+                             str_detect(Variety, "M[aALlAaGgKkIiTt]") ~ "Malagkit",
+                             str_detect(Variety, "\\b(Y+[EeLlLlOoWw_* COoRrNn]+)+") ~ "Yellow Corn Hybrid",
+                             str_detect(Variety, "(FILIPINA_703)+|(Filipina 703)+") ~ "Filipina 703-HY",
+                             str_detect(Variety, "^([Cn])+") ~ "Cn 224-OPV White",
+                             str_detect(Variety, "^\\(HYBRID YELLOW CORN\\)|^[Yellow Corn Hybrid]$") ~ "Hybrid Yellow Corn",
+                             str_detect(Variety, "^([Mem]+[ei]s+)+") ~ "Memphis Native White Corn",
+                             str_detect(Variety, "^((FILIPINA_802)+|(Fi[l+ĺ]+[iu]+(pi)+[n ]+a+(\\s|-))*802)+") ~ "Filipina 802-Hybrid White",
+                             str_detect(Variety, "[NK]+[ ]*[6410]+") ~ "NK6410 BT/GT Hybrid",
+                             str_detect(Variety, "B[Rr][Ii]+[GgHhTt]") ~ "Bright Jane",
+                             str_detect(Variety, "^J") ~ "J505",
+                             str_detect(Variety, "^(Native) ([Ww]hite)$") ~ "Native White",
+                             str_detect(Variety, "^(P+|[Pioneer]+)") ~ "Pioneer 266",
+                             str_detect(Variety, "^(NSIC GM)") ~ "NSIC GM CN38",
+                             str_detect(Variety, "^[Super 999]+") ~ "Super 999-HY",
+                             str_detect(Variety, "\\b(Supreme 5150)+") ~ "Supreme 5150-HY",
+                             str_detect(Variety, "B118G") ~ "B118G-Hybrid Yellow",
+                             str_detect(Variety, "T+[INIGinig]+[u]*[IiBb]") ~ "Tiniguib",
+                             str_detect(Variety, "G[LUTINOUSlutinous]") ~ "Glutinous White",
+                             str_detect(Variety, "Bio [Ss]eed") ~ "Bio Seed",
+                             str_detect(Variety, "(BioCorn 108)+") ~ "BioCorn 108-HY",
+         TRUE ~ Variety))
+
+number_sampled_plants <- 20
+percent_100 <- 100
+insect_variety_edit$variety %>% unique()
+```
+
+```Rating of 1 is classified as No damage to very slight```
+```Corn Borer, Semi-looper, earworm```
+```Borer```
+
+```{r}
+# Corn borer
+borer_df_ev <- 
+  insect_raw %>%
+  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Corn Borer - Damage Rating ")) %>%
+  filter(Municipality != "Santa Rita" & Municipality != "Hilongos")
+
+borer_df_ev$collect_date <- 
+  as.Date(borer_df_ev$`Collection Date`, "%B %d, %Y")
+
+borer_dmg_ev <-
+  borer_df_ev %>% 
+  mutate(Year = year(collect_date), Month = month(collect_date))
+
+borer_joined_ev <-
+  borer_dmg_ev %>% 
+  left_join(monthly_averages, by=c('Year', 'Month')) %>%
+  # mutate_at(c(9:28), as.factor) %>%
+  # mutate(across(contains("Corn Borer - Damage Rating "), 
+  #        ~ case_when( . < 2 ~ "No",
+  #                     . < 4 ~ "Light",
+  #                     . < 6 ~ "Moderate",
+  #                     . < 8 ~ "Severe",
+  #                     . < 10 ~ "High"), 
+  #        .names="Class_Infest_{.col}")) %>%
+  # mutate(across(contains("Class_Infest_Corn Borer - Damage Rating "), ~classification_dmg(.))) %>%
+  # # get the modal observation rating
+  #  mutate(Modeborer_class_infest = getmode(c_across(contains("Class_Infest_Corn Borer - Damage Rating ")))) %>%
+  # # create ranks column
+  # mutate(borer_mode_classification = rank(Modeborer_class_infest)) %>%
+  rowwise() %>%
+  mutate(sum_no = sum(c_across(starts_with("Corn Borer - Damage Rating ")) == "1"),
+         sum_light = sum(c_across(starts_with("Corn Borer - Damage Rating ")) == "3"),
+         sum_moderate = sum(c_across(starts_with("Corn Borer - Damage Rating ")) == "5"),
+         sum_severe = sum(c_across(starts_with("Corn Borer - Damage Rating ")) == "7"),
+         sum_high = sum(c_across(starts_with("Corn Borer - Damage Rating ")) == "9"),
+         average_damage_borer = (((3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants)),
+         damage_rating_borer = (((3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants * 9)) * percent_100,
+         incidence_borer = ((sum(c_across(sum_light:sum_high))) * percent_100) / number_sampled_plants,
+         )
+
+
+View(borer_joined_ev)
+
+# borer_joined_ev %>%
+#   count(Province, Municipality, `Corn Type`)
+
+summary_borer <-
+  borer_joined_ev %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  remove_missing(na.rm=TRUE) %>%
+  summarise(observations = n(),
+            sum_avg_dmg_borer = sum(average_damage_borer),
+            sum_dmg_rate_borer = sum(damage_rating_borer),
+            sum_incidence_borer = sum(incidence_borer))
+
+View(summary_borer)
+
+summary_borer %>%
+  ggplot(aes(sum_incidence_borer)) +
+  geom_density()
+
+summary_borer %>%
+  ggplot(aes(sum_incidence_borer)) +
+  geom_histogram()
+
+summary_borer %>%
+  ggplot(aes(sample=sum_incidence_borer)) +
+  stat_qq() +
+  stat_qq_line()
+
+summary_borer %>%
+  ggplot(aes(`Corn Type`, sum_incidence_borer)) +
+  geom_boxplot()
+
+summary_borer %>%
+  ggplot(aes(Treatment, sum_incidence_borer)) +
+  geom_boxplot()
+
+
+library("nortest")
+library("moments")
+library("stats")
+library("MASS")
+library("car")
+
+ggqqplot(summary_borer$sum_incidence_borer)
+
+# Kolmogorov Smirnov test for normality samples > 50
+ks_test_borer <- ks.test(summary_borer$sum_incidence_borer, 'pnorm')
+
+# Anderson-Darling Test is a goodness-of-fit test that determines how well your data fits a given distribution. 
+# This test is most typically used to see if your data follow a normal distribution or not.
+ad_test_borer <- ad.test(summary_borer$sum_incidence_borer)
+
+skew_borer <- skewness(summary_borer$sum_incidence_borer)
+kurt_borer <- kurtosis(summary_borer$sum_incidence_borer)
+
+# Jarque-Bera Normality Test performs a goodness-of-fit test that 
+# determines whether or not sample data have skewness and 
+# kurtosis that matches a normal distribution.
+jarq_borer <- jarque.test(summary_borer$sum_incidence_borer)
+
+# Bartlett’s test is used to test if k samples are from populations with equal variances. 
+# Equal variances across populations are called homoscedasticity or homogeneity of variances.
+bartlett_fertilizer_borer <- bartlett.test(sum_incidence_borer ~ Treatment, summary_borer)
+bartlett_corntype_borer <- bartlett.test(sum_incidence_borer ~ `Corn Type`, summary_borer)
+bartlett_municipality_borer <- bartlett.test(sum_incidence_borer ~ Municipality, summary_borer)
+bartlett_province_borer <- bartlett.test(sum_incidence_borer ~ Province, summary_borer)
+bartlett_fert_corn_borer <- bartlett.test(sum_incidence_borer ~ interaction(Treatment, `Corn Type`), summary_borer)
+
+
+# Null hypothesis is variances across all samples are equal. 
+# Levene’s test is an alternative to Bartlett’s test when the data is not normally distributed.
+levenes_fertilizer_borer <- leveneTest(sum_incidence_borer ~ Treatment, summary_borer)
+levenes_corntype_borer <- leveneTest(sum_incidence_borer ~ `Corn Type`, summary_borer)
+levenes_municipality_borer <- leveneTest(sum_incidence_borer ~ Municipality, summary_borer)
+levenes_province_borer <- leveneTest(sum_incidence_borer ~ Province, summary_borer)
+levenes_fert_corn_borer <- leveneTest(sum_incidence_borer ~ interaction(Treatment, `Corn Type`), summary_borer)
+
+library(onewaytests) # Brown-Forsythe Test (one-way anova)
+bf_fertilizer_borer <- bf.test(sum_incidence_borer ~ Treatment, summary_borer)
+bf_corntype_borer <- bf.test(sum_incidence_borer ~ factor_corn, summary_borer)
+
+# AnOVa
+aov_fert_borer <- aov(sum_incidence_borer ~ Treatment, summary_borer) %>% summary()
+t.test_corn_borer <- t.test(sum_incidence_borer ~ `Corn Type`, summary_borer)
+
+# wilcoxon test - corntype non normal
+wilcoxon.test_corntype_borer <- wilcox.test(sum_incidence_borer ~ `Corn Type`, summary_borer)
+  
+# perform kruskal-wallis test on corntype 
+kruskal_wallis_corntype_borer <- ks.test(sum_incidence_borer ~ `Corn Type`, summary_borer)
+
+# Two way AnOVa
+aov_fert_corn_borer <- aov(sum_incidence_borer ~ Treatment + `Corn Type`, summary_borer) %>% summary()
+# AnOVa with Interaction
+aov_fert_corn_inter_borer <- aov(sum_incidence_borer ~ Treatment*`Corn Type`, summary_borer) %>% summary()
+
+
+# Create transformed objects using bestNormalize
+# library("bestNormalize")
+# bestNorm_borer <- predict(bestNormalize(summary_borer$sum_incidence_borer, out_of_sample = FALSE, loo = TRUE))
+# 
+# detach("package:bestNormalize", unload = TRUE)
+# detach("package:nortest", unload = TRUE)
+# detach("package:MASS", unload = TRUE)
+# detach("package:stats", unload = TRUE)
+# detach("package:moments", unload = TRUE)
+# detach("package:car", unload = TRUE)
+# detach("package:agricolae", unload = TRUE)
+# # summary_borer$orq <- transfo(summary_borer$sum_incidence_borer, type = "bestObj", robust=FALSE)$Y[,"X"]
+# summary_borer$orq <- bestNorm_borer
+# 
+# # Test of Normality after transformation
+# ks_test_borer_trans <- ks.test(summary_borer$orq, 'pnorm')
+# ad_test_borer_trans <- ad.test(summary_borer$orq)
+# skew_borer_trans <- skewness(summary_borer$orq)
+# kurt_borer_trans <- kurtosis(summary_borer$orq)
+# jarq_borer_trans <- jarque.test(summary_borer$orq)
+# 
+# 
+# # Test of Homoskedasticity after transformation
+# levenes_fertilizer_borer_trans <- leveneTest(orq ~ Treatment, summary_borer)
+# levenes_corntype_borer_trans <- leveneTest(orq ~ `Corn Type`, summary_borer)
+# levenes_municipality_borer_trans <- leveneTest(orq ~ Municipality, summary_borer)
+# levenes_province_borer_trans <- leveneTest(orq ~ Province, summary_borer)
+# levenes_fert_corn_borer_trans <- leveneTest(orq ~ interaction(Treatment, `Corn Type`), summary_borer)
+# 
+# summary_borer %>%
+#   ggplot(aes(orq)) +
+#   geom_density()
+# 
+# summary_borer$order_treat <- ordered(summary_borer$Treatment,
+#                          levels = c("BRFR", "RFR", "ARFR"))
+# 
+# summary_borer$factor_corn <- factor(summary_borer$`Corn Type`)
+# 
+# # anova on Transformation
+# aov_fert_borer_yj <- aov(orq ~ order_treat, summary_borer) %>% summary()
+# aov_corn_borer_yj <- aov(orq ~ factor_corn, summary_borer) %>% summary()
+# # Two way AnOVa
+# 
+# twoway_fert_corn_borer_yj <- aov(orq ~ order_treat + factor_corn, summary_borer) 
+# tukey_fert_corn_borer <- TukeyHSD(twoway_fert_corn_borer_yj)
+# 
+# # AnOVa with Interaction
+# aov_fert_corn_inter_borer_yj <- aov(orq ~ order_treat*factor_corn, summary_borer)  %>% summary()
+
+
+borer_joined_ev %>%
+  ggplot(aes(mean_temp, incidence_borer)) +
+  geom_smooth(se=FALSE)
+
+
+borer_joined_ev %>%
+  ggplot(aes(mean_wind, incidence_borer)) +
+  geom_smooth(se=FALSE)
+
+
+borer_joined_ev %>%
+  ggplot(aes(mean_humid, incidence_borer)) +
+  geom_smooth(se=FALSE)
+
+
+borer_joined_ev %>%
+  ggplot(aes(mean_rain, incidence_borer)) +
+  geom_smooth(se=FALSE)
+
+```
+
+```Rating of 1 is classified as No damage to very slight```
+```Corn Borer, Semi-looper, earworm```
+```Semilooper```
+```{r}
+# Semilooper
+semilooper_df_ev <- 
+  insect_raw %>%
+  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Semi-looper - Damage Rating ")) %>%
+  filter(Municipality != "Santa Rita" & Municipality != "Hilongos")
+
+semilooper_df_ev$collect_date <- 
+  as.Date(semilooper_df_ev$`Collection Date`, "%B %d, %Y")
+
+semilooper_dmg_ev <-
+  semilooper_df_ev %>% 
+  mutate(Year = year(collect_date), Month = month(collect_date))
+
+semilooper_joined_ev <-
+  semilooper_dmg_ev %>% 
+  left_join(monthly_averages, by=c('Year', 'Month')) %>%
+  # # mutate_at(c(9:28), as.factor) %>%
+  # mutate(across(contains("Semi-looper - Damage Rating "), 
+  #        ~ case_when( . < 2 ~ "No",
+  #                     . < 4 ~ "Light",
+  #                     . < 6 ~ "Moderate",
+  #                     . < 8 ~ "Severe",
+  #                     . < 10 ~ "High"), 
+  #        .names="Class_Infest_{.col}")) %>%
+  # mutate(across(contains("Class_Infest_Semi-looper - Damage Rating "), ~classification_dmg(.))) %>%
+  # # get the modal observation rating
+  #  mutate(Modesemilooper_class_infest = getmode(c_across(contains("Class_Infest_Semi-looper - Damage Rating ")))) %>%
+  # # create ranks column
+  # mutate(semilooper_mode_classification = rank(Modesemilooper_class_infest))
+  rowwise() %>%
+    mutate(sum_no = sum(c_across(starts_with("Semi-looper - Damage Rating")) == "1"),
+           sum_light = sum(c_across(starts_with("Semi-looper - Damage Rating")) == "3"),
+           sum_moderate = sum(c_across(starts_with("Semi-looper - Damage Rating")) == "5"),
+           sum_severe = sum(c_across(starts_with("Semi-looper - Damage Rating")) == "7"),
+           sum_high = sum(c_across(starts_with("Semi-looper - Damage Rating")) == "9"),
+           average_damage_semilooper = (((1 * sum_no) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants)),
+           damage_rating_semilooper = (((1 * sum_no) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants * 9)) * percent_100,
+           incidence_semilooper = ((sum(c_across(sum_light:sum_high))) * percent_100) / number_sampled_plants,
+           )
+
+View(semilooper_joined_ev)
+
+summary_semilooper <-
+  semilooper_joined_ev %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  remove_missing(na.rm=TRUE) %>%
+  summarise(observations = n(),
+            sum_avg_dmg_semilooper = sum(average_damage_semilooper),
+            sum_dmg_rate_semilooper = sum(damage_rating_semilooper),
+            sum_incidence_semilooper = sum(incidence_semilooper))
+
+View(summary_semilooper)
+
+summary_semilooper %>%
+  ggplot(aes(sum_incidence_semilooper)) +
+  geom_density()
+
+summary_semilooper %>%
+  ggplot(aes(sum_incidence_semilooper)) +
+  geom_histogram()
+
+summary_semilooper %>%
+  ggplot(aes(sample=sum_incidence_semilooper)) +
+  stat_qq() +
+  stat_qq_line()
+
+library("nortest")
+library("moments")
+library("stats")
+library("MASS")
+library("car")
+
+ggqqplot(summary_semilooper$sum_incidence_semilooper)
+
+# Kolmogorov Smirnov test for normality samples > 50
+ks_test_semilooper <- ks.test(summary_semilooper$sum_incidence_semilooper, 'pnorm')
+
+# Anderson-Darling Test is a goodness-of-fit test that determines 
+# how well your data fits a given distribution. 
+# This test is most typically used to see if your data follow a normal distribution or not.
+ad_test_semilooperlooper <- ad.test(summary_semilooper$sum_incidence_semilooper)
+
+skew_semilooper <- skewness(summary_semilooper$sum_incidence_semilooper)
+kurt_semilooper <- kurtosis(summary_semilooper$sum_incidence_semilooper)
+
+# Jarque-Bera Normality Test performs a goodness-of-fit test that 
+# determines whether or not sample data have skewness and 
+# kurtosis that matches a normal distribution.
+jarq_semilooper <- jarque.test(summary_semilooper$sum_incidence_semilooper)
+
+# Bartlett’s test is used to test if k samples are from populations with equal variances. 
+# Equal variances across populations are called homoscedasticity or homogeneity of variances.
+bartlett_fertilizer_semilooper <- bartlett.test(sum_incidence_semilooper ~ Treatment, summary_semilooper)
+bartlett_corntype_semilooper <- bartlett.test(sum_incidence_semilooper ~ `Corn Type`, summary_semilooper)
+bartlett_municipality_semilooper <- bartlett.test(sum_incidence_semilooper ~ Municipality, summary_semilooper)
+bartlett_province_semilooper <- bartlett.test(sum_incidence_semilooper ~ Province, summary_semilooper)
+bartlett_fert_corn_semilooper <- bartlett.test(sum_incidence_semilooper ~ interaction(Treatment, `Corn Type`), summary_semilooper)
+
+
+# Null hypothesis is variances across all samples are equal. 
+# Levene’s test is an alternative to Bartlett’s test when the data is not normally distributed.
+levenes_fertilizer_semilooper <- leveneTest(sum_incidence_semilooper ~ Treatment, summary_semilooper)
+levenes_corntype_semilooper <- leveneTest(sum_incidence_semilooper ~ `Corn Type`, summary_semilooper)
+levenes_municipality_semilooper <- leveneTest(sum_incidence_semilooper ~ Municipality, summary_semilooper)
+levenes_province_semilooper <- leveneTest(sum_incidence_semilooper ~ Province, summary_semilooper)
+levenes_fert_corn_semilooper <- leveneTest(sum_incidence_semilooper ~ interaction(Treatment, `Corn Type`), summary_semilooper)
+
+# AnOVa
+aov_fert_semilooper <- aov(sum_incidence_semilooper ~ Treatment, summary_semilooper)
+aov_corn_semilooper <- aov(sum_incidence_semilooper ~ `Corn Type`, summary_semilooper) 
+# Two way AnOVa
+
+twoway_fert_corn_semilooper <- aov(sum_incidence_semilooper ~ Treatment + `Corn Type`, summary_semilooper) 
+tukey_fert_corn_semilooper <- TukeyHSD(twoway_fert_corn_semilooper)
+
+# AnOVa with Interaction
+aov_fert_corn_inter_semilooper <- aov(sum_incidence_semilooper ~ Treatment*`Corn Type`, summary_semilooper)
+
+
+detach("package:onewaytests", unload = TRUE)
+detach("package:nortest", unload = TRUE)
+detach("package:MASS", unload = TRUE)
+detach("package:stats", unload = TRUE)
+detach("package:moments", unload = TRUE)
+detach("package:car", unload = TRUE)
+
+library("bestNormalize")
+bestNorm_semilooper <- predict(bestNormalize(summary_semilooper$sum_incidence_semilooper, out_of_sample = FALSE, loo = TRUE))
+detach("package:bestNormalize", unload = TRUE)
+
+
+# center_scale(x) tranformation according to bestNormalize
+summary_semilooper$orq <- bestNorm_semilooper
+
+# Test of Normality after transformation
+ks_test_semilooper_trans <- ks.test(summary_semilooper$orq, 'pnorm')
+ad_test_semilooper_trans <- ad.test(summary_semilooper$orq)
+skew_semilooper_trans <- skewness(summary_semilooper$orq)
+kurt_semilooper_trans <- kurtosis(summary_semilooper$orq)
+jarq_semilooper_trans <- jarque.test(summary_semilooper$orq)
+
+
+# Test of Homoskedasticity after transformation
+levenes_fertilizer_semilooper_trans <- leveneTest(orq ~ Treatment, summary_semilooper)
+levenes_corntype_semilooper_trans <- leveneTest(orq ~ `Corn Type`, summary_semilooper)
+levenes_municipality_semilooper_trans <- leveneTest(orq ~ Municipality, summary_semilooper)
+levenes_province_semilooper_trans <- leveneTest(orq ~ Province, summary_semilooper)
+levenes_fert_corn_semilooper_trans <- leveneTest(orq ~ interaction(Treatment, `Corn Type`), summary_semilooper)
+
+summary_semilooper %>%
+  ggplot(aes(orq)) +
+  geom_density()
+
+summary_semilooper$order_treat <- ordered(summary_semilooper$Treatment,
+                         levels = c("BRFR", "RFR", "ARFR"))
+
+summary_semilooper$factor_corn <- factor(summary_semilooper$`Corn Type`)
+
+# anova on Transformation
+aov_fert_semilooper_yj <- aov(orq ~ order_treat, summary_semilooper) %>% summary()
+aov_corn_semilooper_yj <- aov(orq ~ factor_corn, summary_semilooper) %>% summary()
+# Two way AnOVa
+
+twoway_fert_corn_semilooper_yj <- aov(orq ~ order_treat + factor_corn, summary_semilooper) 
+tukey_fert_corn_semilooper <- TukeyHSD(twoway_fert_corn_semilooper_yj)
+
+# AnOVa with Interaction
+aov_fert_corn_inter_semilooper_yj <- aov(orq ~ order_treat*factor_corn, summary_semilooper)  %>% summary()
+```
+
+```Rating of 1 is classified as No damage to very slight```
+```Corn Borer, Semi-looper, earworm```
+```Earworm```
+
+```{r}
+# Earworm
+earworm_df_ev <- 
+  insect_raw %>%
+  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Corn Earworm - Damage Rating ")) %>%
+  filter(Municipality != "Santa Rita" & Municipality != "Hilongos")
+
+earworm_df_ev$collect_date <- 
+  as.Date(earworm_df_ev$`Collection Date`, "%B %d, %Y")
+
+earworm_dmg_ev <-
+  earworm_df_ev %>% 
+  mutate(Year = year(collect_date), Month = month(collect_date))
+
+earworm_joined_ev <-
+  earworm_dmg_ev %>% 
+  left_join(monthly_averages, by=c('Year', 'Month')) %>%
+  # mutate_at(c(9:28), as.factor) %>%
+  # mutate(across(contains("Corn Earworm - Damage Rating "), 
+  #        ~ case_when( . < 2 ~ "No",
+  #                     . < 4 ~ "Light",
+  #                     . < 6 ~ "Moderate",
+  #                     . < 8 ~ "Severe",
+  #                     . < 10 ~ "High"), 
+  #        .names="Class_Infest_{.col}")) %>%
+  # mutate(across(contains("Class_Infest_Corn Earworm - Damage Rating "), ~classification_dmg(.))) %>%
+  # # get the modal observation rating
+  #  mutate(Modeearworm_class_infest = getmode(c_across(contains("Class_Infest_Corn Earworm - Damage Rating ")))) %>%
+  # # create ranks column
+  # mutate(earworm_mode_classification = rank(Modeearworm_class_infest))
+rowwise() %>%
+    mutate(sum_no = sum(c_across(starts_with("Corn Earworm - Damage Rating")) == "1"),
+           sum_light = sum(c_across(starts_with("Corn Earworm - Damage Rating")) == "3"),
+           sum_moderate = sum(c_across(starts_with("Corn Earworm - Damage Rating")) == "5"),
+           sum_severe = sum(c_across(starts_with("Corn Earworm - Damage Rating")) == "7"),
+           sum_high = sum(c_across(starts_with("Corn Earworm - Damage Rating")) == "9"),
+           average_damage_earworm = (((1 * sum_no) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants)),
+           damage_rating_earworm = (((1 * sum_no) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants * 9)) * percent_100,
+           incidence_earworm = ((sum(c_across(sum_light:sum_high))) * percent_100) / number_sampled_plants,
+           )
+
+View(earworm_joined_ev)
+
+
+summary_earworm <-
+  earworm_joined_ev %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  remove_missing(na.rm=TRUE) %>%
+  summarise(observations = n(),
+            sum_avg_dmg_earworm = sum(average_damage_earworm),
+            sum_dmg_rate_earworm = sum(damage_rating_earworm),
+            sum_incidence_earworm = sum(incidence_earworm))
+
+View(summary_earworm)
+
+summary_earworm %>%
+  ggplot(aes(sum_incidence_earworm)) +
+  geom_density()
+
+summary_earworm %>%
+  ggplot(aes(sum_incidence_earworm)) +
+  geom_histogram()
+
+summary_earworm %>%
+  ggplot(aes(sample=sum_incidence_earworm)) +
+  stat_qq() +
+  stat_qq_line()
+
+library("nortest")
+library("moments")
+library("stats")
+library("MASS")
+library("car")
+
+ggqqplot(summary_earworm$sum_incidence_earworm)
+
+# Kolmogorov Smirnov test for normality samples > 50
+ks_test_earworm <- ks.test(summary_earworm$sum_incidence_earworm, 'pnorm')
+
+# Anderson-Darling Test is a goodness-of-fit test that determines how well your data fits a given distribution. 
+# This test is most typically used to see if your data follow a normal distribution or not.
+ad_test_earworm <- ad.test(summary_earworm$sum_incidence_earworm)
+
+skew_earworm <- skewness(summary_earworm$sum_incidence_earworm)
+kurt_earworm <- kurtosis(summary_earworm$sum_incidence_earworm)
+
+# Jarque-Bera Normality Test performs a goodness-of-fit test that 
+# determines whether or not sample data have skewness and 
+# kurtosis that matches a normal distribution.
+jarq_earworm <- jarque.test(summary_earworm$sum_incidence_earworm)
+
+# Bartlett’s test is used to test if k samples are from populations with equal variances. 
+# Equal variances across populations are called homoscedasticity or homogeneity of variances.
+bartlett_fertilizer_earworm <- bartlett.test(sum_incidence_earworm ~ Treatment, summary_earworm)
+bartlett_corntype_earworm <- bartlett.test(sum_incidence_earworm ~ `Corn Type`, summary_earworm)
+bartlett_municipality_earworm <- bartlett.test(sum_incidence_earworm ~ Municipality, summary_earworm)
+bartlett_province_earworm <- bartlett.test(sum_incidence_earworm ~ Province, summary_earworm)
+bartlett_fert_corn_earworm <- bartlett.test(sum_incidence_earworm ~ interaction(Treatment, `Corn Type`), summary_earworm)
+
+
+# Null hypothesis is variances across all samples are equal. 
+# Levene’s test is an alternative to Bartlett’s test when the data is not normally distributed.
+levenes_fertilizer_earworm <- leveneTest(sum_incidence_earworm ~ Treatment, summary_earworm)
+levenes_corntype_earworm <- leveneTest(sum_incidence_earworm ~ `Corn Type`, summary_earworm)
+levenes_municipality_earworm <- leveneTest(sum_incidence_earworm ~ Municipality, summary_earworm)
+levenes_province_earworm <- leveneTest(sum_incidence_earworm ~ Province, summary_earworm)
+levenes_fert_corn_earworm <- leveneTest(sum_incidence_earworm ~ interaction(Treatment, `Corn Type`), summary_earworm)
+
+
+# AnOVa
+aov_fert_earworm <- aov(sum_incidence_earworm ~ Treatment, summary_earworm)
+aov_corn_earworm <- aov(sum_incidence_earworm ~ `Corn Type`, summary_earworm) 
+# Two way AnOVa
+
+twoway_fert_corn_earworm <- aov(sum_incidence_earworm ~ Treatment + `Corn Type`, summary_earworm) 
+# tukey_fert_corn_earworm <- TukeyHSD(twoway_fert_corn_earworm)
+
+# AnOVa with Interaction
+aov_fert_corn_inter_earworm <- aov(sum_incidence_earworm ~ Treatment*`Corn Type`, summary_earworm)
+
+
+detach("package:nortest", unload = TRUE)
+detach("package:MASS", unload = TRUE)
+detach("package:stats", unload = TRUE)
+detach("package:moments", unload = TRUE)
+detach("package:car", unload = TRUE)
+
+library("bestNormalize")
+bestNorm_earworm <- predict(bestNormalize(summary_earworm$sum_incidence_earworm, out_of_sample = FALSE, loo = TRUE))
+detach("package:bestNormalize", unload = TRUE)
+
+
+# Yeo-Johnson tranformation according to bestNormalize
+summary_earworm$orq <- bestNorm_earworm
+
+# Test of Normality after transformation
+ks_test_earworm_trans <- ks.test(summary_earworm$orq, 'pnorm')
+ad_test_earworm_trans <- ad.test(summary_earworm$orq)
+skew_earworm_trans <- skewness(summary_earworm$orq)
+kurt_earworm_trans <- kurtosis(summary_earworm$orq)
+jarq_earworm_trans <- jarque.test(summary_earworm$orq)
+
+
+# Test of Homoskedasticity after transformation
+levenes_fertilizer_earworm_trans <- leveneTest(orq ~ Treatment, summary_earworm)
+levenes_corntype_earworm_trans <- leveneTest(orq ~ `Corn Type`, summary_earworm)
+levenes_municipality_earworm_trans <- leveneTest(orq ~ Municipality, summary_earworm)
+levenes_province_earworm_trans <- leveneTest(orq ~ Province, summary_earworm)
+levenes_fert_corn_earworm_trans <- leveneTest(orq ~ interaction(Treatment, `Corn Type`), summary_earworm)
+
+summary_earworm %>%
+  ggplot(aes(orq)) +
+  geom_density()
+
+summary_earworm$order_treat <- ordered(summary_earworm$Treatment,
+                         levels = c("BRFR", "RFR", "ARFR"))
+
+summary_earworm$factor_corn <- factor(summary_earworm$`Corn Type`)
+
+# anova on Transformation
+aov_fert_earworm_yj <- aov(orq ~ order_treat, summary_earworm) %>% summary()
+aov_corn_earworm_yj <- aov(orq ~ factor_corn, summary_earworm) %>% summary()
+
+# Two way AnOVa
+twoway_fert_corn_earworm_yj <- aov(orq ~ order_treat + factor_corn, summary_earworm) 
+tukey_fert_corn_earworm <- TukeyHSD(twoway_fert_corn_earworm_yj)
+
+# AnOVa with Interaction
+aov_fert_corn_inter_earworm_yj <- aov(orq ~ order_treat*factor_corn, summary_earworm)  %>% summary()
+```
+
+```Rating of 1 is classified as No damage or No infestation ONLY```
+```Corn Planthopper, borer, Leaf feeders(Armyworm, cutworm)```
+```rating of 1 is not included in computation on damage rating and incidence```
+```Hopper```
+
+```{r}
+# Corn Plant Hopper
+hopper_df_ev <- 
+  insect_raw %>%
+  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Corn Plant Hopper - Damage Rating")) %>%
+  filter(Municipality != "Santa Rita" & Municipality != "Hilongos")
+
+# convert date format
+hopper_df_ev$collect_date <- 
+  as.Date(hopper_df_ev$`Collection Date`, "%B %d, %Y")
+
+hopper_dmg_ev <-
+  hopper_df_ev %>% 
+  mutate(Year = year(collect_date), Month = month(collect_date))
+
+# merged with monthly average weather parameters
+classification_dmg <- function(x) {ordered(x, levels = c("No", "Light", "Moderate", "Severe", "High"))}
+
+# 
+# rank_rating <- c(1, 3, 5, 7, 9)
+# names(rank_rating) <- c("No", "Light", "Moderate", "Severe", "High")
+# ranked_class <- rank(rank_rating)
+# factor(rank_rating, ordered=TRUE)
+# 
+# 
+# getmode <- function(v) {
+#   uniqv <- unique(v)
+#   uniqv[which.max(tabulate(match(v, uniqv)))]
+# }
+
+hopper_joined_ev <-
+  hopper_dmg_ev %>% 
+  left_join(monthly_averages, by=c('Year', 'Month')) %>%
+  # mutate_at(c(9:28), as.factor) %>%
+  # mutate(across(contains("Corn Plant Hopper - Damage Rating "), 
+  #        ~ case_when( . == 1 ~ "No",
+  #                     . == 3 ~ "Light",
+  #                     . == 5 ~ "Moderate",
+  #                     . == 7 ~ "Severe",
+  #                     . == 9 ~ "High"), 
+  #        .names="Class_Infest_{.col}")) %>%
+  # mutate(across(contains("Class_Infest_Corn Plant Hopper - Damage Rating "), ~classification_dmg(.))) %>%
+  # # get the modal observation rating
+  #  mutate(Mode_class_infest_hopper = getmode(c_across(contains("Class_Infest_Corn Plant Hopper - Damage Rating ")))) %>%
+  # # create ranks column
+  # mutate(Ranked_mode_classification = rank(Mode_class_infest_hopper)) %>%
+  rowwise() %>%
+  mutate(
+             sum_no = sum(c_across(starts_with("Corn Plant Hopper - Damage Rating ")) == "1"),
+             sum_light = sum(c_across(starts_with("Corn Plant Hopper - Damage Rating ")) == "3"),
+             sum_moderate = sum(c_across(starts_with("Corn Plant Hopper - Damage Rating ")) == "5"),
+             sum_severe = sum(c_across(starts_with("Corn Plant Hopper - Damage Rating ")) == "7"),
+             sum_high = sum(c_across(starts_with("Corn Plant Hopper - Damage Rating ")) == "9"),
+             average_damage_hopper = (((3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants)),
+             damage_rating_hopper = (((3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants * 9)) * percent_100,
+             incidence_hopper = ((sum(c_across(sum_light:sum_high))) * percent_100) / number_sampled_plants,
+         )
+         
+View(hopper_joined_ev)
+
+summary_hopper <-
+  hopper_joined_ev %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  remove_missing(na.rm=TRUE) %>%
+  summarise(observations = n(),
+            sum_avg_dmg_hopper = sum(average_damage_hopper),
+            sum_dmg_rate_hopper = sum(damage_rating_hopper),
+            sum_incidence_hopper = sum(incidence_hopper))
+
+View(summary_hopper)
+
+summary_hopper %>%
+  ggplot(aes(sum_incidence_hopper)) +
+  geom_density()
+
+summary_hopper %>%
+  ggplot(aes(sum_incidence_hopper)) +
+  geom_histogram()
+
+summary_hopper %>%
+  ggplot(aes(sample=sum_incidence_hopper)) +
+  stat_qq() +
+  stat_qq_line()
+
+library("nortest")
+library("moments")
+library("stats")
+library("MASS")
+library("car")
+
+ggqqplot(summary_hopper$sum_incidence_hopper)
+
+# Kolmogorov Smirnov test for normality samples > 50
+ks_test_hopper <- ks.test(summary_hopper$sum_incidence_hopper, 'pnorm')
+
+# Anderson-Darling Test is a goodness-of-fit test that determines how well your data fits a given distribution. 
+# This test is most typically used to see if your data follow a normal distribution or not.
+ad_test_hopper <- ad.test(summary_hopper$sum_incidence_hopper)
+
+skew_hopper <- skewness(summary_hopper$sum_incidence_hopper)
+kurt_hopper <- kurtosis(summary_hopper$sum_incidence_hopper)
+
+# Jarque-Bera Normality Test performs a goodness-of-fit test that 
+# determines whether or not sample data have skewness and 
+# kurtosis that matches a normal distribution.
+jarq_hopper <- jarque.test(summary_hopper$sum_incidence_hopper)
+
+
+# Bartlett’s test is used to test if k samples are from populations with equal variances. 
+# Equal variances across populations are called homoscedasticity or homogeneity of variances.
+bartlett_fertilizer_hopper <- bartlett.test(sum_incidence_hopper ~ Treatment, summary_hopper)
+bartlett_corntype_hopper <- bartlett.test(sum_incidence_hopper ~ `Corn Type`, summary_hopper)
+bartlett_municipality_hopper <- bartlett.test(sum_incidence_hopper ~ Municipality, summary_hopper)
+bartlett_province_hopper <- bartlett.test(sum_incidence_hopper ~ Province, summary_hopper)
+bartlett_fert_corn_hopper <- bartlett.test(sum_incidence_hopper ~ interaction(Treatment, `Corn Type`), summary_hopper)
+
+
+# Null hypothesis is variances across all samples are equal. 
+# Levene’s test is an alternative to Bartlett’s test when the data is not normally distributed.
+levenes_fertilizer_hopper <- leveneTest(sum_incidence_hopper ~ Treatment, summary_hopper)
+levenes_corntype_hopper <- leveneTest(sum_incidence_hopper ~ `Corn Type`, summary_hopper)
+levenes_municipality_hopper <- leveneTest(sum_incidence_hopper ~ Municipality, summary_hopper)
+levenes_province_hopper <- leveneTest(sum_incidence_hopper ~ Province, summary_hopper)
+levenes_fert_corn_hopper <- leveneTest(sum_incidence_hopper ~ interaction(Treatment, `Corn Type`), summary_hopper)
+
+detach("package:nortest", unload = TRUE)
+detach("package:MASS", unload = TRUE)
+detach("package:stats", unload = TRUE)
+detach("package:moments", unload = TRUE)
+detach("package:car", unload = TRUE)
+
+library("bestNormalize")
+bestNorm_hopper <- predict(bestNormalize(summary_hopper$sum_incidence_hopper, out_of_sample = FALSE, loo = TRUE))
+detach("package:bestNormalize", unload = TRUE)
+
+
+# Yeo Johnson tranformation according to bestNormalize
+summary_hopper$yeojohnson <- bestNorm_hopper
+
+# Test of Normality after transformation
+ks_test_hopper_trans <- ks.test(summary_hopper$yeojohnson, 'pnorm')
+ad_test_hopper_trans <- ad.test(summary_hopper$yeojohnson)
+skew_hopper_trans <- skewness(summary_hopper$yeojohnson)
+kurt_hopper_trans <- kurtosis(summary_hopper$yeojohnson)
+jarq_hopper_trans <- jarque.test(summary_hopper$yeojohnson)
+
+
+# Test of Homoskedasticity after transformation
+levenes_fertilizer_hopper_trans <- leveneTest(yeojohnson ~ Treatment, summary_hopper)
+levenes_corntype_hopper_trans <- leveneTest(yeojohnson ~ `Corn Type`, summary_hopper)
+levenes_municipality_hopper_trans <- leveneTest(yeojohnson ~ Municipality, summary_hopper)
+levenes_province_hopper_trans <- leveneTest(yeojohnson ~ Province, summary_hopper)
+levenes_fert_corn_hopper_trans <- leveneTest(yeojohnson ~ interaction(Treatment, `Corn Type`), summary_hopper)
+
+summary_hopper %>%
+  ggplot(aes(yeojohnson)) +
+  geom_density()
+
+summary_hopper$order_treat <- ordered(summary_hopper$Treatment,
+                         levels = c("BRFR", "RFR", "ARFR"))
+
+summary_hopper$factor_corn <- factor(summary_hopper$`Corn Type`)
+
+# anova on Transformation
+aov_fert_hopper_yj <- aov(yeojohnson ~ order_treat, summary_hopper)
+aov_corn_hopper_yj <- aov(yeojohnson ~ factor_corn, summary_hopper) 
+# Two way AnOVa
+
+twoway_fert_corn_hopper_yj <- aov(yeojohnson ~ order_treat + factor_corn, summary_hopper) 
+tukey_fert_corn_hopper <- TukeyHSD(twoway_fert_corn_hopper_yj)
+
+# AnOVa with Interaction
+aov_fert_corn_inter_hopper_yj <- aov(yeojohnson ~ order_treat*factor_corn, summary_hopper)
+```
+
+```Rating of 1 is classified as No damage or No infestation ONLY```
+```Corn Planthopper, borer, Leaf feeders(Armyworm, `cutworm`)```
+```rating of 1 is not included in computation on damage rating and incidence```
+```Cutworm```
+```{r}
+# Corn leaf feeders: Cutworm
+cutworm_df_ev <- 
+  insect_raw %>%
+  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Cutworm - Damage Rating ")) %>%
+  filter(Municipality != "Santa Rita" & Municipality != "Hilongos")
+
+cutworm_df_ev$collect_date <- 
+  as.Date(cutworm_df_ev$`Collection Date`, "%B %d, %Y")
+
+cutworm_dmg_ev <-
+  cutworm_df_ev %>% 
+  mutate(Year = year(collect_date), Month = month(collect_date))
+
+number_sampled_plants <- 20
+
+
+cutworm_joined_ev <-
+  cutworm_dmg_ev %>% 
+  left_join(monthly_averages, by=c('Year', 'Month')) %>%
+  # mutate_at(c(9:28), as.factor) %>%
+  rowwise() %>%
+    mutate(sum_no = sum(c_across(starts_with("Cutworm - Damage Rating ")) == "1"),
+           sum_light = sum(c_across(starts_with("Cutworm - Damage Rating ")) == "3"),
+           sum_moderate = sum(c_across(starts_with("Cutworm - Damage Rating ")) == "5"),
+           sum_severe = sum(c_across(starts_with("Cutworm - Damage Rating ")) == "7"),
+           sum_high = sum(c_across(starts_with("Cutworm - Damage Rating ")) == "9"),
+           average_damage_cutworm = (((1 * sum_no) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants)),
+           damage_rating_cutworm = (((1 * sum_no) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants * 9)) * percent_100,
+           incidence_cutworm = ((sum(c_across(sum_light:sum_high))) * percent_100) / number_sampled_plants,
+           )
+
+View(cutworm_joined_ev)
+
+
+summary_cutworm <-
+  cutworm_joined_ev %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  filter(Municipality != "Santa Rita" & Municipality != "Hilongos") %>%
+  remove_missing(na.rm=TRUE) %>%
+  summarise(sum_avg_dmg_cutworm = sum(average_damage_cutworm),
+            sum_dmg_rate_cutworm = sum(damage_rating_cutworm),
+            sum_incidence_cutworm = sum(incidence_cutworm))
+
+View(summary_cutworm)
+
+
+summary_cutworm <-
+  cutworm_joined_ev %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  remove_missing(na.rm=TRUE) %>%
+  summarise(observations = n(),
+            sum_avg_dmg_cutworm = sum(average_damage_cutworm),
+            sum_dmg_rate_cutworm = sum(damage_rating_cutworm),
+            sum_incidence_cutworm = sum(incidence_cutworm))
+
+View(summary_cutworm)
+
+
+summary_cutworm %>%
+  ggplot(aes(sum_incidence_cutworm)) +
+  geom_density()
+
+summary_cutworm %>%
+  ggplot(aes(sum_incidence_cutworm)) +
+  geom_histogram()
+
+summary_cutworm %>%
+  ggplot(aes(sample=sum_incidence_cutworm)) +
+  stat_qq() +
+  stat_qq_line()
+
+library("nortest")
+library("moments")
+library("stats")
+library("MASS")
+library("car")
+
+ggqqplot(summary_cutworm$sum_incidence_cutworm)
+
+# Kolmogorov Smirnov test for normality samples > 50
+ks_test_cutworm <- ks.test(summary_cutworm$sum_incidence_cutworm, 'pnorm')
+
+# Anderson-Darling Test is a goodness-of-fit test that determines how well your data fits a given distribution. 
+# This test is most typically used to see if your data follow a normal distribution or not.
+ad_test_cutworm <- ad.test(summary_cutworm$sum_incidence_cutworm)
+
+skew_cutworm <- skewness(summary_cutworm$sum_incidence_cutworm)
+kurt_cutworm <- kurtosis(summary_cutworm$sum_incidence_cutworm)
+
+# Jarque-Bera Normality Test performs a goodness-of-fit test that 
+# determines whether or not sample data have skewness and 
+# kurtosis that matches a normal distribution.
+jarq_cutworm <- jarque.test(summary_cutworm$sum_incidence_cutworm)
+
+# Bartlett’s test is used to test if k samples are from populations with equal variances. 
+# Equal variances across populations are called homoscedasticity or homogeneity of variances.
+bartlett_fertilizer_cutworm <- bartlett.test(sum_incidence_cutworm ~ Treatment, summary_cutworm)
+bartlett_corntype_cutworm <- bartlett.test(sum_incidence_cutworm ~ `Corn Type`, summary_cutworm)
+bartlett_municipality_cutworm <- bartlett.test(sum_incidence_cutworm ~ Municipality, summary_cutworm)
+bartlett_province_cutworm <- bartlett.test(sum_incidence_cutworm ~ Province, summary_cutworm)
+bartlett_fert_corn_cutworm <- bartlett.test(sum_incidence_cutworm ~ interaction(Treatment, `Corn Type`), summary_cutworm)
+
+
+# Null hypothesis is variances across all samples are equal. 
+# Levene’s test is an alternative to Bartlett’s test when the data is not normally distributed.
+levenes_fertilizer_cutworm <- leveneTest(sum_incidence_cutworm ~ Treatment, summary_cutworm)
+levenes_corntype_cutworm <- leveneTest(sum_incidence_cutworm ~ `Corn Type`, summary_cutworm)
+levenes_municipality_cutworm <- leveneTest(sum_incidence_cutworm ~ Municipality, summary_cutworm)
+levenes_province_cutworm <- leveneTest(sum_incidence_cutworm ~ Province, summary_cutworm)
+levenes_fert_corn_cutworm <- leveneTest(sum_incidence_cutworm ~ interaction(Treatment, `Corn Type`), summary_cutworm)
+
+detach("package:nortest", unload = TRUE)
+detach("package:MASS", unload = TRUE)
+detach("package:stats", unload = TRUE)
+detach("package:moments", unload = TRUE)
+detach("package:car", unload = TRUE)
+
+library("bestNormalize")
+bestNorm_cutworm <- predict(bestNormalize(summary_earworm$sum_incidence_earworm, out_of_sample = FALSE, loo = TRUE))
+detach("package:bestNormalize", unload = TRUE)
+
+
+# Yeo-Johnson tranformation according to bestNormalize
+# summary_cutworm$yeojohnson <- transfo(summary_cutworm$sum_incidence_cutworm, type = "bestObj", robust=FALSE)$Y[,"X"]
+
+summary_cutworm$orq <- bestNorm_cutworm
+
+# Test of Normality after transformation
+ks_test_cutworm_trans <- ks.test(summary_cutworm$orq, 'pnorm')
+ad_test_cutworm_trans <- ad.test(summary_cutworm$orq)
+skew_cutworm_trans <- skewness(summary_cutworm$orq)
+kurt_cutworm_trans <- kurtosis(summary_cutworm$orq)
+jarq_cutworm_trans <- jarque.test(summary_cutworm$orq)
+
+
+# Test of Homoskedasticity after transformation
+levenes_fertilizer_cutworm_trans <- leveneTest(orq ~ Treatment, summary_cutworm)
+levenes_corntype_cutworm_trans <- leveneTest(orq ~ `Corn Type`, summary_cutworm)
+levenes_municipality_cutworm_trans <- leveneTest(orq ~ Municipality, summary_cutworm)
+levenes_province_cutworm_trans <- leveneTest(orq ~ Province, summary_cutworm)
+levenes_fert_corn_cutworm_trans <- leveneTest(orq ~ interaction(Treatment, `Corn Type`), summary_cutworm)
+
+summary_cutworm %>%
+  ggplot(aes(orq)) +
+  geom_density()
+
+summary_cutworm$order_treat <- ordered(summary_cutworm$Treatment,
+                         levels = c("BRFR", "RFR", "ARFR"))
+
+summary_cutworm$factor_corn <- factor(summary_cutworm$`Corn Type`)
+
+# anova on Transformation
+aov_fert_cutworm_yj <- aov(orq ~ order_treat, summary_cutworm)
+aov_corn_cutworm_yj <- aov(orq ~ factor_corn, summary_cutworm) 
+# Two way AnOVa
+
+twoway_fert_corn_cutworm_yj <- aov(orq ~ order_treat + factor_corn, summary_cutworm) 
+tukey_fert_corn_cutworm <- TukeyHSD(twoway_fert_corn_cutworm_yj)
+
+# AnOVa with Interaction
+aov_fert_corn_inter_cutworm_yj <- aov(orq ~ order_treat*factor_corn, summary_cutworm)
+
+```
+
+```Rating of 1 is classified as No damage or No infestation ONLY```
+```Corn Planthopper, aphids, Leaf feeders(Armyworm, cutworm)```
+```rating of 1 is not included in computation on damage rating and incidence```
+```Armyworm```
+
+```{r}
+# Corn leaf feeders: Armyworm
+armyworm_df_ev <- 
+  insect_raw %>%
+  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, starts_with("Armyworm - Damage Rating ")) %>%
+  filter(Municipality != "Santa Rita" & Municipality != "Hilongos")
+
+armyworm_df_ev$collect_date <- 
+  as.Date(armyworm_df_ev$`Collection Date`, "%B %d, %Y")
+
+armyworm_dmg_ev <-
+  armyworm_df_ev %>% 
+  mutate(Year = year(collect_date), Month = month(collect_date))
+
+number_sampled_plants <- 20
+
+
+armyworm_joined_ev <-
+  armyworm_dmg_ev %>% 
+  left_join(monthly_averages, by=c('Year', 'Month')) %>%
+  # mutate_at(c(9:28), as.factor) %>%
+  rowwise() %>%
+    mutate(sum_no = sum(c_across(starts_with("Armyworm - Damage Rating ")) == "1"),
+           sum_light = sum(c_across(starts_with("Armyworm - Damage Rating ")) == "3"),
+           sum_moderate = sum(c_across(starts_with("Armyworm - Damage Rating ")) == "5"),
+           sum_severe = sum(c_across(starts_with("Armyworm - Damage Rating ")) == "7"),
+           sum_high = sum(c_across(starts_with("Armyworm - Damage Rating ")) == "9"),
+           average_damage_armyworm = (((1 * sum_no) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants)),
+           damage_rating_armyworm = (((1 * sum_no) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants * 9)) * percent_100,
+           incidence_armyworm = ((sum(c_across(sum_light:sum_high))) * percent_100) / number_sampled_plants,
+           )
+
+View(armyworm_joined_ev)
+
+summary_armyworm <-
+  armyworm_joined_ev %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  remove_missing(na.rm=TRUE) %>%
+  summarise(sum_avg_dmg_armyworm = sum(average_damage_armyworm),
+            sum_dmg_rate_armyworm = sum(damage_rating_armyworm),
+            sum_incidence_armyworm = sum(incidence_armyworm))
+
+View(summary_armyworm)
+
+
+summary_armyworm %>%
+  ggplot(aes(sum_incidence_armyworm)) +
+  geom_density()
+
+summary_armyworm %>%
+  ggplot(aes(sum_incidence_armyworm)) +
+  geom_histogram()
+
+summary_armyworm %>%
+  ggplot(aes(sample=sum_incidence_armyworm)) +
+  stat_qq() +
+  stat_qq_line()
+
+library("nortest")
+library("moments")
+library("stats")
+library("MASS")
+library("car")
+
+ggqqplot(summary_armyworm$sum_incidence_armyworm)
+
+# Kolmogorov Smirnov test for normality samples > 50
+ks_test_armyworm <- ks.test(summary_armyworm$sum_incidence_armyworm, 'pnorm')
+
+# Anderson-Darling Test is a goodness-of-fit test that determines how well your data fits a given distribution. 
+# This test is most typically used to see if your data follow a normal distribution or not.
+ad_test_armyworm <- ad.test(summary_armyworm$sum_incidence_armyworm)
+
+skew_armyworm <- skewness(summary_armyworm$sum_incidence_armyworm)
+kurt_armyworm <- kurtosis(summary_armyworm$sum_incidence_armyworm)
+
+# Jarque-Bera Normality Test performs a goodness-of-fit test that 
+# determines whether or not sample data have skewness and 
+# kurtosis that matches a normal distribution.
+jarq_armyworm <- jarque.test(summary_armyworm$sum_incidence_armyworm)
+
+# Bartlett’s test is used to test if k samples are from populations with equal variances. 
+# Equal variances across populations are called homoscedasticity or homogeneity of variances.
+bartlett_fertilizer_armyworm <- bartlett.test(sum_incidence_armyworm ~ Treatment, summary_armyworm)
+bartlett_corntype_armyworm <- bartlett.test(sum_incidence_armyworm ~ `Corn Type`, summary_armyworm)
+bartlett_municipality_armyworm <- bartlett.test(sum_incidence_armyworm ~ Municipality, summary_armyworm)
+bartlett_province_armyworm <- bartlett.test(sum_incidence_armyworm ~ Province, summary_armyworm)
+bartlett_fert_corn_armyworm <- bartlett.test(sum_incidence_armyworm ~ interaction(Treatment, `Corn Type`), summary_armyworm)
+
+
+# Null hypothesis is variances across all samples are equal. 
+# Levene’s test is an alternative to Bartlett’s test when the data is not normally distributed.
+levenes_fertilizer_armyworm <- leveneTest(sum_incidence_armyworm ~ Treatment, summary_armyworm)
+levenes_corntype_armyworm <- leveneTest(sum_incidence_armyworm ~ `Corn Type`, summary_armyworm)
+levenes_municipality_armyworm <- leveneTest(sum_incidence_armyworm ~ Municipality, summary_armyworm)
+levenes_province_armyworm <- leveneTest(sum_incidence_armyworm ~ Province, summary_armyworm)
+levenes_fert_corn_armyworm <- leveneTest(sum_incidence_armyworm ~ interaction(Treatment, `Corn Type`), summary_armyworm)
+
+# AnOVa
+aov_fert_armyworm <- aov(log(sum_incidence_armyworm + 1) ~ Treatment, summary_armyworm)
+aov_corn_armyworm <- aov(sum_incidence_armyworm ~ `Corn Type`, summary_armyworm) 
+# Two way AnOVa
+
+twoway_fert_corn_armyworm <- aov(sum_incidence_armyworm ~ Treatment + `Corn Type`, summary_armyworm) 
+# tukey_fert_corn_armyworm <- TukeyHSD(twoway_fert_corn_armyworm)
+
+# AnOVa with Interaction
+aov_fert_corn_inter_armyworm <- aov(sum_incidence_armyworm ~ Treatment*`Corn Type`, summary_armyworm)
+
+detach("package:nortest", unload = TRUE)
+detach("package:MASS", unload = TRUE)
+detach("package:stats", unload = TRUE)
+detach("package:moments", unload = TRUE)
+detach("package:car", unload = TRUE)
+
+library("bestNormalize")
+bestNorm_armyworm <- predict(bestNormalize(summary_armyworm$sum_incidence_armyworm, out_of_sample = FALSE, loo = TRUE))
+detach("package:bestNormalize", unload = TRUE)
+
+
+# Arcsin tranformation according to bestNormalize
+# summary_armyworm$orq <- asin(sqrt(summary_armyworm$sum_incidence_armyworm) / max(summary_armyworm$sum_incidence_armyworm))
+
+summary_armyworm$orq <- bestNorm_armyworm
+
+ks_test_armyworm_trans <- ks.test(summary_armyworm$orq, 'pnorm')
+ad_test_armyworm_trans <- ad.test(summary_armyworm$orq)
+skew_armyworm_trans <- skewness(summary_armyworm$orq)
+kurt_armyworm_trans <- kurtosis(summary_armyworm$orq)
+jarq_armyworm_trans <- jarque.test(summary_armyworm$orq)
+
+summary_armyworm %>%
+  ggplot(aes(orq)) +
+  geom_density()
+
+
+summary_armyworm$order_treat <- ordered(summary_armyworm$Treatment,
+                         levels = c("BRFR", "RFR", "ARFR"))
+
+summary_armyworm$factor_corn <- factor(summary_armyworm$`Corn Type`)
+
+# anova on Transformation
+aov_fert_armyworm_yj <- aov(orq ~ order_treat, summary_armyworm)
+aov_corn_armyworm_yj <- aov(orq ~ factor_corn, summary_armyworm) 
+# Two way AnOVa
+
+twoway_fert_corn_armyworm_yj <- aov(orq ~ order_treat + factor_corn, summary_armyworm) 
+tukey_fert_corn_armyworm <- TukeyHSD(twoway_fert_corn_armyworm_yj)
+
+# AnOVa with Interaction
+aov_fert_corn_inter_armyworm_yj <- aov(orq ~ order_treat*factor_corn, summary_armyworm)
+
+# # Kruskall Wallis non normal even after transformation
+# summary_armyworm$order_treat <- ordered(summary_armyworm$Treatment,
+#                          levels = c("BRFR", "RFR", "ARFR"))
+# 
+# summary_armyworm$factor_corn <- factor(summary_armyworm$`Corn Type`)
+# 
+# kruskall_fertilizer_armyworm <- kruskal.test(sum_incidence_armyworm ~ order_treat, data = summary_armyworm)
+# kruskall_cornType_armyworm <- kruskal.test(sum_incidence_armyworm ~ `Corn Type`, data = summary_armyworm)
+# 
+# pairwise.wilcox.test(summary_armyworm$sum_incidence_armyworm, summary_armyworm$order_treat,
+#                  p.adjust.method = "BH")
+```
+
+```Rating of 1 is classified as No damage or No infestation ONLY```
+```Corn Planthopper, aphids, Leaf feeders(Armyworm, cutworm)```
+```rating of 1 is not included in computation on damage rating and incidence```
+```Aphids```
+
+```{r}
+# Aphids
+aphids_df_ev <- 
+  insect_raw %>%
+  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, starts_with("Aphids - Damage Rating ")) %>%
+  filter(Municipality != "Santa Rita" & Municipality != "Hilongos") 
+
+aphids_df_ev$collect_date <- 
+  as.Date(aphids_df_ev$`Collection Date`, "%B %d, %Y")
+
+aphids_dmg_ev <-
+  aphids_df_ev %>% 
+  mutate(Year = year(collect_date), Month = month(collect_date))
+
+
+aphids_joined_ev <-
+  aphids_dmg_ev %>% 
+  left_join(monthly_averages, by=c('Year', 'Month')) %>%
+  # mutate_at(c(9:28), as.factor) %>%
+  rowwise() %>%
+    mutate(sum_no = sum(c_across(starts_with("Aphids - Damage Rating ")) == "1"),
+           sum_light = sum(c_across(starts_with("Aphids - Damage Rating ")) == "3"),
+           sum_moderate = sum(c_across(starts_with("Aphids - Damage Rating ")) == "5"),
+           sum_severe = sum(c_across(starts_with("Aphids - Damage Rating ")) == "7"),
+           sum_high = sum(c_across(starts_with("Aphids - Damage Rating ")) == "9"),
+           average_damage_aphids = ((1 * sum_no) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants),
+           damage_rating_aphids = (((1 * sum_no) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants * 9)) * percent_100,
+           incidence_aphids = ((sum(c_across(sum_light:sum_high))) * percent_100) / number_sampled_plants,
+           )
+
+View(aphids_joined_ev)
+
+summary_aphids <-
+  aphids_joined_ev %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  remove_missing(na.rm=TRUE) %>%
+  summarise(sum_avg_dmg_aphids = sum(average_damage_aphids),
+            sum_dmg_rate_aphids = sum(damage_rating_aphids),
+            sum_incidence_aphids = sum(incidence_aphids))
+
+View(summary_aphids)
+
+
+summary_aphids %>%
+  ggplot(aes(sum_incidence_aphids)) +
+  geom_density()
+
+summary_aphids %>%
+  ggplot(aes(sum_incidence_aphids)) +
+  geom_histogram()
+
+summary_aphids %>%
+  ggplot(aes(sample=sum_incidence_aphids)) +
+  stat_qq() +
+  stat_qq_line()
+
+library("nortest")
+library("moments")
+library("stats")
+library("MASS")
+library("car")
+library("cellWise")
+
+ggqqplot(summary_aphids$sum_incidence_aphids)
+
+# Kolmogorov Smirnov test for normality samples > 50
+ks_test_aphids <- ks.test(summary_aphids$sum_incidence_aphids, 'pnorm')
+
+# Anderson-Darling Test is a goodness-of-fit test that determines how well your data fits a given distribution. 
+# This test is most typically used to see if your data follow a normal distribution or not.
+ad_test_aphids <- ad.test(summary_aphids$sum_incidence_aphids)
+
+skew_aphids <- skewness(summary_aphids$sum_incidence_aphids)
+kurt_aphids <- kurtosis(summary_aphids$sum_incidence_aphids)
+
+# Jarque-Bera Normality Test performs a goodness-of-fit test that 
+# determines whether or not sample data have skewness and 
+# kurtosis that matches a normal distribution.
+jarq_aphids <- jarque.test(summary_aphids$sum_incidence_aphids)
+
+# Bartlett’s test is used to test if k samples are from populations with equal variances. 
+# Equal variances across populations are called homoscedasticity or homogeneity of variances.
+bartlett_fertilizer_aphids <- bartlett.test(sum_incidence_aphids ~ Treatment, summary_aphids)
+bartlett_corntype_aphids <- bartlett.test(sum_incidence_aphids ~ `Corn Type`, summary_aphids)
+bartlett_municipality_aphids <- bartlett.test(sum_incidence_aphids ~ Municipality, summary_aphids)
+bartlett_province_aphids <- bartlett.test(sum_incidence_aphids ~ Province, summary_aphids)
+bartlett_fert_corn_aphids <- bartlett.test(sum_incidence_aphids ~ interaction(Treatment, `Corn Type`), summary_aphids)
+
+
+# Null hypothesis is variances across all samples are equal. 
+# Levene’s test is an alternative to Bartlett’s test when the data is not normally distributed.
+levenes_fertilizer_aphids <- leveneTest(sum_incidence_aphids ~ Treatment, summary_aphids)
+levenes_corntype_aphids <- leveneTest(sum_incidence_aphids ~ `Corn Type`, summary_aphids)
+levenes_municipality_aphids <- leveneTest(sum_incidence_aphids ~ Municipality, summary_aphids)
+levenes_province_aphids <- leveneTest(sum_incidence_aphids ~ Province, summary_aphids)
+levenes_fert_corn_aphids <- leveneTest(sum_incidence_aphids ~ interaction(Treatment, `Corn Type`), summary_aphids)
+
+# AnOVa
+aov_fert_aphids <- aov(sum_incidence_aphids ~ Treatment, summary_aphids)
+aov_corn_aphids <- aov(sum_incidence_aphids ~ `Corn Type`, summary_aphids) 
+# Two way AnOVa
+
+twoway_fert_corn_aphids <- aov(sum_incidence_aphids ~ Treatment + `Corn Type`, summary_aphids) 
+# tukey_fert_corn_aphids <- TukeyHSD(twoway_fert_corn_aphids)
+
+# AnOVa with Interaction
+aov_fert_corn_inter_aphids <- aov(sum_incidence_aphids ~ Treatment*`Corn Type`, summary_aphids)
+
+detach("package:nortest", unload = TRUE)
+detach("package:MASS", unload = TRUE)
+detach("package:stats", unload = TRUE)
+detach("package:moments", unload = TRUE)
+detach("package:car", unload = TRUE)
+
+library("bestNormalize")
+bestNorm_aphids <- predict(bestNormalize(summary_aphids$sum_incidence_aphids, out_of_sample = FALSE, loo = TRUE))
+detach("package:bestNormalize", unload = TRUE)
+
+# Yeo Johnson Transformation according to bestNormalize
+# Anova on transformed using Yeo-Johnson transformation
+summary_aphids$yeojohnson <- transfo(summary_aphids$sum_incidence_aphids, type = "bestObj", robust=FALSE)$Y[,"X"]
+
+# Test for normality on transformed data
+ks_test_aphids_trans <- ks.test(summary_aphids$yeojohnson, 'pnorm')
+ad_test_aphids_trans <- ad.test(summary_aphids$yeojohnson)
+skew_aphids_trans <- skewness(summary_aphids$yeojohnson)
+kurt_aphids_trans <- kurtosis(summary_aphids$yeojohnson)
+jarq_aphids_trans <- jarque.test(summary_aphids$yeojohnson)
+
+summary_aphids %>%
+  ggplot(aes(yeojohnson)) +
+  geom_density()
+
+# Test for Heteroskedasticity on transformed data
+levenes_fertilizer_aphids_yj <- leveneTest(yeojohnson ~ Treatment, summary_aphids)
+levenes_corntype_aphids_yj <- leveneTest(yeojohnson ~ `Corn Type`, summary_aphids)
+levenes_municipality_aphids_yj <- leveneTest(yeojohnson ~ Municipality, summary_aphids)
+levenes_province_aphids_yj <- leveneTest(yeojohnson ~ Province, summary_aphids)
+levenes_fert_corn_aphids_yj <- leveneTest(yeojohnson ~ interaction(Treatment, `Corn Type`), summary_aphids)
+
+# anova on Transformation
+aov_fert_aphids_yj <- aov(yeojohnson ~ Treatment, summary_aphids)
+aov_corn_aphids_yj <- aov(yeojohnson ~ `Corn Type`, summary_aphids) 
+# Two way AnOVa
+
+twoway_fert_corn_aphids_yj <- aov(yeojohnson ~ Treatment + `Corn Type`, summary_aphids) 
+# tukey_fert_corn_aphids <- TukeyHSD(twoway_fert_corn_aphids)
+
+# AnOVa with Interaction
+aov_fert_corn_inter_aphids_yj <- aov(yeojohnson ~ Treatment*`Corn Type`, summary_aphids)
+
+
+# Kruskall Wallis
+summary_aphids$order_treat <- ordered(summary_aphids$Treatment,
+                         levels = c("BRFR", "RFR", "ARFR"))
+
+summary_aphids$factor_corn <- factor(summary_aphids$`Corn Type`)
+
+kruskall_fertilizer_aphids_yj <- kruskal.test(yeojohnson ~ order_treat, data = summary_aphids)
+kruskall_cornType_aphids_yj <- kruskal.test(yeojohnson ~ factor_corn, data = summary_aphids)
+
+pairwise.wilcox.test(summary_aphids$sum_incidence_aphids, summary_aphids$order_treat,
+                 p.adjust.method = "BH")
+
+```
+
+
+```Fall armyworm has different rating scale (according to dashboard)```
+
+```{r}
+# Fall Armyworm
+faw_df_ev <- 
+  insect_raw %>%
+  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Fall Armyworm - Damage Rating"))%>%
+  filter(Municipality != "Santa Rita" & Municipality != "Hilongos") 
+
+faw_df_ev$collect_date <- 
+  as.Date(faw_df_ev$`Collection Date`, "%B %d, %Y")
+
+faw_dmg_ev <-
+  faw_df_ev %>% 
+  mutate(Year = year(collect_date), Month = month(collect_date))
+
+faw_joined_ev <-
+  faw_dmg_ev %>% 
+  left_join(monthly_averages, by=c('Year', 'Month')) %>%
+  rowwise() %>%
+  mutate(sum_0 = sum(c_across(starts_with("Fall Armyworm - Damage Rating ")) == "0"),
+         sum_1 = sum(c_across(starts_with("Fall Armyworm - Damage Rating ")) == "1"),
+         sum_2 = sum(c_across(starts_with("Fall Armyworm - Damage Rating ")) == "2"),
+         sum_3 = sum(c_across(starts_with("Fall Armyworm - Damage Rating ")) == "3"),
+         sum_4 = sum(c_across(starts_with("Fall Armyworm - Damage Rating ")) == "4"),
+         sum_5 = sum(c_across(starts_with("Fall Armyworm - Damage Rating ")) == "5"),
+         sum_6 = sum(c_across(starts_with("Fall Armyworm - Damage Rating ")) == "6"),
+         sum_7 = sum(c_across(starts_with("Fall Armyworm - Damage Rating ")) == "7"),
+         sum_8 = sum(c_across(starts_with("Fall Armyworm - Damage Rating ")) == "8"),
+         sum_9 = sum(c_across(starts_with("Fall Armyworm - Damage Rating ")) == "9"),
+         average_damage_faw = (((1 * sum_1) + (3 * sum_3) + (5 * sum_5) + (7 * sum_7) + (9 * sum_9) + (2 * sum_2) + (4 * sum_4) + (6 * sum_6) + (8 * sum_8)) / (number_sampled_plants)),
+         damage_rating_faw = (((1 * sum_1) + (3 * sum_3) + (5 * sum_5) + (7 * sum_7) + (9 * sum_9) + (2 * sum_2) + (4 * sum_4) + (6 * sum_6) + (8 * sum_8)) / (number_sampled_plants * 9)) * percent_100,
+         incidence_faw = ((sum(c_across(sum_1:sum_9)))* percent_100) / number_sampled_plants,
+         )
+
+View(faw_joined_ev)
+
+summary_faw <-
+  faw_joined_ev %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  remove_missing(na.rm=TRUE) %>%
+  summarise(sum_avg_dmg_faw = sum(average_damage_faw),
+            sum_dmg_rate_faw = sum(damage_rating_faw),
+            sum_incidence_faw = sum(incidence_faw))
+
+View(summary_faw)
+
+summary_faw %>%
+  ggplot(aes(sum_incidence_faw)) +
+  geom_density()
+
+summary_faw %>%
+  ggplot(aes(sum_incidence_faw)) +
+  geom_histogram()
+
+summary_faw %>%
+  ggplot(aes(sample=sum_incidence_faw)) +
+  stat_qq() +
+  stat_qq_line()
+
+library("nortest")
+library("moments")
+library("stats")
+library("car")
+library("MASS")
+
+ggqqplot(summary_faw$sum_incidence_faw)
+
+# Kolmogorov Smirnov test for normality samples > 50
+ks_test_faw <- ks.test(summary_faw$sum_incidence_faw, 'pnorm')
+
+# Anderson-Darling Test is a goodness-of-fit test that determines how well your data fits a given distribution. 
+# This test is most typically used to see if your data follow a normal distribution or not.
+ad_test_faw <- ad.test(summary_faw$sum_incidence_faw)
+
+skew_faw <- skewness(summary_faw$sum_incidence_faw)
+kurt_faw <- kurtosis(summary_faw$sum_incidence_faw)
+
+# Jarque-Bera Normality Test performs a goodness-of-fit test that 
+# determines whether or not sample data have skewness and 
+# kurtosis that matches a normal distribution.
+jarq_faw <- jarque.test(summary_faw$sum_incidence_faw)
+
+
+# Bartlett’s test is used to test if k samples are from populations with equal variances. 
+# Equal variances across populations are called homoscedasticity or homogeneity of variances.
+bartlett_fertilizer_faw <- bartlett.test(sum_incidence_faw ~ Treatment, summary_faw)
+bartlett_corntype_faw <- bartlett.test(sum_incidence_faw ~ `Corn Type`, summary_faw)
+bartlett_municipality_faw <- bartlett.test(sum_incidence_faw ~ Municipality, summary_faw)
+bartlett_province_faw <- bartlett.test(sum_incidence_faw ~ Province, summary_faw)
+bartlett_fert_corn_faw <- bartlett.test(sum_incidence_faw ~ interaction(Treatment, `Corn Type`), summary_faw)
+
+
+# Null hypothesis is variances across all samples are equal. 
+# Levene’s test is an alternative to Bartlett’s test when the data is not normally distributed.
+levenes_fertilizer_faw <- leveneTest(sum_incidence_faw ~ Treatment, summary_faw)
+levenes_corntype_faw <- leveneTest(sum_incidence_faw ~ `Corn Type`, summary_faw)
+levenes_municipality_faw <- leveneTest(sum_incidence_faw ~ Municipality, summary_faw)
+levenes_province_faw <- leveneTest(sum_incidence_faw ~ Province, summary_faw)
+levenes_fert_corn_faw <- leveneTest(sum_incidence_faw ~ interaction(Treatment, `Corn Type`), summary_faw)
+
+
+detach("package:nortest", unload = TRUE)
+detach("package:MASS", unload = TRUE)
+detach("package:stats", unload = TRUE)
+detach("package:moments", unload = TRUE)
+detach("package:car", unload = TRUE)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
