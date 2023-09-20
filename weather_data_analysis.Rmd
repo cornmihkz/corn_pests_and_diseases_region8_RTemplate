@@ -96,19 +96,16 @@ monthly_averages <-
 
 insect_raw <- read_csv("pest.csv")
 insect_raw$Variety %>% unique()
+```
+
+
+```{r}
 
 # October 2020 - August 2023
 # collection_weather_avg <-
 #   monthly_averages %>% 
 #   filter(!(Year == 2020 & Month < 9)) 
-
-
-```
-
-
-
-
-```{r}
+.
 # # Alangalang
 # area <- alangalang_weather
 # 
