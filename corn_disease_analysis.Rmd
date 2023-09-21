@@ -2426,6 +2426,151 @@ weather_disease_corr
 
 ```
 
+``` Correlation: Diseases vs Weather Parameters with rstatix```
+```{r}
+library("rstatix")
+
+# stalk
+stalk_cor_windx <- cor_test(stalk_ev, "mean_wind", "incidence_stalk")
+stalk_cor_tempx <- cor_test(stalk_ev, "mean_temp", "incidence_stalk")
+stalk_cor_humidx <- cor_test(stalk_ev, "mean_humid", "incidence_stalk")
+stalk_cor_rainx <- cor_test(stalk_ev, "mean_rain", "incidence_stalk")
+
+corr_stalk_dfx <- data.frame(
+  weather_parameter = c(stalk_cor_windx$var1, stalk_cor_tempx$var1, stalk_cor_humidx$var1, stalk_cor_rainx$var1),
+  incidence = c(stalk_cor_windx$var2, stalk_cor_tempx$var2, stalk_cor_humidx$var2, stalk_cor_rainx$var2),
+  r_coef = c(stalk_cor_windx$cor, stalk_cor_tempx$cor, stalk_cor_humidx$cor, stalk_cor_rainx$cor),
+  p_val  = c(stalk_cor_windx$p, stalk_cor_tempx$p, stalk_cor_humidx$p, stalk_cor_rainx$p)
+) %>% mutate(r_coef = round(r_coef, 3),
+             p_val = round(p_val, 4))
+
+
+# blight
+blight_cor_windx <- cor_test(blight_ev, "mean_wind", "incidence_blight")
+blight_cor_tempx <- cor_test(blight_ev, "mean_temp", "incidence_blight")
+blight_cor_humidx <- cor_test(blight_ev, "mean_humid", "incidence_blight")
+blight_cor_rainx <- cor_test(blight_ev, "mean_rain", "incidence_blight")
+
+
+corr_blight_dfx <- data.frame(
+  weather_parameter = c(blight_cor_windx$var1, blight_cor_tempx$var1, blight_cor_humidx$var1, blight_cor_rainx$var1),
+  incidence = c(blight_cor_windx$var2, blight_cor_tempx$var2, blight_cor_humidx$var2, blight_cor_rainx$var2),
+  r_coef = c(blight_cor_windx$cor, blight_cor_tempx$cor, blight_cor_humidx$cor, blight_cor_rainx$cor),
+  p_val  = c(blight_cor_windx$p, blight_cor_tempx$p, blight_cor_humidx$p, blight_cor_rainx$p)
+) %>% mutate(r_coef = round(r_coef, 3),
+             p_val = round(p_val, 4))
+
+# leaf
+leaf_cor_windx <- cor_test(leaf_ev, "mean_wind", "incidence_leaf")
+leaf_cor_tempx <- cor_test(leaf_ev, "mean_temp", "incidence_leaf")
+leaf_cor_humidx <- cor_test(leaf_ev, "mean_humid", "incidence_leaf")
+leaf_cor_rainx <- cor_test(leaf_ev, "mean_rain", "incidence_leaf")
+
+corr_leaf_dfx <- data.frame(
+  weather_parameter = c(leaf_cor_windx$var1, leaf_cor_tempx$var1, leaf_cor_humidx$var1, leaf_cor_rainx$var1),
+  incidence = c(leaf_cor_windx$var2, leaf_cor_tempx$var2, leaf_cor_humidx$var2, leaf_cor_rainx$var2),
+  r_coef = c(leaf_cor_windx$cor, leaf_cor_tempx$cor, leaf_cor_humidx$cor, leaf_cor_rainx$cor),
+  p_val  = c(leaf_cor_windx$p, leaf_cor_tempx$p, leaf_cor_humidx$p, leaf_cor_rainx$p)
+) %>% mutate(r_coef = round(r_coef, 3),
+             p_val = round(p_val, 4))
+
+
+# brown
+brown_cor_windx <- cor_test(brown_ev, "mean_wind", "incidence_brown")
+brown_cor_tempx <- cor_test(brown_ev, "mean_temp", "incidence_brown")
+brown_cor_humidx <- cor_test(brown_ev, "mean_humid", "incidence_brown")
+brown_cor_rainx <- cor_test(brown_ev, "mean_rain", "incidence_brown")
+
+corr_brown_dfx <- data.frame(
+  weather_parameter = c(brown_cor_windx$var1, brown_cor_tempx$var1, brown_cor_humidx$var1, brown_cor_rainx$var1),
+  incidence = c(brown_cor_windx$var2, brown_cor_tempx$var2, brown_cor_humidx$var2, brown_cor_rainx$var2),
+  r_coef = c(brown_cor_windx$cor, brown_cor_tempx$cor, brown_cor_humidx$cor, brown_cor_rainx$cor),
+  p_val  = c(brown_cor_windx$p, brown_cor_tempx$p, brown_cor_humidx$p, brown_cor_rainx$p)
+) %>% mutate(r_coef = round(r_coef, 3),
+             p_val = round(p_val, 4))
+
+
+
+# mildew
+mildew_cor_windx <- cor_test(mildew_ev, "mean_wind", "incidence_mildew")
+mildew_cor_tempx <- cor_test(mildew_ev, "mean_temp", "incidence_mildew")
+mildew_cor_humidx <- cor_test(mildew_ev, "mean_humid", "incidence_mildew")
+mildew_cor_rainx <- cor_test(mildew_ev, "mean_rain", "incidence_mildew")
+
+corr_mildew_dfx <- data.frame(
+  weather_parameter = c(mildew_cor_windx$var1, mildew_cor_tempx$var1, mildew_cor_humidx$var1, mildew_cor_rainx$var1),
+  incidence = c(mildew_cor_windx$var2, mildew_cor_tempx$var2, mildew_cor_humidx$var2, mildew_cor_rainx$var2),
+  r_coef = c(mildew_cor_windx$cor, mildew_cor_tempx$cor, mildew_cor_humidx$cor, mildew_cor_rainx$cor),
+  p_val  = c(mildew_cor_windx$p, mildew_cor_tempx$p, mildew_cor_humidx$p, mildew_cor_rainx$p)
+) %>% mutate(r_coef = round(r_coef, 3),
+             p_val = round(p_val, 4))
+
+
+
+# southrust
+southrust_cor_windx <- cor_test(southrust_ev, "mean_wind", "incidence_southrust")
+southrust_cor_tempx <- cor_test(southrust_ev, "mean_temp", "incidence_southrust")
+southrust_cor_humidx <- cor_test(southrust_ev, "mean_humid", "incidence_southrust")
+southrust_cor_rainx <- cor_test(southrust_ev, "mean_rain", "incidence_southrust")
+
+corr_southrust_dfx <- data.frame(
+  weather_parameter = c(southrust_cor_windx$var1, southrust_cor_tempx$var1, southrust_cor_humidx$var1, southrust_cor_rainx$var1),
+  incidence = c(southrust_cor_windx$var2, southrust_cor_tempx$var2, southrust_cor_humidx$var2, southrust_cor_rainx$var2),
+  r_coef = c(southrust_cor_windx$cor, southrust_cor_tempx$cor, southrust_cor_humidx$cor, southrust_cor_rainx$cor),
+  p_val  = c(southrust_cor_windx$p, southrust_cor_tempx$p, southrust_cor_humidx$p, southrust_cor_rainx$p)
+) %>% mutate(r_coef = round(r_coef, 3),
+             p_val = round(p_val, 4))
+
+
+
+# rust
+rust_cor_windx <- cor_test(rust_ev, "mean_wind", "incidence_rust")
+rust_cor_tempx <- cor_test(rust_ev, "mean_temp", "incidence_rust")
+rust_cor_humidx <- cor_test(rust_ev, "mean_humid", "incidence_rust")
+rust_cor_rainx <- cor_test(rust_ev, "mean_rain", "incidence_rust")
+
+corr_rust_dfx <- data.frame(
+  weather_parameter = c(rust_cor_windx$var1, rust_cor_tempx$var1, rust_cor_humidx$var1, rust_cor_rainx$var1),
+  incidence = c(rust_cor_windx$var2, rust_cor_tempx$var2, rust_cor_humidx$var2, rust_cor_rainx$var2),
+  r_coef = c(rust_cor_windx$cor, rust_cor_tempx$cor, rust_cor_humidx$cor, rust_cor_rainx$cor),
+  p_val  = c(rust_cor_windx$p, rust_cor_tempx$p, rust_cor_humidx$p, rust_cor_rainx$p)
+) %>% mutate(r_coef = round(r_coef, 3),
+             p_val = round(p_val, 4))
+
+
+# blsb
+blsb_cor_windx <- cor_test(blsb_ev, "mean_wind", "incidence_blsb")
+blsb_cor_tempx <- cor_test(blsb_ev, "mean_temp", "incidence_blsb")
+blsb_cor_humidx <- cor_test(blsb_ev, "mean_humid", "incidence_blsb")
+blsb_cor_rainx <- cor_test(blsb_ev, "mean_rain", "incidence_blsb") 
+
+corr_blsb_dfx <- data.frame(
+  weather_parameter = c(blsb_cor_windx$var1, blsb_cor_tempx$var1, blsb_cor_humidx$var1, blsb_cor_rainx$var1),
+  incidence = c(blsb_cor_windx$var2, blsb_cor_tempx$var2, blsb_cor_humidx$var2, blsb_cor_rainx$var2),
+  r_coef = c(blsb_cor_windx$cor, blsb_cor_tempx$cor, blsb_cor_humidx$cor, blsb_cor_rainx$cor),
+  p_val  = c(blsb_cor_windx$p, blsb_cor_tempx$p, blsb_cor_humidx$p, blsb_cor_rainx$p)
+) %>% mutate(r_coef = round(r_coef, 3),
+             p_val = round(p_val, 4))
+
+
+
+weather_disease_corrx <-
+  corr_stalk_dfx %>% 
+  full_join(corr_blight_dfx) %>% 
+  full_join(corr_leaf_dfx) %>% 
+  full_join(corr_brown_dfx) %>%
+  full_join(corr_mildew_dfx) %>%
+  full_join(corr_southrust_dfx) %>%
+  full_join(corr_rust_dfx) %>%
+  full_join(corr_blsb_dfx)
+
+weather_disease_corrx
+
+
+detach("package:ggpubr", unload = TRUE)
+detach("package:rstatix", unload = TRUE)
+```
+
 
 
 
