@@ -6,6 +6,7 @@ output: html_document
 ---
 
 ```{r}
+knitr::opts_chunk$set(echo = TRUE, fig.width=8, fig.height=5)
 library("dplyr")
 library("ggpubr")
 library("tidymodels")
@@ -14,6 +15,10 @@ library("ggpubr")
 library("broom")
 library("multcompView")
 library("car")
+
+plot_width <- 8
+plot_height <- 5
+plot_dpi <- 300
 
 set.seed(123)
 insect_raw$Variety %>% unique()
@@ -264,48 +269,56 @@ borer_joined_ev %>%
   ggplot(aes(mean_temp, incidence_borer)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average temperature (C)", y = "Incidence Borer") +
+  labs(x = "Monthly Average temperature (C)", 
+       y = "Incidence Borer",
+       title = "Temperature and Incidence of Corn Borer") +
   annotate("label", x = 27, y = 8,  
            label = temp_borer_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Borer vs Temperature.png")
+ggsave(path = "../pests", filename = "Corn Borer vs Temperature.png", width=plot_width, height=plot_height, dpi=plot_dpi)
 
 
 borer_joined_ev %>%
   ggplot(aes(mean_wind, incidence_borer)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence Borer") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Borer",
+       title = "Wind Speed and Incidence of Corn Borer") +
   annotate("label", x = 7, y = 8,  
            label = wind_borer_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Borer vs Wind.png")
+ggsave(path = "../pests", filename = "Corn Borer vs Wind.png", width=plot_width, height=plot_height, dpi=plot_dpi)
 
 
 borer_joined_ev %>%
   ggplot(aes(mean_humid, incidence_borer)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence Borer") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Borer",
+       title = "Humidity and Incidence of Corn Borer") +
   annotate("label", x = 60, y = 8,  
            label = humid_borer_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Borer vs Humidity.png")
+ggsave(path = "../pests", filename = "Corn Borer vs Humidity.png", width=plot_width, height=plot_height, dpi=plot_dpi)
 
 
 borer_joined_ev %>%
   ggplot(aes(mean_rain, incidence_borer)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence Borer") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Borer",
+       title = "Rainfall and Incidence of Corn Borer") +
   annotate("label", x = 0.4, y = 10,  
            label = rain_borer_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Borer vs Rain.png")
+ggsave(path = "../pests", filename = "Corn Borer vs Rain.png", width=plot_width, height=plot_height, dpi=plot_dpi)
 
 summary_borer_corntype_bp <-
   summary_borer %>% 
@@ -324,9 +337,10 @@ summary_borer %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_borer_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 1.1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Borer") +
+       y = "Percent Incidence Borer",
+       title = "Effect of Corn Type to Borer Incidence") +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Borer Percent Incidence vs Corn Type.png")
+ggsave(path = "../pests", filename = "Corn Borer Percent Incidence vs Corn Type.png", width=plot_width, height=plot_height, dpi=plot_dpi)
 
 
 summary_borer_fert_bp <-
@@ -345,15 +359,17 @@ summary_borer %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_borer_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.25, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence Borer") + 
+       y = "Percent Incidence Borer",
+       title = "Effect of Fertilizer Treatment Rate to Borer Incidence") + 
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Borer Percent Incidence vs Fertilizer Treatment.png")
+ggsave(path = "../pests", filename = "Corn Borer Percent Incidence vs Fertilizer Treatment.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
+
 
 detach("package:bestNormalize", unload = TRUE)
 detach("package:nortest", unload = TRUE)
 detach("package:MASS", unload = TRUE)
 detach("package:stats", unload = TRUE)
-detach("package:moments", unload = TRUE)
 ```
 
 
@@ -557,7 +573,9 @@ semilooper_joined_ev %>%
   ggplot(aes(mean_temp, incidence_semilooper)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Temperature (C)", y = "Incidence Semilooper") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence Semilooper",
+       title = "Temperature vs Corn Semi-looper") +
   annotate("label", x = 27, y = 8,  
            label = temp_semilooper_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -569,7 +587,9 @@ semilooper_joined_ev %>%
   ggplot(aes(mean_wind, incidence_semilooper)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence Semilooper") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Semilooper",
+       title = "Wind Speed vs Corn Semi-looper") +
   annotate("label", x = 7, y = 8,  
            label = wind_semilooper_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -581,7 +601,9 @@ semilooper_joined_ev %>%
   ggplot(aes(mean_humid, incidence_semilooper)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence Semilooper") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Semilooper",
+       title = "Humidity vs Corn Semi-looper") +
   annotate("label", x = 60, y = 8,  
            label = humid_semilooper_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -593,7 +615,9 @@ semilooper_joined_ev %>%
   ggplot(aes(mean_rain, incidence_semilooper)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence Semilooper") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Semilooper",
+       title = "Rainfall vs Corn Semi-looper") +
   annotate("label", x = 0.5, y = 10,  
            label = rain_semilooper_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -618,7 +642,8 @@ summary_semilooper %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_semilooper_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 1.75, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Semilooper") +
+       y = "Percent Incidence Semilooper",
+       title = "Effect of Corn Type on Corn Semi-looper Incidence") +
   theme_classic()
 ggsave(path = "../pests", filename = "Semilooper Percent Incidence vs Corn Type.png")
 
@@ -639,7 +664,8 @@ summary_semilooper %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_semilooper_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.75, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence Semilooper") + 
+       y = "Percent Incidence Semilooper",
+       title = "Effect of Fertilizer Treatment Rate on Corn Semi-looper Incidence") + 
   theme_classic()
 ggsave(path = "../pests", filename = "Semilooper Percent Incidence vs Fertilizer Treatment.png")
 
@@ -862,7 +888,9 @@ earworm_joined_ev %>%
   ggplot(aes(mean_temp, incidence_earworm)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly average temperature (C)", y = "Incidence Earworm") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence Earworm",
+       title = "Temperature vs Corn Earworm") +
   annotate("label", x = 28.5, y = 13,  
            label = temp_earworm_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -873,7 +901,9 @@ earworm_joined_ev %>%
   ggplot(aes(mean_wind, incidence_earworm)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly average wind speed (km/h)", y = "Incidence Earworm") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Earworm",
+       title = "Wind Speed vs Corn Earworm") +
   annotate("label", x = 7, y = 13,  
            label = wind_earworm_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -884,7 +914,9 @@ earworm_joined_ev %>%
   ggplot(aes(mean_humid, incidence_earworm)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly average humidity (%)", y = "Incidence Earworm") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Earworm",
+       title = "Humidity vs Corn Earworm") +
   annotate("label", x = 60, y = 13,  
            label = humid_earworm_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -894,7 +926,9 @@ earworm_joined_ev %>%
   ggplot(aes(mean_rain, incidence_earworm)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly average rainfall (mm)", y = "Incidence Earworm") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Earworm",
+       title = "Rainfall vs Corn Earworm") +
   annotate("label", x = 0.5, y = 13,  
            label = rain_earworm_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -917,7 +951,8 @@ summary_earworm %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_earworm_corntype_bp, aes(label = round(w, 2), y = w), vjust = -0.8, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Earworm") +
+       y = "Percent Incidence Earworm",
+       title = "Effect of Corn Type on Corn Earworm Incidence") +
   theme_classic()
 
 
@@ -937,7 +972,8 @@ summary_earworm %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_earworm_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 1.75, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence Earworm") + 
+       y = "Percent Incidence Earworm",
+       title = "Effect of Fertilizer Treatment Rate on Corn Earworm Incidence") + 
   theme_classic()
 
 
@@ -1168,7 +1204,9 @@ hopper_joined_ev %>%
   ggplot(aes(mean_temp, incidence_hopper)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Temperature (C)", y = "Incidence Hopper") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence Hopper",
+       title = "Temperature vs Corn Plant Hopper") +
   annotate("label", x = 28, y = 8,  
            label = temp_hopper_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1180,7 +1218,9 @@ hopper_joined_ev %>%
   ggplot(aes(mean_wind, incidence_hopper)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence Hopper") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Hopper",
+       title = "Wind Speed vs Corn Plant Hopper") +
   annotate("label", x = 8, y = 8,  
            label = wind_hopper_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1192,7 +1232,9 @@ hopper_joined_ev %>%
   ggplot(aes(mean_humid, incidence_hopper)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence Hopper") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Hopper",
+       title = "Humidity vs Corn Plant Hopper") +
   annotate("label", x = 60, y = 11,  
            label = humid_hopper_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1203,7 +1245,9 @@ hopper_joined_ev %>%
   ggplot(aes(mean_rain, incidence_hopper)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence Hopper") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Hopper",
+       title = "Rainfall vs Corn Plant Hopper") +
   annotate("label", x = 0.5, y = 10,  
            label = rain_hopper_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1229,7 +1273,8 @@ summary_hopper %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_borer_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.25, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Hopper") +
+       y = "Percent Incidence Hopper",
+       title = "Effect of Corn Type on Corn Plant Hopper Incidence") +
   theme_classic()
 ggsave(path = "../pests", filename = "Hopper Percent Incidence vs Corn Type.png")
 
@@ -1250,7 +1295,8 @@ summary_hopper %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_hopper_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 1.15, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence Hopper") + 
+       y = "Percent Incidence Hopper",
+       title = "Effect of Fertilizer Treatment Rate on Corn Plant Hopper Incidence") + 
   theme_classic()
 ggsave(path = "../pests", filename = "Hopper Percent Incidence vs Fertilizer Treatment.png")
 
@@ -1294,9 +1340,6 @@ cutworm_joined_ev <-
            damage_rating_cutworm = (((1 * sum_no) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants * 9)) * percent_100,
            incidence_cutworm = ((sum(c_across(sum_light:sum_high))) * percent_100) / number_sampled_plants,
            )
-
-View(cutworm_joined_ev)
-
 
 summary_cutworm <-
   cutworm_joined_ev %>%
@@ -1471,7 +1514,9 @@ cutworm_joined_ev %>%
   ggplot(aes(mean_temp, incidence_cutworm)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Temperature (C)", y = "Incidence Cutworm") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence Cutworm",
+       title = "Temperature vs Cutworm") +
   annotate("label", x = 28, y = 8,  
            label = temp_cutworm_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1483,7 +1528,9 @@ cutworm_joined_ev %>%
   ggplot(aes(mean_wind, incidence_cutworm)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence Cutworm") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Cutworm",
+       title = "Wind Speed vs Cutworm") +
   annotate("label", x = 8, y = 8,  
            label = wind_cutworm_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1495,7 +1542,9 @@ cutworm_joined_ev %>%
   ggplot(aes(mean_humid, incidence_cutworm)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence Cutworm") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Cutworm",
+       title = "Humidity vs Cutworm") +
   annotate("label", x = 60, y = 8,  
            label = humid_cutworm_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1506,7 +1555,9 @@ cutworm_joined_ev %>%
   ggplot(aes(mean_rain, incidence_cutworm)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence Cutworm") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Cutworm",
+       title = "Rainfall vs Cutworm") +
   annotate("label", x = 0.5, y = 10,  
            label = rain_cutworm_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1531,7 +1582,8 @@ summary_cutworm %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_cutworm_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 1.5, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Cutworm") +
+       y = "Percent Incidence Cutworm",
+       title = "Effect of Corn Type to Cutworm Incidence") +
   theme_classic()
 ggsave(path = "../pests", filename = "Cutworm Percent Incidence vs Corn Type.png")
 
@@ -1553,7 +1605,8 @@ summary_cutworm %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_cutworm_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 2.85, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence Cutworm") + 
+       y = "Percent Incidence Cutworm",
+       title = "Effect of Fertilizer Treatment Rate to Cutworm Incidence") + 
   theme_classic()
 ggsave(path = "../pests", filename = "Cutworm Percent Incidence vs Fertilizer Treatment.png")
 
@@ -1765,7 +1818,9 @@ armyworm_joined_ev %>%
   ggplot(aes(mean_temp, incidence_armyworm)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Temperature (C)", y = "Incidence Armyworm") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence Armyworm",
+       title = "Temperature vs Armyworm") +
   annotate("label", x = 28, y = 12,  
            label = temp_armyworm_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1777,7 +1832,9 @@ armyworm_joined_ev %>%
   ggplot(aes(mean_wind, incidence_armyworm)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence Armyworm") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Armyworm",
+       title = "Wind Speed vs Armyworm") +
   annotate("label", x = 7.5, y = 12,  
            label = wind_armyworm_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1789,7 +1846,9 @@ armyworm_joined_ev %>%
   ggplot(aes(mean_humid, incidence_armyworm)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence Armyworm") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Armyworm",
+       title = "Humidity vs Armyworm") +
   annotate("label", x = 60, y = 12,  
            label = humid_armyworm_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1801,7 +1860,9 @@ armyworm_joined_ev %>%
   ggplot(aes(mean_rain, incidence_armyworm)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence Armyworm") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Armyworm",
+       title = "Rainfall vs Armyworm") +
   annotate("label", x = 0.5, y = 12,  
            label = rain_armyworm_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1826,7 +1887,8 @@ summary_armyworm %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_armyworm_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.8, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Armyworm") +
+       y = "Percent Incidence Armyworm",
+       title = "Effect of Corn Type on Armyworm Incidence") +
   theme_classic()
 ggsave(path = "../pests", filename = "Armyworm Percent Incidence vs Corn Type.png")
 
@@ -1847,7 +1909,8 @@ summary_armyworm %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_armyworm_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.8, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence Armyworm") + 
+       y = "Percent Incidence Armyworm",
+       title = "Effect of Fertilizer Treatment Rate on Armyworm Incidence") + 
   theme_classic()
 ggsave(path = "../pests", filename = "Armyworm Percent Incidence vs Fertilizer Treatment.png")
 
@@ -2052,7 +2115,9 @@ aphids_joined_ev %>%
   ggplot(aes(mean_temp, incidence_aphids)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Temperature (C)", y = "Incidence Aphids") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence Aphids",
+       title = "Temperature vs Aphids") +
   annotate("label", x = 27.5, y = 12,  
            label = temp_aphids_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -2064,7 +2129,9 @@ aphids_joined_ev %>%
   ggplot(aes(mean_wind, incidence_aphids)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence Aphids") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Aphids",
+       title = "Wind Speed vs Aphids") +
   annotate("label", x = 7.5, y = 8,  
            label = wind_aphids_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -2076,7 +2143,9 @@ aphids_joined_ev %>%
   ggplot(aes(mean_humid, incidence_aphids)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence Aphids") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Aphids",
+       title = "Humidity vs Aphids") +
   annotate("label", x = 60, y = 8,  
            label = humid_aphids_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -2087,7 +2156,9 @@ aphids_joined_ev %>%
   ggplot(aes(mean_rain, incidence_aphids)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence Aphids") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Aphids",
+       title = "Rainfall vs Aphids") +
   annotate("label", x = 0.5, y = 11,  
            label = rain_aphids_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -2111,7 +2182,8 @@ summary_aphids %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_aphids_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.8, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Aphids") +
+       y = "Percent Incidence Aphids",
+       title = "Effect of Corn Type on Aphids Incidence") +
   theme_classic()
 ggsave(path = "../pests", filename = "Aphids Percent Incidence vs Corn Type.png")
 
@@ -2132,7 +2204,8 @@ summary_aphids %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_aphids_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.8, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence Aphids") + 
+       y = "Percent Incidence Aphids",
+       title = "Effect of Fertilizer Treatment Rate on Aphids Incidence") + 
   theme_classic()
 ggsave(path = "../pests", filename = "Aphids Percent Incidence vs Fertilizer Treatment.png")
 
@@ -2143,9 +2216,6 @@ detach("package:stats", unload = TRUE)
 ```Fall armyworm has different rating scale (according to dashboard)```
 ```{r}
 # Fall Armyworm
-number_sampled_plants <- 20
-percent_100 <- 100
-
 faw_df_ev <- 
   insect_raw %>%
   select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Fall Armyworm - Damage Rating"))%>%
@@ -2345,7 +2415,9 @@ faw_joined_ev %>%
   ggplot(aes(mean_temp, incidence_faw)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Temperature (C)", y = "Incidence FAW") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence FAW",
+       title = "Temperature vs FAW") +
   annotate("label", x = 27.5, y = 25,  
            label = temp_faw_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -2357,7 +2429,9 @@ faw_joined_ev %>%
   ggplot(aes(mean_wind, incidence_faw)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence FAW") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence FAW",
+       title = "Wind Speed vs FAW") +
   annotate("label", x = 7.5, y = 25,  
            label = wind_faw_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -2369,7 +2443,9 @@ faw_joined_ev %>%
   ggplot(aes(mean_humid, incidence_faw)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence FAW") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence FAW",
+       title = "Humidity vs FAW") +
   annotate("label", x = 60, y = 35,  
            label = humid_faw_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -2380,7 +2456,9 @@ faw_joined_ev %>%
   ggplot(aes(mean_rain, incidence_faw)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence FAW") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence FAW",
+       title = "Rainfall vs FAW") +
   annotate("label", x = 0.4, y = 25,  
            label = rain_faw_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -2404,7 +2482,8 @@ summary_faw %>%
                 y = w + sd$y), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_faw_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.8, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence FAW") +
+       y = "Percent Incidence FAW",
+       title = "Effect of Corn Type on FAW Incidence") +
   theme_classic()
 ggsave(path = "../pests", filename = "FAW Percent Incidence vs Corn Type.png")
 
@@ -2425,7 +2504,8 @@ summary_faw %>%
                 y = w + sd$y), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_faw_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 1.25, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence FAW") + 
+       y = "Percent Incidence FAW",
+       title = "Effect of Fertilizer Treatment Rate on FAW Incidence") + 
   theme_classic()
 ggsave(path = "../pests", filename = "FAW Percent Incidence vs Fertilizer Treatment.png")
 

@@ -45,8 +45,8 @@ blsb_joined_ev <-
          sum_moderate = sum(c_across(starts_with("BandedLeaf and Sheath Blight")) == "5"),
          sum_heavy = sum(c_across(starts_with("BandedLeaf and Sheath Blight")) == "7"),
          sum_very = sum(c_across(starts_with("BandedLeaf and Sheath Blight")) == "9"),
-         average_damage_blsb = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
-         damage_rating_blsb = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
+         average_damage_blsb = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
+         damage_rating_blsb = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
          incidence_blsb = ((sum(c_across(sum_slight:sum_very))) * percent_100) / number_sampled_plants,
          )
 
@@ -214,7 +214,9 @@ blsb_joined_ev %>%
   ggplot(aes(mean_temp, incidence_blsb)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly average temperature (C)", y = "Incidence blsb") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence BLSB",
+       title = "Temperature vs BLSB") +
   annotate("label", x = 27.5, y = 12,  
            label = temp_blsb_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -226,7 +228,9 @@ blsb_joined_ev %>%
   ggplot(aes(mean_wind, incidence_blsb)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence BLSB") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence BLSB",
+       title = "Wind Speed vs BLSB") +
   annotate("label", x = 7, y = 11,  
            label = wind_blsb_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -237,7 +241,9 @@ blsb_joined_ev %>%
   ggplot(aes(mean_humid, incidence_blsb)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence BLSB") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence BLSB",
+       title = "Humidity vs BLSB") +
   annotate("label", x = 60, y = 11,  
            label = humid_blsb_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -248,7 +254,9 @@ blsb_joined_ev %>%
   ggplot(aes(mean_rain, incidence_blsb)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence BLSB") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence BLSB",
+       title = "Rainfall vs BLSB") +
   annotate("label", x = 0.4, y = 13,  
            label = rain_blsb_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -272,7 +280,8 @@ summary_blsb %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_blsb_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = -1.82, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence BLSB") +
+       y = "Percent Incidence BLSB",
+       title = "Effect of Corn Type on BLSB Incidence") +
   theme_classic()
 ggsave(path = "../diseases", filename = "Percent BLSB vs Corn Type.png")
 
@@ -293,7 +302,8 @@ summary_blsb %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_blsb_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -1.2, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence BLSB") + 
+       y = "Percent Incidence BLSB",
+       title = "Effect of Fertilizer Treatment Rate on BLSB Incidence") + 
   theme_classic()
 ggsave(path = "../diseases", filename = "Percent BLSB vs Fertilizer Treatment.png")
 
@@ -328,8 +338,8 @@ rust_joined_ev <-
          sum_moderate = sum(c_across(starts_with("Common Rust")) == "5"),
          sum_heavy = sum(c_across(starts_with("Common Rust")) == "7"),
          sum_very = sum(c_across(starts_with("Common Rust")) == "9"),
-         average_damage_rust = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
-         damage_rating_rust = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
+         average_damage_rust = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
+         damage_rating_rust = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
          incidence_rust = ((sum(c_across(sum_slight:sum_very))) * percent_100) / number_sampled_plants,
          )
 
@@ -497,7 +507,9 @@ rust_joined_ev %>%
   ggplot(aes(mean_temp, incidence_rust)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly average temperature (C)", y = "Incidence rust") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence Common Rust",
+       title = "Temperature vs Common Rust") +
   annotate("label", x = 27.5, y = 12,  
            label = temp_rust_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -509,7 +521,9 @@ rust_joined_ev %>%
   ggplot(aes(mean_wind, incidence_rust)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence rust") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Common Rust",
+       title = "Wind Speed vs Common Rust") +
   annotate("label", x = 7, y = 11,  
            label = wind_rust_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -520,7 +534,9 @@ rust_joined_ev %>%
   ggplot(aes(mean_humid, incidence_rust)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence rust") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Rust",
+       title = "Humidity vs Common Rust") +
   annotate("label", x = 60, y = 11,  
            label = humid_rust_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -531,7 +547,9 @@ rust_joined_ev %>%
   ggplot(aes(mean_rain, incidence_rust)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence rust") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Common Rust",
+       title = "Rainfall vs Common Rust") +
   annotate("label", x = 0.4, y = 13,  
            label = rain_rust_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -555,7 +573,8 @@ summary_rust %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_rust_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = -1.82, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence rust") +
+       y = "Percent Incidence Common Rust",
+       title = "Effect of Corn Type on Common Rust Incidence") +
   theme_classic()
 ggsave(path = "../diseases", filename = "Percent Rust vs Corn Type.png")
 
@@ -576,7 +595,8 @@ summary_rust %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_rust_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -2, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence rust") + 
+       y = "Percent Incidence Common Rust",
+       title = "Effect of Fertilizer Treatment Rate on Common Rust Incidence") + 
   theme_classic()
 ggsave(path = "../diseases", filename = "Percent Rust vs Fertilizer Treatment.png")
 
@@ -613,8 +633,8 @@ southrust_joined_ev <-
          sum_moderate = sum(c_across(starts_with("Southern Rust")) == "5"),
          sum_heavy = sum(c_across(starts_with("Southern Rust")) == "7"),
          sum_very = sum(c_across(starts_with("Southern Rust")) == "9"),
-         average_damage_southrust = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
-         damage_rating_southrust = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
+         average_damage_southrust = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
+         damage_rating_southrust = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
          incidence_southrust = ((sum(c_across(sum_slight:sum_very))) * percent_100) / number_sampled_plants,
          )
 
@@ -782,7 +802,9 @@ southrust_joined_ev %>%
   ggplot(aes(mean_temp, incidence_southrust)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly average temperature (C)", y = "Incidence southrust") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence Southern Rust",
+       title = "Temperature vs Soutern Rust") +
   annotate("label", x = 27.5, y = 12,  
            label = temp_southrust_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -794,7 +816,9 @@ southrust_joined_ev %>%
   ggplot(aes(mean_wind, incidence_southrust)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence southrust") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Southern Rust",
+       title = "Wind Speed vs Soutern Rust") +
   annotate("label", x = 7, y = 11,  
            label = wind_southrust_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -805,7 +829,9 @@ southrust_joined_ev %>%
   ggplot(aes(mean_humid, incidence_southrust)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence southrust") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Southern Rust",
+       title = "Humidity vs Soutern Rust") +
   annotate("label", x = 60, y = 11,  
            label = humid_southrust_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -816,7 +842,9 @@ southrust_joined_ev %>%
   ggplot(aes(mean_rain, incidence_southrust)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence southrust") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Southern Rust",
+       title = "Rainfall vs Soutern Rust") +
   annotate("label", x = 0.4, y = 13,  
            label = rain_southrust_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -840,7 +868,8 @@ summary_southrust %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_southrust_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.82, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Southern Rust") +
+       y = "Percent Incidence Southern Rust",
+       title = "Effect of Corn Type on Southern Rust Incidence") +
   theme_classic()
 ggsave(path = "../diseases", filename = "Southern Rust Percent Incidence vs Corn Type.png")
 
@@ -861,7 +890,8 @@ summary_southrust %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_southrust_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence Southern Rust") + 
+       y = "Percent Incidence Southern Rust",
+       title = "Effect of Fertilizer Treatment Rate on Southern Rust Incidence") + 
   theme_classic()
 ggsave(path = "../diseases", filename = "Southern Rust Percent Incidence vs Fertilizer Treatment.png")
 
@@ -896,8 +926,8 @@ mildew_joined_ev <-
          sum_moderate = sum(c_across(starts_with("Downy Mildew")) == "5"),
          sum_heavy = sum(c_across(starts_with("Downy Mildew")) == "7"),
          sum_very = sum(c_across(starts_with("Downy Mildew")) == "9"),
-         average_damage_mildew = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
-         damage_rating_mildew = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
+         average_damage_mildew = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
+         damage_rating_mildew = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
          incidence_mildew = ((sum(c_across(sum_slight:sum_very))) * percent_100) / number_sampled_plants,
          )
 
@@ -1065,7 +1095,9 @@ mildew_joined_ev %>%
   ggplot(aes(mean_temp, incidence_mildew)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly average temperature (C)", y = "Incidence mildew") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence Downy Mildew",
+       title = "Temperature vs Downy Mildew") +
   annotate("label", x = 27.5, y = 12,  
            label = temp_mildew_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1077,7 +1109,9 @@ mildew_joined_ev %>%
   ggplot(aes(mean_wind, incidence_mildew)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence mildew") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Downy Mildew",
+       title = "Wind Speed vs Downy Mildew") +
   annotate("label", x = 7, y = 11,  
            label = wind_mildew_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1088,7 +1122,9 @@ mildew_joined_ev %>%
   ggplot(aes(mean_humid, incidence_mildew)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence mildew") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Downy Mildew",
+       title = "Humidity vs Downy Mildew") +
   annotate("label", x = 60, y = 11,  
            label = humid_mildew_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1099,7 +1135,9 @@ mildew_joined_ev %>%
   ggplot(aes(mean_rain, incidence_mildew)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence mildew") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Downy Mildew",
+       title = "Rainfall vs Downy Mildew") +
   annotate("label", x = 0.4, y = 13,  
            label = rain_mildew_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1123,7 +1161,8 @@ summary_mildew %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_mildew_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.82, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Downy Mildew") +
+       y = "Percent Incidence Downy Mildew",
+       title = "Effect of Corn Type on Downy Mildew Incidence") +
   theme_classic()
 ggsave(path = "../diseases", filename = "Downy Mildew Percent Incidence vs Corn Type.png")
 
@@ -1144,7 +1183,8 @@ summary_mildew %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_mildew_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence Downy Mildew") + 
+       y = "Percent Incidence Downy Mildew",
+       title = "Effect of Fertilizer Treatment Rate on Downy Mildew Incidence") + 
   theme_classic()
 ggsave(path = "../diseases", filename = "Downy Mildew Percent Incidence vs Fertilizer Treatment.png")
 
@@ -1179,8 +1219,8 @@ brown_joined_ev <-
          sum_moderate = sum(c_across(starts_with("Brown Spot")) == "5"),
          sum_heavy = sum(c_across(starts_with("Brown Spot")) == "7"),
          sum_very = sum(c_across(starts_with("Brown Spot")) == "9"),
-         average_damage_brown = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
-         damage_rating_brown = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
+         average_damage_brown = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
+         damage_rating_brown = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
          incidence_brown = ((sum(c_across(sum_slight:sum_very))) * percent_100) / number_sampled_plants,
          )
 
@@ -1348,7 +1388,9 @@ brown_joined_ev %>%
   ggplot(aes(mean_temp, incidence_brown)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly average temperature (C)", y = "Incidence brown") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence Brown Spot",
+       title = "Temperature vs Brown Spot") +
   annotate("label", x = 27.5, y = 12,  
            label = temp_brown_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1360,7 +1402,9 @@ brown_joined_ev %>%
   ggplot(aes(mean_wind, incidence_brown)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence brown") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Brown Spot",
+       title = "Wind Speed vs Brown Spot") +
   annotate("label", x = 8, y = 11,  
            label = wind_brown_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1371,7 +1415,9 @@ brown_joined_ev %>%
   ggplot(aes(mean_humid, incidence_brown)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence brown") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Brown Spot",
+       title = "Humidity vs Brown Spot") +
   annotate("label", x = 60, y = 11,  
            label = humid_brown_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1382,7 +1428,9 @@ brown_joined_ev %>%
   ggplot(aes(mean_rain, incidence_brown)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence brown") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Brown Spot",
+       title = "Rainfall vs Brown Spot") +
   annotate("label", x = 0.4, y = 13,  
            label = rain_brown_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1406,7 +1454,8 @@ summary_brown %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_brown_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.82, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Brown Spot") +
+       y = "Percent Incidence Brown Spot",
+       title = "Effect of Corn Type on Brown Spot Incidence") +
   theme_classic()
 ggsave(path = "../diseases", filename = "Brown Spot Percent Incidence vs Corn Type.png")
 
@@ -1427,7 +1476,8 @@ summary_brown %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_brown_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence Brown Spot") + 
+       y = "Percent Incidence Brown Spot",
+       title = "Effect of Fertilizer Treatment Rate on Brown Spot Incidence") + 
   theme_classic()
 ggsave(path = "../diseases", filename = "Brown Spot Percent Incidence vs Fertilizer Treatment.png")
 
@@ -1462,8 +1512,8 @@ leaf_joined_ev <-
          sum_moderate = sum(c_across(starts_with("Leaf Spot")) == "5"),
          sum_heavy = sum(c_across(starts_with("Leaf Spot")) == "7"),
          sum_very = sum(c_across(starts_with("Leaf Spot")) == "9"),
-         average_damage_leaf = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
-         damage_rating_leaf = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
+         average_damage_leaf = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
+         damage_rating_leaf = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
          incidence_leaf = ((sum(c_across(sum_slight:sum_very))) * percent_100) / number_sampled_plants,
          )
 
@@ -1631,7 +1681,9 @@ leaf_joined_ev %>%
   ggplot(aes(mean_temp, incidence_leaf)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly average temperature (C)", y = "Incidence leaf") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence Leaf Spot",
+       title = "Temperature vs Leaf Spot") +
   annotate("label", x = 27.5, y = 13,  
            label = temp_leaf_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1643,7 +1695,9 @@ leaf_joined_ev %>%
   ggplot(aes(mean_wind, incidence_leaf)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence leaf") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Leaf Spot",
+       title = "Wind Speed vs Leaf Spot") +
   annotate("label", x = 7, y = 13,  
            label = wind_leaf_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1654,7 +1708,9 @@ leaf_joined_ev %>%
   ggplot(aes(mean_humid, incidence_leaf)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence leaf") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Leaf Spot",
+       title = "Humidity vs Leaf Spot") +
   annotate("label", x = 60, y = 13,  
            label = humid_leaf_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1665,7 +1721,9 @@ leaf_joined_ev %>%
   ggplot(aes(mean_rain, incidence_leaf)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence leaf") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Leaf Spot",
+       title = "Rainfall vs Leaf Spot") +
   annotate("label", x = 0.4, y = 15,  
            label = rain_leaf_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1689,7 +1747,8 @@ summary_leaf %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_leaf_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.82, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Leaf Spot") +
+       y = "Percent Incidence Leaf Spot",
+       title = "Effect of Corn Type on Leaf Spot Incidence") +
   theme_classic()
 ggsave(path = "../diseases", filename = "Leaf Spot Percent Incidence vs Corn Type.png")
 
@@ -1710,7 +1769,8 @@ summary_leaf %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_leaf_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence Leaf Spot") + 
+       y = "Percent Incidence Leaf Spot",
+       title = "Effect of Fertilizer Treatment Rate on Leaf Spot Incidence") + 
   theme_classic()
 ggsave(path = "../diseases", filename = "Leaf Spot Percent Incidence vs Fertilizer Treatment.png")
 
@@ -1745,8 +1805,8 @@ blight_joined_ev <-
          sum_moderate = sum(c_across(starts_with("Leaf Blight")) == "5"),
          sum_heavy = sum(c_across(starts_with("Leaf Blight")) == "7"),
          sum_very = sum(c_across(starts_with("Leaf Blight")) == "9"),
-         average_damage_blight = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
-         damage_rating_blight = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
+         average_damage_blight = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
+         damage_rating_blight = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
          incidence_blight = ((sum(c_across(sum_slight:sum_very))) * percent_100) / number_sampled_plants,
          )
 
@@ -1914,7 +1974,9 @@ blight_joined_ev %>%
   ggplot(aes(mean_temp, incidence_blight)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly average temperature (C)", y = "Incidence blight") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence Leaf Blight",
+       title = "Temperature vs Leaf Blight") +
   annotate("label", x = 27.5, y = 9,  
            label = temp_blight_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1926,7 +1988,9 @@ blight_joined_ev %>%
   ggplot(aes(mean_wind, incidence_blight)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence blight") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Leaf Blight",
+       title = "Wind Speed vs Leaf Blight") +
   annotate("label", x = 8, y = 9,  
            label = wind_blight_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1937,7 +2001,9 @@ blight_joined_ev %>%
   ggplot(aes(mean_humid, incidence_blight)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence blight") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Leaf Blight",
+       title = "Humidity vs Leaf Blight") +
   annotate("label", x = 60, y = 9,  
            label = humid_blight_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1948,7 +2014,9 @@ blight_joined_ev %>%
   ggplot(aes(mean_rain, incidence_blight)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence blight") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Leaf Blight",
+       title = "Rainfall vs Leaf Blight") +
   annotate("label", x = 0.4, y = 15,  
            label = rain_blight_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -1972,7 +2040,8 @@ summary_blight %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_blight_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.82, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Leaf Blight") +
+       y = "Percent Incidence Leaf Blight",
+       title = "Effect of Corn Type on Leaf Blight Incidence") +
   theme_classic()
 ggsave(path = "../diseases", filename = "Leaf Blight Percent Incidence vs Corn Type.png")
 
@@ -1993,7 +2062,8 @@ summary_blight %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_blight_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence Leaf Blight") + 
+       y = "Percent Incidence Leaf Blight",
+       title = "Effect of Fertilizer Treatment Rate on Leaf Blight Incidence") + 
   theme_classic()
 ggsave(path = "../diseases", filename = "Leaf Blight Percent Incidence vs Fertilizer Treatment.png")
 
@@ -2028,8 +2098,8 @@ stalk_joined_ev <-
          sum_moderate = sum(c_across(starts_with("Stalk Rot")) == "5"),
          sum_heavy = sum(c_across(starts_with("Stalk Rot")) == "7"),
          sum_very = sum(c_across(starts_with("Stalk Rot")) == "9"),
-         average_damage_stalk = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
-         damage_rating_stalk = (((1 * sum_slight) + (3 * sum_slight) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
+         average_damage_stalk = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
+         damage_rating_stalk = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
          incidence_stalk = ((sum(c_across(sum_slight:sum_very))) * percent_100) / number_sampled_plants,
          )
 
@@ -2057,7 +2127,7 @@ summary_stalk$factor_corn <- factor(summary_stalk$`Corn Type`,
                                     labels=c("N", "G"), 
                                     levels = c("Non - GM Corn", "GM CORN"))
 
-ggqqplot(summary_stalk$percent_incidence_stalk)
+# ggqqplot(summary_stalk$percent_incidence_stalk)
 
 library("nortest")
 library("moments")
@@ -2197,7 +2267,9 @@ stalk_joined_ev %>%
   ggplot(aes(mean_temp, incidence_stalk)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly average temperature (C)", y = "Incidence stalk") +
+  labs(x = "Monthly Average Temperature (C)", 
+       y = "Incidence Stalk Rot", 
+       title = "Temperature vs Stalk Rot") +
   annotate("label", x = 27.5, y = 13,  
            label = temp_stalk_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -2209,7 +2281,9 @@ stalk_joined_ev %>%
   ggplot(aes(mean_wind, incidence_stalk)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Wind Speed (km/h)", y = "Incidence stalk") +
+  labs(x = "Monthly Average Wind Speed (km/h)", 
+       y = "Incidence Stalk Rot", 
+       title = "Wind Speed vs Stalk Rot") +
   annotate("label", x = 8.2, y = 13,  
            label = wind_stalk_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -2220,7 +2294,9 @@ stalk_joined_ev %>%
   ggplot(aes(mean_humid, incidence_stalk)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
-  labs(x = "Monthly Average Humidity (%)", y = "Incidence stalk") +
+  labs(x = "Monthly Average Humidity (%)", 
+       y = "Incidence Stalk Rot", 
+       title = "Humidity vs Stalk Rot") +
   annotate("label", x = 60, y = 13,  
            label = humid_stalk_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -2231,7 +2307,9 @@ stalk_joined_ev %>%
   ggplot(aes(mean_rain, incidence_stalk)) +
   geom_point(color = "gray", show.legend = FALSE) +
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
-  labs(x = "Monthly Average Rainfall (mm)", y = "Incidence stalk") +
+  labs(x = "Monthly Average Rainfall (mm)", 
+       y = "Incidence Stalk Rot", 
+       title = "Rainfall vs Stalk Rot") +
   annotate("label", x = 0.4, y = 15,  
            label = rain_stalk_eqn,
            parse = TRUE, color = "red", size = 5) +
@@ -2255,7 +2333,8 @@ summary_stalk %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_stalk_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 1.2, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Stalk Rot") +
+       y = "Percent Incidence Stalk Rot",
+       title = "Effect of Corn Type on Stalk Rot Incidence") +
   theme_classic()
 ggsave(path = "../diseases", filename = "Stalk Rot Percent Incidence vs Corn Type.png")
 
@@ -2276,7 +2355,8 @@ summary_stalk %>%
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_stalk_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 2.3, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
-       y = "Percent Incidence Stalk Rot") + 
+       y = "Percent Incidence Stalk Rot",
+       title = "Effect of Fertilizer Treatment Rate on Stalk Rot Incidence") + 
   theme_classic()
 ggsave(path = "../diseases", filename = "Stalk Rot Percent Incidence vs Fertilizer Treatment.png")
 
