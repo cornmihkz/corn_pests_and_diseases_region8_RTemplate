@@ -15,6 +15,18 @@ library("ggpubr")
 library("broom")
 library("multcompView")
 library("car")
+library("rstatix")
+library("FSA")
+library("stats")
+library("rcompanion")
+library("dunn.test")
+
+letters_height <- 64
+median_height <- 66
+crop_growth_stages <- c("emergence", "single_leaf", "seedling", "early_whorl", "mid_whorl", 
+                       "late_whorl", "tasseling", "silking", "maturity")
+stages_description <- c("Emergence", "Single leaf", "Seedling", "Early Whorl", "Mid whorl",
+                        "Late whorl", "Tasseling", "Silking", "Maturity")
 
 plot_width <- 8
 plot_height <- 5
@@ -112,7 +124,8 @@ View(borer_joined_ev)
 
 summary_borer <-
   borer_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  select(-`Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_borer = n() * number_sampled_plants,
             sum_avg_dmg_borer = sum(average_damage_borer),
@@ -121,6 +134,14 @@ summary_borer <-
             percent_incidence_borer = (sum_incidence_borer / total_count_samples_borer) * percent_100)
 
 View(summary_borer)
+
+
+summary_borer$crop_stage <- 
+  factor(summary_borer$`Crop Stage`, 
+         levels = c("Early Whorl", "Late Whorl", "Maturity", "Mid Whorl", "Seedling (3 - 4 Leaves)",
+                    "Silking", "Single Leaf", "Tasseling", "Emergence"),
+         labels = c("early_whorl", "late_whorl", "maturity", "mid_whorl", "seedling", 
+                    "silking", "single_leaf", "tasseling", "emergence"))
 
 summary_borer$order_treat <- ordered(summary_borer$Treatment,
                                      levels = c("BRFR", "RFR", "ARFR"),
@@ -174,11 +195,12 @@ levenes_corntype_borer <- leveneTest(percent_incidence_borer ~ `Corn Type`, summ
 levenes_municipality_borer <- leveneTest(percent_incidence_borer ~ Municipality, summary_borer)
 levenes_province_borer <- leveneTest(percent_incidence_borer ~ Province, summary_borer)
 levenes_fert_corn_borer <- leveneTest(percent_incidence_borer ~ interaction(Treatment, `Corn Type`), summary_borer)
+levenes_stage_borer <- leveneTest(percent_incidence_borer ~ `Crop Stage`, summary_borer)
 
 
 # AnOVa
 aov_fert_borer <- aov(percent_incidence_borer ~ order_treat, summary_borer)
-aov_corn_borer <- aov(percent_incidence_borer ~ factor_corn, summary_borer) 
+aov_corn_borer <- aov(percent_incidence_borer ~ factor_corn, summary_borer)
 ttest_corn_borer <- t.test(percent_incidence_borer ~ factor_corn, summary_borer)
 
 # Two way AnOVa
@@ -196,6 +218,9 @@ twoway_fert_corn_borer %>% summary()
 print(tukey_fert_corn_borer)
 aov_fert_corn_inter_borer %>% summary()
 print(tukey_fert_corn_inter_borer)
+
+TukeyHSD(aov_fert_borer)
+TukeyHSD(aov_corn_borer)
 
 twoway_fert_corn_borer_letters <- multcompLetters4(twoway_fert_corn_borer, tukey_fert_corn_borer)
 aov_fert_corn_borer_letters <- multcompLetters4(aov_fert_corn_inter_borer, tukey_fert_corn_inter_borer)
@@ -365,13 +390,86 @@ summary_borer %>%
 ggsave(path = "../pests", filename = "Corn Borer Percent Incidence vs Fertilizer Treatment.png", width=plot_width, height=plot_height, dpi=plot_dpi)
 
 
+# by province
+aov_province_borer <- aov(percent_incidence_borer ~ Province, data = summary_borer)
+tukeyhsd_province_borer <- TukeyHSD(aov_province_borer)
+letters_province_borer <- multcompLetters4(aov_province_borer, tukeyhsd_province_borer)
+
+# median values on boxplots
+summary_borer_province_bp <-
+  summary_borer %>% 
+  group_by(Province) %>% 
+  summarise(w=median(percent_incidence_borer), sd = mean_sd(percent_incidence_borer)) %>% 
+  arrange(desc(w)) 
+
+summary_borer_province_bp$province_cld <- 
+  as.data.frame.list(letters_province_borer$Province)$Letters
+
+dunnTest(percent_incidence_borer ~ Province, data = summary_borer)
+
+attach(summary_borer)
+province_borer_df <- as.list.data.frame(dunn.test(percent_incidence_borer, Province, list = TRUE))
+detach(summary_borer)
+
+
+
+summary_borer %>%
+  ggplot(aes(Province, percent_incidence_borer)) + 
+  geom_boxplot() +
+  geom_text(data = summary_borer_province_bp, aes(label = province_cld,
+                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_borer_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  labs(x = "Provinces", 
+       y = "Percent Incidence Borer",
+       title = "Provinces to Borer Incidence") + 
+  theme_classic()
+ggsave(path = "../province", filename = "Corn Borer Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
+
+
+# by Crop stage
+# median values on boxplots
+summary_borer_corn_stage_bp <- 
+  summary_borer %>% 
+  group_by(crop_stage) %>% 
+  summarise(w=median(percent_incidence_borer), sd = mean_sd(percent_incidence_borer)) %>% 
+  arrange(desc(w))
+
+aov_stage_borer <- aov(percent_incidence_borer ~ crop_stage, data = summary_borer)
+tukeyhsd_stage_borer <- TukeyHSD(aov_stage_borer)
+letters_stage_borer <- multcompLetters4(aov_stage_borer, tukeyhsd_stage_borer)
+
+aov_stage_borer %>% summary()
+
+summary_borer_corn_stage_bp$stage_cld <- 
+  as.data.frame.list(letters_stage_borer$crop_stage)$Letters
+
+dunnTest(percent_incidence_borer ~ crop_stage, data = summary_borer)
+
+attach(summary_borer)
+stage_borer_df <- as.list.data.frame(dunn.test(percent_incidence_borer, crop_stage, list = TRUE))
+detach(summary_borer)
+
+
+summary_borer %>%
+  ggplot(aes(crop_stage, percent_incidence_borer)) + 
+  geom_boxplot() +
+  geom_text(data = summary_borer_corn_stage_bp, aes(label = stage_cld,
+                y = letters_height ), vjust = -3, color="red", size = 4) +
+  geom_text(data = summary_borer_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels=stages_description) +
+  labs(x = "Corn Growth Stages", 
+       y = "Percent Incidence Borer",
+       title = "Corn Crop Growth Stages and Borer Incidence") + 
+  theme_classic()
+ggsave(path = "../stage", filename = "Corn Borer Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
 
 detach("package:bestNormalize", unload = TRUE)
 detach("package:nortest", unload = TRUE)
 detach("package:MASS", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
-
 
 ```Rating of 1 is classified as No damage to very slight```
 ```Corn Borer, Semi-looper, earworm```
@@ -421,7 +519,7 @@ View(semilooper_joined_ev)
 
 summary_semilooper <-
   semilooper_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_semilooper = n() * number_sampled_plants,
             sum_avg_dmg_semilooper = sum(average_damage_semilooper),
@@ -443,6 +541,14 @@ summary_semilooper %>%
   ggplot(aes(sample=percent_incidence_semilooper)) +
   stat_qq() +
   stat_qq_line()
+
+
+summary_semilooper$crop_stage <- 
+  factor(summary_semilooper$`Crop Stage`, 
+         levels = c("Early Whorl", "Late Whorl", "Maturity", "Mid Whorl", "Seedling (3 - 4 Leaves)",
+                    "Silking", "Single Leaf", "Tasseling", "Emergence"),
+         labels = c("early_whorl", "late_whorl", "maturity", "mid_whorl", "seedling", 
+                    "silking", "single_leaf", "tasseling", "emergence"))
 
 summary_semilooper$order_treat <- ordered(summary_semilooper$Treatment,
                                      levels = c("BRFR", "RFR", "ARFR"),
@@ -507,6 +613,9 @@ twoway_fert_corn_semilooper %>% summary()
 print(tukey_fert_corn_semilooper)
 aov_fert_corn_inter_semilooper %>% summary()
 print(tukey_fert_corn_inter_semilooper)
+
+TukeyHSD(aov_fert_semilooper)
+TukeyHSD(aov_corn_semilooper)
 
 twoway_fert_corn_semilooper_letters <- multcompLetters4(twoway_fert_corn_semilooper, tukey_fert_corn_semilooper)
 aov_fert_corn_semilooper_letters <- multcompLetters4(aov_fert_corn_inter_semilooper, tukey_fert_corn_inter_semilooper)
@@ -669,6 +778,80 @@ summary_semilooper %>%
   theme_classic()
 ggsave(path = "../pests", filename = "Semilooper Percent Incidence vs Fertilizer Treatment.png")
 
+# by province
+aov_province_semilooper <- aov(percent_incidence_semilooper ~ Province, data = summary_semilooper)
+tukeyhsd_province_semilooper <- TukeyHSD(aov_province_semilooper)
+letters_province_semilooper <- multcompLetters4(aov_province_semilooper, tukeyhsd_province_semilooper)
+
+# median values on boxplots
+summary_semilooper_province_bp <-
+  summary_semilooper %>% 
+  group_by(Province) %>% 
+  summarise(w=median(percent_incidence_semilooper), sd = mean_sd(percent_incidence_semilooper)) %>% 
+  arrange(desc(w)) 
+
+summary_semilooper_province_bp$province_cld <- 
+  as.data.frame.list(letters_province_semilooper$Province)$Letters
+
+dunnTest(percent_incidence_semilooper ~ Province, data = summary_semilooper)
+
+attach(summary_semilooper)
+province_semilooper_df <- as.list.data.frame(dunn.test(percent_incidence_semilooper, Province, list = TRUE))
+detach(summary_semilooper)
+
+
+
+summary_semilooper %>%
+  ggplot(aes(Province, percent_incidence_semilooper)) + 
+  geom_boxplot() +
+  geom_text(data = summary_semilooper_province_bp, aes(label = province_cld,
+                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_semilooper_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  labs(x = "Provinces", 
+       y = "Percent Incidence Semilooper",
+       title = "Provinces to Semilooper Incidence") + 
+  theme_classic()
+ggsave(path = "../province", filename = "Corn Semilooper Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
+
+
+# by Crop stage
+# median values on boxplots
+summary_semilooper_corn_stage_bp <- 
+  summary_semilooper %>% 
+  group_by(crop_stage) %>% 
+  summarise(w=median(percent_incidence_semilooper), sd = mean_sd(percent_incidence_semilooper)) %>% 
+  arrange(desc(w))
+
+aov_stage_semilooper <- aov(percent_incidence_semilooper ~ crop_stage, data = summary_semilooper)
+tukeyhsd_stage_semilooper <- TukeyHSD(aov_stage_semilooper)
+letters_stage_semilooper <- multcompLetters4(aov_stage_semilooper, tukeyhsd_stage_semilooper)
+
+aov_stage_semilooper %>% summary()
+
+summary_semilooper_corn_stage_bp$stage_cld <- 
+  as.data.frame.list(letters_stage_semilooper$crop_stage)$Letters
+
+dunnTest(percent_incidence_semilooper ~ crop_stage, data = summary_semilooper)
+
+attach(summary_semilooper)
+stage_semilooper_df <- as.list.data.frame(dunn.test(percent_incidence_semilooper, crop_stage, list = TRUE))
+detach(summary_semilooper)
+
+
+summary_semilooper %>%
+  ggplot(aes(crop_stage, percent_incidence_semilooper)) + 
+  geom_boxplot() +
+  geom_text(data = summary_semilooper_corn_stage_bp, aes(label = stage_cld,
+                y = letters_height - 25 ), vjust = -3, color="red", size = 4) +
+  geom_text(data = summary_semilooper_corn_stage_bp, aes(label = round(w, 2), y = median_height - 25), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels=stages_description) +
+  labs(x = "Corn Growth Stages", 
+       y = "Percent Incidence Semilooper",
+       title = "Corn Crop Growth Stages and Semilooper Incidence") + 
+  theme_classic()
+ggsave(path = "../stage", filename = "Semilooper Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
 detach("package:MASS", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
@@ -723,7 +906,7 @@ View(earworm_joined_ev)
 
 summary_earworm <-
   earworm_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_earworm = n() * number_sampled_plants,
             sum_avg_dmg_earworm = sum(average_damage_earworm),
@@ -745,6 +928,13 @@ summary_earworm %>%
   ggplot(aes(sample=sum_incidence_earworm)) +
   stat_qq() +
   stat_qq_line()
+
+summary_earworm$crop_stage <- 
+  factor(summary_earworm$`Crop Stage`, 
+         levels = c("Early Whorl", "Late Whorl", "Maturity", "Mid Whorl", "Seedling (3 - 4 Leaves)",
+                    "Silking", "Single Leaf", "Tasseling", "Emergence"),
+         labels = c("early_whorl", "late_whorl", "maturity", "mid_whorl", "seedling", 
+                    "silking", "single_leaf", "tasseling", "emergence"))
 
 summary_earworm$order_treat <- ordered(summary_earworm$Treatment,
                                      levels = c("BRFR", "RFR", "ARFR"),
@@ -813,6 +1003,9 @@ tukey_fert_corn_earworm <- TukeyHSD(twoway_fert_corn_earworm)
 # AnOVa with Interaction
 aov_fert_corn_inter_earworm <- aov(sum_incidence_earworm ~ order_treat*factor_corn, summary_earworm)
 tukey_fert_corn_inter_earworm <- TukeyHSD(aov_fert_corn_inter_earworm)
+
+TukeyHSD(aov_fert_earworm)
+TukeyHSD(aov_corn_earworm)
 
 aov_fert_earworm %>% summary()
 aov_corn_earworm %>% summary()
@@ -895,6 +1088,7 @@ earworm_joined_ev %>%
            label = temp_earworm_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
+ggsave(path = "../pests", filename = "Earworm vs Temperature.png")
 
 
 earworm_joined_ev %>%
@@ -908,6 +1102,7 @@ earworm_joined_ev %>%
            label = wind_earworm_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
+ggsave(path = "../pests", filename = "Earworm vs Wind Speed.png")
 
 
 earworm_joined_ev %>%
@@ -921,6 +1116,7 @@ earworm_joined_ev %>%
            label = humid_earworm_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
+ggsave(path = "../pests", filename = "Earworm vs Humidity.png")
 
 earworm_joined_ev %>%
   ggplot(aes(mean_rain, incidence_earworm)) +
@@ -933,6 +1129,7 @@ earworm_joined_ev %>%
            label = rain_earworm_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
+ggsave(path = "../pests", filename = "Earworm vs Rainfall.png")
 
 summary_earworm_corntype_bp <-
   summary_earworm %>% 
@@ -954,6 +1151,8 @@ summary_earworm %>%
        y = "Percent Incidence Earworm",
        title = "Effect of Corn Type on Corn Earworm Incidence") +
   theme_classic()
+ggsave(path = "../pests", filename = "Earworm Percent Incidence vs Corn Type.png")
+
 
 
 summary_earworm_fert_bp <-
@@ -975,6 +1174,82 @@ summary_earworm %>%
        y = "Percent Incidence Earworm",
        title = "Effect of Fertilizer Treatment Rate on Corn Earworm Incidence") + 
   theme_classic()
+ggsave(path = "../pests", filename = "Earworm Percent Incidence vs Fertilizer Treatment.png")
+
+
+# by province
+aov_province_earworm <- aov(percent_incidence_earworm ~ Province, data = summary_earworm)
+tukeyhsd_province_earworm <- TukeyHSD(aov_province_earworm)
+letters_province_earworm <- multcompLetters4(aov_province_earworm, tukeyhsd_province_earworm)
+
+# median values on boxplots
+summary_earworm_province_bp <-
+  summary_earworm %>% 
+  group_by(Province) %>% 
+  summarise(w=median(percent_incidence_earworm), sd = mean_sd(percent_incidence_earworm)) %>% 
+  arrange(desc(w)) 
+
+summary_earworm_province_bp$province_cld <- 
+  as.data.frame.list(letters_province_earworm$Province)$Letters
+
+dunnTest(percent_incidence_earworm ~ Province, data = summary_earworm)
+
+attach(summary_earworm)
+province_earworm_df <- as.list.data.frame(dunn.test(percent_incidence_earworm, Province, list = TRUE))
+detach(summary_earworm)
+
+
+
+summary_earworm %>%
+  ggplot(aes(Province, percent_incidence_earworm)) + 
+  geom_boxplot() +
+  geom_text(data = summary_earworm_province_bp, aes(label = province_cld,
+                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_earworm_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  labs(x = "Provinces", 
+       y = "Percent Incidence Earworm",
+       title = "Provinces to Earworm Incidence") + 
+  theme_classic()
+ggsave(path = "../province", filename = "Corn Earworm Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
+
+
+# by Crop stage
+# median values on boxplots
+summary_earworm_corn_stage_bp <- 
+  summary_earworm %>% 
+  group_by(crop_stage) %>% 
+  summarise(w=median(percent_incidence_earworm), sd = mean_sd(percent_incidence_earworm)) %>% 
+  arrange(desc(w))
+
+aov_stage_earworm <- aov(percent_incidence_earworm ~ crop_stage, data = summary_earworm)
+tukeyhsd_stage_earworm <- TukeyHSD(aov_stage_earworm)
+letters_stage_earworm <- multcompLetters4(aov_stage_earworm, tukeyhsd_stage_earworm)
+
+aov_stage_earworm %>% summary()
+
+summary_earworm_corn_stage_bp$stage_cld <- 
+  as.data.frame.list(letters_stage_earworm$crop_stage)$Letters
+
+dunnTest(percent_incidence_earworm ~ crop_stage, data = summary_earworm)
+
+attach(summary_earworm)
+stage_earworm_df <- as.list.data.frame(dunn.test(percent_incidence_earworm, crop_stage, list = TRUE))
+detach(summary_earworm)
+
+
+summary_earworm %>%
+  ggplot(aes(crop_stage, percent_incidence_earworm)) + 
+  geom_boxplot() +
+  geom_text(data = summary_earworm_corn_stage_bp, aes(label = stage_cld,
+                y = letters_height ), vjust = -3, color="red", size = 4) +
+  geom_text(data = summary_earworm_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels=stages_description) +
+  labs(x = "Corn Growth Stages", 
+       y = "Percent Incidence Earworm",
+       title = "Corn Crop Growth Stages and Earworm Incidence") + 
+  theme_classic()
+ggsave(path = "../stage", filename = "Earworm Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
 
 
 detach("package:MASS", unload = TRUE)
@@ -1048,7 +1323,7 @@ View(hopper_joined_ev)
 
 summary_hopper <-
   hopper_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_hopper = n() * number_sampled_plants,
             sum_avg_dmg_hopper = sum(average_damage_hopper),
@@ -1070,6 +1345,14 @@ summary_hopper %>%
   ggplot(aes(sample=sum_incidence_hopper)) +
   stat_qq() +
   stat_qq_line()
+
+
+summary_hopper$crop_stage <- 
+  factor(summary_hopper$`Crop Stage`, 
+         levels = c("Early Whorl", "Late Whorl", "Maturity", "Mid Whorl", "Seedling (3 - 4 Leaves)",
+                    "Silking", "Single Leaf", "Tasseling", "Emergence"),
+         labels = c("early_whorl", "late_whorl", "maturity", "mid_whorl", "seedling", 
+                    "silking", "single_leaf", "tasseling", "emergence"))
 
 
 summary_hopper$order_treat <- ordered(summary_hopper$Treatment,
@@ -1130,6 +1413,9 @@ tukey_fert_corn_hopper <- TukeyHSD(twoway_fert_corn_hopper)
 # AnOVa with Interaction
 aov_fert_corn_inter_hopper <- aov(sum_incidence_hopper ~ order_treat*factor_corn, summary_hopper)
 tukey_fert_corn_inter_hopper <- TukeyHSD(aov_fert_corn_inter_hopper)
+
+TukeyHSD(aov_fert_hopper)
+TukeyHSD(aov_corn_hopper)
 
 aov_fert_hopper %>% summary()
 aov_corn_hopper %>% summary()
@@ -1300,6 +1586,80 @@ summary_hopper %>%
   theme_classic()
 ggsave(path = "../pests", filename = "Hopper Percent Incidence vs Fertilizer Treatment.png")
 
+# by province
+aov_province_hopper <- aov(percent_incidence_hopper ~ Province, data = summary_hopper)
+tukeyhsd_province_hopper <- TukeyHSD(aov_province_hopper)
+letters_province_hopper <- multcompLetters4(aov_province_hopper, tukeyhsd_province_hopper)
+
+# median values on boxplots
+summary_hopper_province_bp <-
+  summary_hopper %>% 
+  group_by(Province) %>% 
+  summarise(w=median(percent_incidence_hopper), sd = mean_sd(percent_incidence_hopper)) %>% 
+  arrange(desc(w)) 
+
+summary_hopper_province_bp$province_cld <- 
+  as.data.frame.list(letters_province_hopper$Province)$Letters
+
+dunnTest(percent_incidence_hopper ~ Province, data = summary_hopper)
+
+attach(summary_hopper)
+province_hopper_df <- as.list.data.frame(dunn.test(percent_incidence_hopper, Province, list = TRUE))
+detach(summary_hopper)
+
+
+
+summary_hopper %>%
+  ggplot(aes(Province, percent_incidence_hopper)) + 
+  geom_boxplot() +
+  geom_text(data = summary_hopper_province_bp, aes(label = province_cld,
+                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_hopper_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  labs(x = "Provinces", 
+       y = "Percent Incidence Hopper",
+       title = "Provinces to Hopper Incidence") + 
+  theme_classic()
+ggsave(path = "../province", filename = "Corn Hopper Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
+
+
+# by Crop stage
+# median values on boxplots
+summary_hopper_corn_stage_bp <- 
+  summary_hopper %>% 
+  group_by(crop_stage) %>% 
+  summarise(w=median(percent_incidence_hopper), sd = mean_sd(percent_incidence_hopper)) %>% 
+  arrange(desc(w))
+
+aov_stage_hopper <- aov(percent_incidence_hopper ~ crop_stage, data = summary_hopper)
+tukeyhsd_stage_hopper <- TukeyHSD(aov_stage_hopper)
+letters_stage_hopper <- multcompLetters4(aov_stage_hopper, tukeyhsd_stage_hopper)
+
+aov_stage_hopper %>% summary()
+
+summary_hopper_corn_stage_bp$stage_cld <- 
+  as.data.frame.list(letters_stage_hopper$crop_stage)$Letters
+
+dunnTest(percent_incidence_hopper ~ crop_stage, data = summary_hopper)
+
+attach(summary_hopper)
+stage_hopper_df <- as.list.data.frame(dunn.test(percent_incidence_hopper, crop_stage, list = TRUE))
+detach(summary_hopper)
+
+
+summary_hopper %>%
+  ggplot(aes(crop_stage, percent_incidence_hopper)) + 
+  geom_boxplot() +
+  geom_text(data = summary_hopper_corn_stage_bp, aes(label = stage_cld,
+                y = letters_height ), vjust = -3, color="red", size = 4) +
+  geom_text(data = summary_hopper_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels=stages_description) +
+  labs(x = "Corn Growth Stages", 
+       y = "Percent Incidence Hopper",
+       title = "Corn Crop Growth Stages and Hopper Incidence") + 
+  theme_classic()
+ggsave(path = "../stage", filename = "Hopper Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
 detach("package:MASS", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
@@ -1340,24 +1700,11 @@ cutworm_joined_ev <-
            damage_rating_cutworm = (((1 * sum_no) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_severe) + (9 * sum_high)) / (number_sampled_plants * 9)) * percent_100,
            incidence_cutworm = ((sum(c_across(sum_light:sum_high))) * percent_100) / number_sampled_plants,
            )
+View(cutworm_joined_ev)
 
 summary_cutworm <-
   cutworm_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
-  filter(Municipality != "Santa Rita" & Municipality != "Hilongos") %>%
-  remove_missing(na.rm=TRUE) %>%
-  summarise(total_count_samples_cutworm = n() * number_sampled_plants,
-            sum_avg_dmg_cutworm = sum(average_damage_cutworm),
-            sum_dmg_rate_cutworm = sum(damage_rating_cutworm),
-            sum_incidence_cutworm = sum(incidence_cutworm),
-            percent_incidence_cutworm = (sum_incidence_cutworm / total_count_samples_cutworm) * percent_100)
-
-View(summary_cutworm)
-
-
-summary_cutworm <-
-  cutworm_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_cutworm = n() * number_sampled_plants,
             sum_avg_dmg_cutworm = sum(average_damage_cutworm),
@@ -1380,6 +1727,13 @@ summary_cutworm %>%
   ggplot(aes(sample=sum_incidence_cutworm)) +
   stat_qq() +
   stat_qq_line()
+
+summary_cutworm$crop_stage <- 
+  factor(summary_cutworm$`Crop Stage`, 
+         levels = c("Early Whorl", "Late Whorl", "Maturity", "Mid Whorl", "Seedling (3 - 4 Leaves)",
+                    "Silking", "Single Leaf", "Tasseling", "Emergence"),
+         labels = c("early_whorl", "late_whorl", "maturity", "mid_whorl", "seedling", 
+                    "silking", "single_leaf", "tasseling", "emergence"))
 
 summary_cutworm$order_treat <- ordered(summary_cutworm$Treatment,
                                      levels = c("BRFR", "RFR", "ARFR"),
@@ -1610,6 +1964,78 @@ summary_cutworm %>%
   theme_classic()
 ggsave(path = "../pests", filename = "Cutworm Percent Incidence vs Fertilizer Treatment.png")
 
+# by province
+aov_province_cutworm <- aov(percent_incidence_cutworm ~ Province, data = summary_cutworm)
+tukeyhsd_province_cutworm <- TukeyHSD(aov_province_cutworm)
+letters_province_cutworm <- multcompLetters4(aov_province_cutworm, tukeyhsd_province_cutworm)
+
+# median values on boxplots
+summary_cutworm_province_bp <-
+  summary_cutworm %>% 
+  group_by(Province) %>% 
+  summarise(w=median(percent_incidence_cutworm), sd = mean_sd(percent_incidence_cutworm)) %>% 
+  arrange(desc(w)) 
+
+summary_cutworm_province_bp$province_cld <- 
+  as.data.frame.list(letters_province_cutworm$Province)$Letters
+
+dunnTest(percent_incidence_cutworm ~ Province, data = summary_cutworm)
+
+attach(summary_cutworm)
+province_cutworm_df <- as.list.data.frame(dunn.test(percent_incidence_cutworm, Province, list = TRUE))
+detach(summary_cutworm)
+
+
+
+summary_cutworm %>%
+  ggplot(aes(Province, percent_incidence_cutworm)) + 
+  geom_boxplot() +
+  geom_text(data = summary_cutworm_province_bp, aes(label = province_cld,
+                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_cutworm_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  labs(x = "Provinces", 
+       y = "Percent Incidence Cutworm",
+       title = "Provinces to Cutworm Incidence") + 
+  theme_classic()
+ggsave(path = "../province", filename = "Corn Cutworm Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
+
+# by Crop stage
+# median values on boxplots
+summary_cutworm_corn_stage_bp <- 
+  summary_cutworm %>% 
+  group_by(crop_stage) %>% 
+  summarise(w=median(percent_incidence_cutworm), sd = mean_sd(percent_incidence_cutworm)) %>% 
+  arrange(desc(w))
+
+aov_stage_cutworm <- aov(percent_incidence_cutworm ~ crop_stage, data = summary_cutworm)
+tukeyhsd_stage_cutworm <- TukeyHSD(aov_stage_cutworm)
+letters_stage_cutworm <- multcompLetters4(aov_stage_cutworm, tukeyhsd_stage_cutworm)
+
+aov_stage_cutworm %>% summary()
+
+summary_cutworm_corn_stage_bp$stage_cld <- 
+  as.data.frame.list(letters_stage_cutworm$crop_stage)$Letters
+
+dunnTest(percent_incidence_cutworm ~ crop_stage, data = summary_cutworm)
+
+attach(summary_cutworm)
+stage_cutworm_df <- as.list.data.frame(dunn.test(percent_incidence_cutworm, crop_stage, list = TRUE))
+detach(summary_cutworm)
+
+
+summary_cutworm %>%
+  ggplot(aes(crop_stage, percent_incidence_cutworm)) + 
+  geom_boxplot() +
+  geom_text(data = summary_cutworm_corn_stage_bp, aes(label = stage_cld,
+                y = letters_height ), vjust = -3, color="red", size = 4) +
+  geom_text(data = summary_cutworm_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels=stages_description) +
+  labs(x = "Corn Growth Stages", 
+       y = "Percent Incidence Cutworm",
+       title = "Corn Crop Growth Stages and Cutworm Incidence") + 
+  theme_classic()
+ggsave(path = "../stage", filename = "Cutworm Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
 
 detach("package:MASS", unload = T)
 detach("package:stats", unload = TRUE)
@@ -1641,7 +2067,6 @@ number_sampled_plants <- 20
 armyworm_joined_ev <-
   armyworm_dmg_ev %>% 
   left_join(monthly_averages, by=c('Year', 'Month')) %>%
-  # mutate_at(c(9:28), as.factor) %>%
   rowwise() %>%
     mutate(sum_no = sum(c_across(starts_with("Armyworm - Damage Rating ")) == "1"),
            sum_light = sum(c_across(starts_with("Armyworm - Damage Rating ")) == "3"),
@@ -1657,7 +2082,7 @@ View(armyworm_joined_ev)
 
 summary_armyworm <-
   armyworm_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_armyworm = n() * number_sampled_plants,
             sum_avg_dmg_armyworm = sum(average_damage_armyworm),
@@ -1681,6 +2106,12 @@ summary_armyworm %>%
   stat_qq() +
   stat_qq_line()
 
+summary_armyworm$crop_stage <- 
+  factor(summary_armyworm$`Crop Stage`, 
+         levels = c("Early Whorl", "Late Whorl", "Maturity", "Mid Whorl", "Seedling (3 - 4 Leaves)",
+                    "Silking", "Single Leaf", "Tasseling", "Emergence"),
+         labels = c("early_whorl", "late_whorl", "maturity", "mid_whorl", "seedling", 
+                    "silking", "single_leaf", "tasseling", "emergence"))
 
 summary_armyworm$order_treat <- ordered(summary_armyworm$Treatment,
                                      levels = c("BRFR", "RFR", "ARFR"),
@@ -1731,6 +2162,8 @@ levenes_fert_corn_armyworm <- leveneTest(sum_incidence_armyworm ~ interaction(Tr
 
 # AnOVa
 aov_fert_armyworm <- aov(sum_incidence_armyworm ~ order_treat, summary_armyworm)
+aov_corn_armyworm <- aov(sum_incidence_armyworm ~ factor_corn, summary_armyworm)
+
 ttest_corn_armyworm <- t.test(sum_incidence_armyworm ~ factor_corn, summary_armyworm)
 
 # Kruskall-Wallis on corn type
@@ -1745,6 +2178,7 @@ aov_fert_corn_inter_armyworm <- aov(sum_incidence_armyworm ~ order_treat*factor_
 tukey_fert_corn_inter_armyworm <- TukeyHSD(aov_fert_corn_inter_armyworm)
 
 aov_fert_armyworm %>% summary()
+aov_corn_armyworm %>% summary()
 
 ttest_corn_armyworm
 twoway_fert_corn_armyworm %>% summary()
@@ -1914,6 +2348,80 @@ summary_armyworm %>%
   theme_classic()
 ggsave(path = "../pests", filename = "Armyworm Percent Incidence vs Fertilizer Treatment.png")
 
+# by province
+aov_province_armyworm <- aov(percent_incidence_armyworm ~ Province, data = summary_armyworm)
+tukeyhsd_province_armyworm <- TukeyHSD(aov_province_armyworm)
+letters_province_armyworm <- multcompLetters4(aov_province_armyworm, tukeyhsd_province_armyworm)
+
+# median values on boxplots
+summary_armyworm_province_bp <-
+  summary_armyworm %>% 
+  group_by(Province) %>% 
+  summarise(w=median(percent_incidence_armyworm), sd = mean_sd(percent_incidence_armyworm)) %>% 
+  arrange(desc(w)) 
+
+summary_armyworm_province_bp$province_cld <- 
+  as.data.frame.list(letters_province_armyworm$Province)$Letters
+
+dunnTest(percent_incidence_armyworm ~ Province, data = summary_armyworm)
+
+attach(summary_armyworm)
+province_armyworm_df <- as.list.data.frame(dunn.test(percent_incidence_armyworm, Province, list = TRUE))
+detach(summary_armyworm)
+
+
+
+summary_armyworm %>%
+  ggplot(aes(Province, percent_incidence_armyworm)) + 
+  geom_boxplot() +
+  geom_text(data = summary_armyworm_province_bp, aes(label = province_cld,
+                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_armyworm_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  labs(x = "Provinces", 
+       y = "Percent Incidence Armyworm",
+       title = "Provinces to Armyworm Incidence") + 
+  theme_classic()
+ggsave(path = "../province", filename = "Corn Armyworm Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
+
+
+# by Crop stage
+# median values on boxplots
+summary_armyworm_corn_stage_bp <- 
+  summary_armyworm %>% 
+  group_by(crop_stage) %>% 
+  summarise(w=median(percent_incidence_armyworm), sd = mean_sd(percent_incidence_armyworm)) %>% 
+  arrange(desc(w))
+
+aov_stage_armyworm <- aov(percent_incidence_armyworm ~ crop_stage, data = summary_armyworm)
+tukeyhsd_stage_armyworm <- TukeyHSD(aov_stage_armyworm)
+letters_stage_armyworm <- multcompLetters4(aov_stage_armyworm, tukeyhsd_stage_armyworm)
+
+aov_stage_armyworm %>% summary()
+
+summary_armyworm_corn_stage_bp$stage_cld <- 
+  as.data.frame.list(letters_stage_armyworm$crop_stage)$Letters
+
+dunnTest(percent_incidence_armyworm ~ crop_stage, data = summary_armyworm)
+
+attach(summary_armyworm)
+stage_armyworm_df <- as.list.data.frame(dunn.test(percent_incidence_armyworm, crop_stage, list = TRUE))
+detach(summary_armyworm)
+
+
+summary_armyworm %>%
+  ggplot(aes(crop_stage, percent_incidence_armyworm)) + 
+  geom_boxplot() +
+  geom_text(data = summary_armyworm_corn_stage_bp, aes(label = stage_cld,
+                y = letters_height ), vjust = -3, color="red", size = 4) +
+  geom_text(data = summary_armyworm_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels=stages_description) +
+  labs(x = "Corn Growth Stages", 
+       y = "Percent Incidence Armyworm",
+       title = "Corn Crop Growth Stages and Armyworm Incidence") + 
+  theme_classic()
+ggsave(path = "../stage", filename = "Armyworm Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
 detach("package:MASS", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
@@ -1958,7 +2466,7 @@ View(aphids_joined_ev)
 
 summary_aphids <-
   aphids_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_aphids = n() * number_sampled_plants,
             sum_avg_dmg_aphids = sum(average_damage_aphids),
@@ -1981,6 +2489,13 @@ summary_aphids %>%
   ggplot(aes(sample=sum_incidence_aphids)) +
   stat_qq() +
   stat_qq_line()
+
+summary_aphids$crop_stage <- 
+  factor(summary_aphids$`Crop Stage`, 
+         levels = c("Early Whorl", "Late Whorl", "Maturity", "Mid Whorl", "Seedling (3 - 4 Leaves)",
+                    "Silking", "Single Leaf", "Tasseling", "Emergence"),
+         labels = c("early_whorl", "late_whorl", "maturity", "mid_whorl", "seedling", 
+                    "silking", "single_leaf", "tasseling", "emergence"))
 
 summary_aphids$order_treat <- ordered(summary_aphids$Treatment,
                          levels = c("BRFR", "RFR", "ARFR"))
@@ -2027,6 +2542,7 @@ levenes_fert_corn_aphids <- leveneTest(sum_incidence_aphids ~ interaction(Treatm
 
 # AnOVa
 aov_fert_aphids <- aov(sum_incidence_aphids ~ order_treat, summary_aphids)
+aov_corn_aphids <- aov(sum_incidence_aphids ~ factor_corn, summary_aphids)
 ttest_corn_aphids <- t.test(sum_incidence_aphids ~ factor_corn, summary_aphids)
 
 # Kruskall-Wallis on corn type
@@ -2041,6 +2557,8 @@ aov_fert_corn_inter_aphids <- aov(sum_incidence_aphids ~ order_treat*factor_corn
 tukey_fert_corn_inter_aphids <- TukeyHSD(aov_fert_corn_inter_aphids)
 
 aov_fert_aphids %>% summary()
+aov_corn_aphids %>% summary()
+
 ttest_corn_aphids
 twoway_fert_corn_aphids %>% summary()
 print(tukey_fert_corn_aphids)
@@ -2209,9 +2727,85 @@ summary_aphids %>%
   theme_classic()
 ggsave(path = "../pests", filename = "Aphids Percent Incidence vs Fertilizer Treatment.png")
 
+# by province
+aov_province_aphids <- aov(percent_incidence_aphids ~ Province, data = summary_aphids)
+tukeyhsd_province_aphids <- TukeyHSD(aov_province_aphids)
+letters_province_aphids <- multcompLetters4(aov_province_aphids, tukeyhsd_province_aphids)
+
+# median values on boxplots
+summary_aphids_province_bp <-
+  summary_aphids %>% 
+  group_by(Province) %>% 
+  summarise(w=median(percent_incidence_aphids), sd = mean_sd(percent_incidence_aphids)) %>% 
+  arrange(desc(w)) 
+
+summary_aphids_province_bp$province_cld <- 
+  as.data.frame.list(letters_province_aphids$Province)$Letters
+
+dunnTest(percent_incidence_aphids ~ Province, data = summary_aphids)
+
+attach(summary_aphids)
+province_aphids_df <- as.list.data.frame(dunn.test(percent_incidence_aphids, Province, list = TRUE))
+detach(summary_aphids)
+
+
+
+summary_aphids %>%
+  ggplot(aes(Province, percent_incidence_aphids)) + 
+  geom_boxplot() +
+  geom_text(data = summary_aphids_province_bp, aes(label = province_cld,
+                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_aphids_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  labs(x = "Provinces", 
+       y = "Percent Incidence Aphids",
+       title = "Provinces to Aphids Incidence") + 
+  theme_classic()
+ggsave(path = "../province", filename = "Corn Aphids Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
+
+
+# by Crop stage
+# median values on boxplots
+summary_aphids_corn_stage_bp <- 
+  summary_aphids %>% 
+  group_by(crop_stage) %>% 
+  summarise(w=median(percent_incidence_aphids), sd = mean_sd(percent_incidence_aphids)) %>% 
+  arrange(desc(w))
+
+aov_stage_aphids <- aov(percent_incidence_aphids ~ crop_stage, data = summary_aphids)
+tukeyhsd_stage_aphids <- TukeyHSD(aov_stage_aphids)
+letters_stage_aphids <- multcompLetters4(aov_stage_aphids, tukeyhsd_stage_aphids)
+
+aov_stage_aphids %>% summary()
+
+summary_aphids_corn_stage_bp$stage_cld <- 
+  as.data.frame.list(letters_stage_aphids$crop_stage)$Letters
+
+dunnTest(percent_incidence_aphids ~ crop_stage, data = summary_aphids)
+
+attach(summary_aphids)
+stage_aphids_df <- as.list.data.frame(dunn.test(percent_incidence_aphids, crop_stage, list = TRUE))
+detach(summary_aphids)
+
+
+summary_aphids %>%
+  ggplot(aes(crop_stage, percent_incidence_aphids)) + 
+  geom_boxplot() +
+  geom_text(data = summary_aphids_corn_stage_bp, aes(label = stage_cld,
+                y = letters_height ), vjust = -3, color="red", size = 4) +
+  geom_text(data = summary_aphids_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels=stages_description) +
+  labs(x = "Corn Growth Stages", 
+       y = "Percent Incidence Aphids",
+       title = "Corn Crop Growth Stages and Aphids Incidence") + 
+  theme_classic()
+ggsave(path = "../stage", filename = "Aphids Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
+
 detach("package:MASS", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
+
 
 ```Fall armyworm has different rating scale (according to dashboard)```
 ```{r}
@@ -2251,7 +2845,7 @@ View(faw_joined_ev)
 
 summary_faw <-
   faw_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment) %>%
+  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_faw = n() * number_sampled_plants,
             sum_avg_dmg_faw = sum(average_damage_faw),
@@ -2274,6 +2868,12 @@ summary_faw %>%
   stat_qq() +
   stat_qq_line()
 
+summary_faw$crop_stage <- 
+  factor(summary_faw$`Crop Stage`, 
+         levels = c("Early Whorl", "Late Whorl", "Maturity", "Mid Whorl", "Seedling (3 - 4 Leaves)",
+                    "Silking", "Single Leaf", "Tasseling", "Emergence"),
+         labels = c("early_whorl", "late_whorl", "maturity", "mid_whorl", "seedling", 
+                    "silking", "single_leaf", "tasseling", "emergence"))
 
 summary_faw$order_treat <- ordered(summary_faw$Treatment,
                          levels = c("BRFR", "RFR", "ARFR"))
@@ -2509,10 +3109,82 @@ summary_faw %>%
   theme_classic()
 ggsave(path = "../pests", filename = "FAW Percent Incidence vs Fertilizer Treatment.png")
 
+# by province
+aov_province_faw <- aov(percent_incidence_faw ~ Province, data = summary_faw)
+tukeyhsd_province_faw <- TukeyHSD(aov_province_faw)
+letters_province_faw <- multcompLetters4(aov_province_faw, tukeyhsd_province_faw)
+
+# median values on boxplots
+summary_faw_province_bp <-
+  summary_faw %>% 
+  group_by(Province) %>% 
+  summarise(w=median(percent_incidence_faw), sd = mean_sd(percent_incidence_faw)) %>% 
+  arrange(desc(w)) 
+
+summary_faw_province_bp$province_cld <- 
+  as.data.frame.list(letters_province_faw$Province)$Letters
+
+dunnTest(percent_incidence_faw ~ Province, data = summary_faw)
+
+attach(summary_faw)
+province_faw_df <- as.list.data.frame(dunn.test(percent_incidence_faw, Province, list = TRUE))
+detach(summary_faw)
+
+
+
+summary_faw %>%
+  ggplot(aes(Province, percent_incidence_faw)) + 
+  geom_boxplot() +
+  geom_text(data = summary_faw_province_bp, aes(label = province_cld,
+                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_faw_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  labs(x = "Provinces", 
+       y = "Percent Incidence FAW",
+       title = "Provinces to FAW Incidence") + 
+  theme_classic()
+ggsave(path = "../province", filename = "Corn FAW Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
+
+
+# by Crop stage
+# median values on boxplots
+summary_faw_corn_stage_bp <- 
+  summary_faw %>% 
+  group_by(crop_stage) %>% 
+  summarise(w=median(percent_incidence_faw), sd = mean_sd(percent_incidence_faw)) %>% 
+  arrange(desc(w))
+
+aov_stage_faw <- aov(percent_incidence_faw ~ crop_stage, data = summary_faw)
+tukeyhsd_stage_faw <- TukeyHSD(aov_stage_faw)
+letters_stage_faw <- multcompLetters4(aov_stage_faw, tukeyhsd_stage_faw)
+
+aov_stage_faw %>% summary()
+
+summary_faw_corn_stage_bp$stage_cld <- 
+  as.data.frame.list(letters_stage_faw$crop_stage)$Letters
+
+dunnTest(percent_incidence_faw ~ crop_stage, data = summary_faw)
+
+attach(summary_faw)
+stage_faw_df <- as.list.data.frame(dunn.test(percent_incidence_faw, crop_stage, list = TRUE))
+detach(summary_faw)
+
+
+summary_faw %>%
+  ggplot(aes(crop_stage, percent_incidence_faw)) + 
+  geom_boxplot() +
+  geom_text(data = summary_faw_corn_stage_bp, aes(label = stage_cld,
+                y = letters_height ), vjust = -3, color="red", size = 4) +
+  geom_text(data = summary_faw_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels=stages_description) +
+  labs(x = "Corn Growth Stages", 
+       y = "Percent Incidence FAW",
+       title = "Corn Crop Growth Stages and FAW Incidence") + 
+  theme_classic()
+ggsave(path = "../stage", filename = "FAW Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
 
 detach("package:stats", unload = TRUE)
 ```
-
 
 ``` Correlation: Incidence vs Weather Parameters```
 ```{r}
@@ -2658,8 +3330,92 @@ weather_pest_corr <-
 
 weather_pest_corr
 
+write.csv(weather_pest_corr, "Weather_Pest_Correlation.csv")
+
+detach("package:rstatix", unload = TRUE)
+detach("package:FSA", unload = TRUE)
+detach("package:rcompanion", unload = TRUE)
+detach("package:dunn.test", unload = TRUE)
+detach("package:ggpubr", unload = TRUE)
+detach("package:correlation", unload = TRUE)
 ```
 
+```By province incidence```
+```{r}
+library(stats)
+
+levenes_province_borer
+kruskal_province_borer     <- kruskal.test(percent_incidence_borer ~ Province, summary_borer)
+levenes_stage_borer        <- leveneTest(percent_incidence_borer ~ `Crop Stage`, summary_borer)
+kruskal_stage_borer        <- kruskal.test(percent_incidence_borer ~ `Crop Stage`, summary_borer)
+
+levenes_province_aphids
+kruskal_province_aphids   <- kruskal.test(percent_incidence_aphids ~ Province, summary_aphids)
+levenes_stage_aphids      <- leveneTest(percent_incidence_aphids ~ `Crop Stage`, summary_aphids)
+kruskal_stage_aphids      <- kruskal.test(percent_incidence_aphids ~ `Crop Stage`, summary_aphids)
+
+levenes_province_armyworm
+kruskal_province_armyworm   <- kruskal.test(percent_incidence_armyworm ~ Province, summary_armyworm)
+levenes_stage_armyworm    <- leveneTest(percent_incidence_armyworm ~ `Crop Stage`, summary_armyworm)
+kruskal_stage_armyworm    <- kruskal.test(percent_incidence_armyworm ~ `Crop Stage`, summary_armyworm)
+
+
+levenes_province_cutworm
+kruskal_province_cutworm     <- kruskal.test(percent_incidence_cutworm ~ Province, summary_cutworm)
+levenes_stage_cutworm        <- leveneTest(percent_incidence_cutworm ~ `Crop Stage`, summary_cutworm)
+aov_stage_cutworm    <- aov(percent_incidence_cutworm ~ `Crop Stage`, summary_cutworm)
+
+levenes_province_hopper
+kruskal_province_hopper <- kruskal.test(percent_incidence_hopper ~ Province, summary_hopper)
+levenes_stage_hopper    <- leveneTest(percent_incidence_hopper ~ `Crop Stage`, summary_hopper)
+kruskal_stage_hopper    <- kruskal.test(percent_incidence_hopper ~ `Crop Stage`, summary_hopper)
+
+levenes_province_faw
+aov_province_faw    <- aov(percent_incidence_faw ~ Province, summary_faw)
+levenes_stage_faw   <- leveneTest(percent_incidence_faw ~ `Crop Stage`, summary_faw)
+aov_stage_faw   <- aov(percent_incidence_faw ~ `Crop Stage`, summary_faw)
+
+levenes_province_earworm
+aov_province_earworm        <- aov(percent_incidence_earworm ~ Province, summary_earworm)
+levenes_stage_earworm       <- leveneTest(percent_incidence_earworm ~ `Crop Stage`, summary_earworm)
+kruskal_stage_faw   <- kruskal.test(percent_incidence_faw ~ `Crop Stage`, summary_faw)
+
+levenes_province_semilooper
+aov_province_semilooper     <- aov(percent_incidence_semilooper ~ Province, summary_semilooper)
+levenes_stage_semilooper <- leveneTest(percent_incidence_semilooper ~ `Crop Stage`, summary_semilooper)
+aov_stage_semilooper   <- aov(percent_incidence_faw ~ `Crop Stage`, summary_faw)
+
+
+detach("package:stats", unload = T)
+```
+
+
+
+```{r}
+province_borer_df
+stage_borer_df
+
+province_faw_df
+stage_faw_df
+
+province_semilooper_df
+stage_semilooper_df
+
+province_cutworm_df
+stage_cutworm_df
+
+province_earworm_df
+stage_earworm_df
+
+province_aphids_df
+stage_aphids_df
+
+province_armyworm_df
+stage_armyworm_df
+
+province_hopper_df
+stage_hopper_df
+```
 
 ```Pest correlation with rstatix package```
 ```{r}
@@ -2805,6 +3561,8 @@ weather_pest_corrstatix <-
 
 weather_pest_corrstatix
 
+
+
 detach("package:ggpubr", unload = TRUE)
 detach("package:rstatix", unload = TRUE)
 ```
@@ -2860,8 +3618,6 @@ print(paste(round(correlation::cor_to_p(cor_hopper_rain_incidence, sample_size_c
 
 
 ```
-
-
 
 
 ```{r}
