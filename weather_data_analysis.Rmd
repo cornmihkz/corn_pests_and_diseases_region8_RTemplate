@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.width= 8, fig.height= 5)
 
 library(tidymodels)
 library(tidyr)
@@ -74,7 +74,7 @@ daily_weather_averages <-
 
 number_sampled_plants <- 20
 percent_100 <- 100
-sample_size_corr <- 2528
+sample_size_corr <- 2528 
 decimal_places <- 5
 
 
@@ -99,8 +99,113 @@ insect_raw$Variety %>% unique()
 ```
 
 
+```{r}
+# by province
+# kruskall-wallis test by province
+attach(summary_blsb)
+kruskal_province_blsb<- kruskal.test(percent_incidence_blsb ~ factor(Province), 
+                                        summary_blsb)
+DunnTest_province_blsb <- DunnTest(percent_incidence_blsb ~ Province, summary_blsb)
+dunn_blsb_province_groups <- dunnTest(percent_incidence_blsb ~ factor(Province),
+                                         method="bonferroni")
+dunn_blsb_province_groups <- dunn_blsb_province_groups$res
+cld_blsb_province <- cldList(comparison = dunn_blsb_province_groups$Comparison,
+                                p.value = dunn_blsb_province_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_blsb_province$Province <- cld_blsb_province$Group
+cld_blsb_province <- as.data.frame.list(cld_blsb_province)
+
+#  values on boxplots geom_text
+
+detach("package:MASS", unload = TRUE)
+summary_blsb_province_bp <-
+  summary_blsb %>% 
+  group_by(Province) %>% 
+  summarise(w=mean(percent_incidence_blsb), sd = mean_sd(percent_incidence_blsb)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_blsb_province, 
+                  by=c("Province"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(Province = Province.x)
+  
+summary_blsb_province_bp <- summary_blsb_province_bp %>% select(-c(Province.x, Province.y))
+
+
+summary_blsb <- summary_blsb %>% left_join(summary_blsb_province_bp, by=c("Province"))
+
+
+summary_blsb %>%
+  ggplot(aes(Province, percent_incidence_blsb)) + 
+  geom_boxplot(aes(fill=Province), show.legend = FALSE) +
+  geom_text(data = summary_blsb_province_bp, aes(y = sd$ymax, label = Letter), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_blsb_province_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.5, alpha = 0.75, color = "darkblue") +
+  labs(x = "Provinces", 
+       y = "Percent Incidence BLSB",
+       title = "Provinces to BLSB Incidence") + 
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1") 
+ggsave(path = "../province", filename = "BLSB Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+
+
+
+# by Crop stage
+# kruskall-wallis test by corn stage
+library("MASS")
+attach(summary_blsb)
+kruskal_crop_stage_blsb<- kruskal.test(percent_incidence_blsb ~ factor(crop_stage), 
+                                        summary_blsb)
+DunnTest_crop_stage_blsb <- DunnTest(percent_incidence_blsb ~ crop_stage, summary_blsb)
+dunn_blsb_crop_stage_groups <- dunnTest(percent_incidence_blsb ~ factor(crop_stage),
+                                         method="bonferroni")
+dunn_blsb_crop_stage_groups <- dunn_blsb_crop_stage_groups$res
+cld_blsb_crop_stage <- cldList(comparison = dunn_blsb_crop_stage_groups$Comparison,
+                                p.value = dunn_blsb_crop_stage_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_blsb_crop_stage$crop_stage <- cld_blsb_crop_stage$Group
+cld_blsb_crop_stage <- as.data.frame.list(cld_blsb_crop_stage)
+
+#  values on boxplots geom_text
+summary_blsb_crop_stage_bp <-
+  summary_blsb %>% 
+  group_by(crop_stage) %>% 
+  summarise(w=mean(percent_incidence_blsb), sd = mean_sd(percent_incidence_blsb)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_blsb_crop_stage, 
+                  by=c("crop_stage"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(crop_stage = crop_stage.x) 
+
+detach("package:MASS", unload = TRUE)
+summary_blsb_crop_stage_bp <- summary_blsb_crop_stage_bp %>% select(-c(crop_stage.x, crop_stage.y))
+summary_blsb <- summary_blsb %>% left_join(summary_blsb_crop_stage_bp, by=c("crop_stage")) %>% drop_na()
+
+
+summary_blsb %>%
+  ggplot(aes(crop_stage, percent_incidence_blsb)) + 
+  geom_boxplot(aes(fill=`Crop Stage`), show.legend=FALSE) +
+  geom_text(data = summary_blsb_crop_stage_bp, aes(label = Letter, y = sd$ymax ), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_blsb_crop_stage_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.1, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels = stage_labels) +
+  labs(x = "Corn Growth Stages", 
+       y = "Percent Incidence BLSB",
+       title = "Corn Crop Growth Stages and BLSB Incidence",
+       caption = "Emergence NOT COUNTED") + 
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../stage", filename = "BLSB Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+```
+
+
 
 ```{r}
+# mutate(DateOrig = mdy(`Collection Date`),
+#          Month_Yr = format_ISO8601(DateOrig, precision = "ym"))
 
 # October 2020 - August 2023
 # collection_weather_avg <-
