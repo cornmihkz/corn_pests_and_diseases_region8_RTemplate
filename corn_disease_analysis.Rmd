@@ -20,6 +20,8 @@ library("FSA")
 library("stats")
 library("rcompanion")
 library("dunn.test")
+library("fuzzyjoin")
+library("stringdist")
 
 plot_width <- 4
 plot_height <- 3
@@ -348,6 +350,8 @@ cld_blsb_province <- as.data.frame.list(cld_blsb_province)
 #  values on boxplots geom_text
 
 detach("package:MASS", unload = TRUE)
+
+
 summary_blsb_province_bp <-
   summary_blsb %>% 
   group_by(Province) %>% 
@@ -434,7 +438,6 @@ ggsave(path = "../stage", filename = "BLSB Percent Incidence vs Crop Growth Stag
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
 detach("package:nortest", unload = TRUE)
-detach("package:MASS", unload = TRUE)
 detach("package:DescTools", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
