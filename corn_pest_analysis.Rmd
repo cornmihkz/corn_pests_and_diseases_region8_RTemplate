@@ -4,7 +4,7 @@ author: "Mihkail Cornell"
 date: "2023-09-05"
 output: html_document
 ---
-```{r include=FALSE}
+```{r}
 knitr::opts_chunk$set(echo = TRUE, fig.width=8, fig.height=5)
 library("dplyr")
 library("ggpubr")
@@ -312,7 +312,7 @@ borer_joined_ev %>%
            label = temp_borer_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Borer vs Temperature.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Borer vs Temperature.png", dpi=plot_dpi)
 
 
 borer_joined_ev %>%
@@ -326,7 +326,7 @@ borer_joined_ev %>%
            label = wind_borer_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Borer vs Wind.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Borer vs Wind.png", dpi=plot_dpi)
 
 
 borer_joined_ev %>%
@@ -340,7 +340,7 @@ borer_joined_ev %>%
            label = humid_borer_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Borer vs Humidity.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Borer vs Humidity.png", dpi=plot_dpi)
 
 
 borer_joined_ev %>%
@@ -354,7 +354,7 @@ borer_joined_ev %>%
            label = rain_borer_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Borer vs Rain.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Borer vs Rain.png", dpi=plot_dpi)
 
 summary_borer_corntype_bp <-
   summary_borer %>% 
@@ -378,7 +378,7 @@ summary_borer %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../pests", filename = "Corn Borer Percent Incidence vs Corn Type.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Borer Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
 
 summary_borer_fert_bp <-
@@ -402,7 +402,7 @@ summary_borer %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../pests", filename = "Corn Borer Percent Incidence vs Fertilizer Treatment.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Borer Percent Incidence vs Fertilizer Treatment.png", dpi=plot_dpi)
 
 
 # by province
@@ -452,7 +452,7 @@ summary_borer %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Corn Borer Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../province", filename = "Corn Borer Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -503,7 +503,7 @@ summary_borer %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Corn Borer Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../stage", filename = "Corn Borer Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
@@ -736,7 +736,7 @@ semilooper_joined_ev %>%
            label = temp_semilooper_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Semi-looper vs Temperature.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Semi-looper vs Temperature.png", dpi=plot_dpi)
 
 
 semilooper_joined_ev %>%
@@ -750,7 +750,7 @@ semilooper_joined_ev %>%
            label = wind_semilooper_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Semi-looper vs Wind.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Semi-looper vs Wind.png", dpi=plot_dpi)
 
 
 semilooper_joined_ev %>%
@@ -764,7 +764,7 @@ semilooper_joined_ev %>%
            label = humid_semilooper_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Semi-looper vs Humidity.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Semi-looper vs Humidity.png", dpi=plot_dpi)
 
 
 semilooper_joined_ev %>%
@@ -778,7 +778,7 @@ semilooper_joined_ev %>%
            label = rain_semilooper_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Semi-looper vs Rain.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Semi-looper vs Rain.png", dpi=plot_dpi)
 
 summary_semilooper_corntype_bp <-
   summary_semilooper %>% 
@@ -802,7 +802,7 @@ summary_semilooper %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../pests", filename = "Semi-looper Percent Incidence vs Corn Type.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Semi-looper Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
 
 summary_semilooper_fert_bp <-
@@ -826,7 +826,7 @@ summary_semilooper %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../pests", filename = "Semi-looper Percent Incidence vs Fertilizer Treatment.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Semi-looper Percent Incidence vs Fertilizer Treatment.png", dpi=plot_dpi)
 
 # by province
 # Letters by province
@@ -856,7 +856,7 @@ summary_semilooper %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Semi-looper Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../province", filename = "Semi-looper Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -888,7 +888,7 @@ summary_semilooper %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Semi-looper Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../stage", filename = "Semi-looper Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
@@ -1113,7 +1113,7 @@ earworm_joined_ev %>%
            label = temp_earworm_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Earworm vs Temperature.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Earworm vs Temperature.png", dpi=plot_dpi)
 
 
 earworm_joined_ev %>%
@@ -1127,7 +1127,7 @@ earworm_joined_ev %>%
            label = wind_earworm_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Earworm vs Wind.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Earworm vs Wind.png", dpi=plot_dpi)
 
 
 earworm_joined_ev %>%
@@ -1141,7 +1141,7 @@ earworm_joined_ev %>%
            label = humid_earworm_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Earworm vs Humidity.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Earworm vs Humidity.png", dpi=plot_dpi)
 
 
 earworm_joined_ev %>%
@@ -1155,7 +1155,7 @@ earworm_joined_ev %>%
            label = rain_earworm_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Earworm vs Rain.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Earworm vs Rain.png", dpi=plot_dpi)
 
 summary_earworm_corntype_bp <-
   summary_earworm %>% 
@@ -1179,7 +1179,7 @@ summary_earworm %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../pests", filename = "Corn Earworm Percent Incidence vs Corn Type.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Earworm Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
 
 
@@ -1205,7 +1205,7 @@ summary_earworm %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../pests", filename = "Corn Earworm Percent Incidence vs Fertilizer Treatment.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Earworm Percent Incidence vs Fertilizer Treatment.png", dpi=plot_dpi)
 
 # by province
 # kruskall-wallis test by province
@@ -1254,7 +1254,7 @@ summary_earworm %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Corn Earworm Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../province", filename = "Corn Earworm Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -1305,7 +1305,7 @@ summary_earworm %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Corn Earworm Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../stage", filename = "Corn Earworm Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
@@ -1530,7 +1530,7 @@ hopper_joined_ev %>%
            label = temp_hopper_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Plant Hopper vs Temperature.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Plant Hopper vs Temperature.png", dpi=plot_dpi)
 
 
 hopper_joined_ev %>%
@@ -1544,7 +1544,7 @@ hopper_joined_ev %>%
            label = wind_hopper_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Plant Hopper vs Wind.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Plant Hopper vs Wind.png", dpi=plot_dpi)
 
 
 hopper_joined_ev %>%
@@ -1558,7 +1558,7 @@ hopper_joined_ev %>%
            label = humid_hopper_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Plant Hopper vs Humidity.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Plant Hopper vs Humidity.png", dpi=plot_dpi)
 
 
 hopper_joined_ev %>%
@@ -1572,7 +1572,7 @@ hopper_joined_ev %>%
            label = rain_hopper_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Corn Plant Hopper vs Rain.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Plant Hopper vs Rain.png", dpi=plot_dpi)
 
 summary_hopper_corntype_bp <-
   summary_hopper %>% 
@@ -1596,7 +1596,7 @@ summary_hopper %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../pests", filename = "Corn Plant Hopper Percent Incidence vs Corn Type.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Plant Hopper Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
 
 
@@ -1622,7 +1622,7 @@ summary_hopper %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../pests", filename = "Corn Plant Hopper Percent Incidence vs Fertilizer Treatment.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Corn Plant Hopper Percent Incidence vs Fertilizer Treatment.png", dpi=plot_dpi)
 
 # by province
 # kruskall-wallis test by province
@@ -1671,7 +1671,7 @@ summary_hopper %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Corn Plant Hopper Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../province", filename = "Corn Plant Hopper Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -1722,7 +1722,7 @@ summary_hopper %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Corn Plant Hopper Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../stage", filename = "Corn Plant Hopper Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
@@ -1948,7 +1948,7 @@ cutworm_joined_ev %>%
            label = temp_cutworm_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Cutworm vs Temperature.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Cutworm vs Temperature.png", dpi=plot_dpi)
 
 
 cutworm_joined_ev %>%
@@ -1962,7 +1962,7 @@ cutworm_joined_ev %>%
            label = wind_cutworm_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Cutworm vs Wind.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Cutworm vs Wind.png", dpi=plot_dpi)
 
 
 cutworm_joined_ev %>%
@@ -1976,7 +1976,7 @@ cutworm_joined_ev %>%
            label = humid_cutworm_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Cutworm vs Humidity.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Cutworm vs Humidity.png", dpi=plot_dpi)
 
 
 cutworm_joined_ev %>%
@@ -1990,7 +1990,7 @@ cutworm_joined_ev %>%
            label = rain_cutworm_eqn,
            parse = TRUE, color = "red", size = 5) +
   theme_classic()
-ggsave(path = "../pests", filename = "Cutworm vs Rain.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Cutworm vs Rain.png", dpi=plot_dpi)
 
 summary_cutworm_corntype_bp <-
   summary_cutworm %>% 
@@ -2014,7 +2014,7 @@ summary_cutworm %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../pests", filename = "Cutworm Percent Incidence vs Corn Type.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Cutworm Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
 
 # by fertilizer rate
@@ -2039,7 +2039,7 @@ summary_cutworm %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../pests", filename = "Cutworm Percent Incidence vs Fertilizer Treatment.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../pests", filename = "Cutworm Percent Incidence vs Fertilizer Treatment.png", dpi=plot_dpi)
 
 # by province
 # kruskall-wallis test by province
@@ -2088,7 +2088,7 @@ summary_cutworm %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Cutworm Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../province", filename = "Cutworm Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -2120,7 +2120,7 @@ summary_cutworm %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Cutworm Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../stage", filename = "Cutworm Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
@@ -2487,7 +2487,7 @@ summary_armyworm %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Armyworm Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../province", filename = "Armyworm Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -2538,7 +2538,7 @@ summary_armyworm %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Armyworm Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../stage", filename = "Armyworm Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
@@ -2896,7 +2896,7 @@ summary_aphids %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Aphids Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../province", filename = "Aphids Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -2947,7 +2947,7 @@ summary_aphids %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Aphids Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../stage", filename = "Aphids Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
@@ -3310,7 +3310,7 @@ summary_faw %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "FAW Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../province", filename = "FAW Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -3342,12 +3342,11 @@ summary_faw %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "FAW Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../stage", filename = "FAW Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:nortest", unload = TRUE)
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
-detach("package:nortest", unload = TRUE)
 detach("package:DescTools", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```

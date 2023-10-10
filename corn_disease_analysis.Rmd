@@ -5,7 +5,7 @@ date: "2023-09-13"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r}
 library("dplyr")
 library("ggpubr")
 library("tidymodels")
@@ -17,21 +17,25 @@ library("ggpubr")
 library("car")
 library("rstatix")
 library("FSA")
-library("stats")
 library("rcompanion")
 library("dunn.test")
 library("fuzzyjoin")
 library("stringdist")
+
+letters_height <- 64
+mean_height <- 66
+crop_growth_stages <- c("emergence", "single_leaf", "seedling", "early_whorl", "mid_whorl", 
+                       "late_whorl", "tasseling", "silking", "maturity")
+stage_labels <- c("Emergence", "Single leaf", "Seedling", "Early Whorl", "Mid whorl",
+                        "Late whorl", "Tasseling", "Silking", "Maturity")
 
 plot_width <- 4
 plot_height <- 3
 plot_dpi <- 250
 
 set.seed(123)
-
 diseases_raw <- read_csv("../diseases/diseases.csv")
 ```
-
 
 ```Banded Leaf and Sheath Blight```
 ```{r}
@@ -381,7 +385,7 @@ summary_blsb %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "BLSB Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../province", filename = "BLSB Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -432,7 +436,7 @@ summary_blsb %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "BLSB Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+ggsave(path = "../stage", filename = "BLSB Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 
 detach("package:agricolae", unload = TRUE)
@@ -740,83 +744,108 @@ summary_rust %>%
 ggsave(path = "../diseases", filename = "Rust vs Fertilizer Treatment.png")
 
 # by province
-aov_province_rust <- aov(percent_incidence_rust ~ Province, data = summary_rust)
-tukeyhsd_province_rust <- TukeyHSD(aov_province_rust)
-letters_province_rust <- multcompLetters4(aov_province_rust, tukeyhsd_province_rust)
+# kruskall-wallis test by province
+attach(summary_rust)
+kruskal_province_rust<- kruskal.test(percent_incidence_rust ~ factor(Province), 
+                                        summary_rust)
+DunnTest_province_rust <- DunnTest(percent_incidence_rust ~ Province, summary_rust)
+dunn_rust_province_groups <- dunnTest(percent_incidence_rust ~ factor(Province),
+                                         method="bonferroni")
+dunn_rust_province_groups <- dunn_rust_province_groups$res
+cld_rust_province <- cldList(comparison = dunn_rust_province_groups$Comparison,
+                                p.value = dunn_rust_province_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_rust_province$Province <- cld_rust_province$Group
+cld_rust_province <- as.data.frame.list(cld_rust_province)
 
-# median values on boxplots
+#  values on boxplots geom_text
+
+detach("package:MASS", unload = TRUE)
 summary_rust_province_bp <-
   summary_rust %>% 
   group_by(Province) %>% 
-  summarise(w=median(percent_incidence_rust), sd = mean_sd(percent_incidence_rust)) %>% 
-  arrange(desc(w)) 
+  summarise(w=mean(percent_incidence_rust), sd = mean_sd(percent_incidence_rust)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_rust_province, 
+                  by=c("Province"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(Province = Province.x)
+  
+summary_rust_province_bp <- summary_rust_province_bp %>% select(-c(Province.x, Province.y))
 
-summary_rust_province_bp$province_cld <- 
-  as.data.frame.list(letters_province_rust$Province)$Letters
 
-dunnTest(percent_incidence_rust ~ Province, data = summary_rust)
-
-attach(summary_rust)
-province_rust_df <- as.list.data.frame(dunn.test(percent_incidence_rust, Province, list = TRUE))
-detach(summary_rust)
-
+summary_rust <- summary_rust %>% left_join(summary_rust_province_bp, by=c("Province"))
 
 
 summary_rust %>%
   ggplot(aes(Province, percent_incidence_rust)) + 
-  geom_boxplot() +
-  geom_text(data = summary_rust_province_bp, aes(label = province_cld,
-                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
-  geom_text(data = summary_rust_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=Province), show.legend = FALSE) +
+  geom_text(data = summary_rust_province_bp, aes(y = sd$ymax, label = Letter), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_rust_province_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.5, alpha = 0.75, color = "darkblue") +
   labs(x = "Provinces", 
        y = "Percent Incidence Common Rust",
        title = "Provinces to Common Rust Incidence") + 
-  theme_classic()
-ggsave(path = "../province", filename = "Corn Common Rust Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1") 
+ggsave(path = "../province", filename = "Common Rust Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
 # by Crop stage
-# median values on boxplots
-summary_rust_corn_stage_bp <- 
+# kruskall-wallis test by corn stage
+library("MASS")
+attach(summary_rust)
+kruskal_crop_stage_rust<- kruskal.test(percent_incidence_rust ~ factor(crop_stage), 
+                                        summary_rust)
+DunnTest_crop_stage_rust <- DunnTest(percent_incidence_rust ~ crop_stage, summary_rust)
+dunn_rust_crop_stage_groups <- dunnTest(percent_incidence_rust ~ factor(crop_stage),
+                                         method="bonferroni")
+dunn_rust_crop_stage_groups <- dunn_rust_crop_stage_groups$res
+cld_rust_crop_stage <- cldList(comparison = dunn_rust_crop_stage_groups$Comparison,
+                                p.value = dunn_rust_crop_stage_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_rust_crop_stage$crop_stage <- cld_rust_crop_stage$Group
+cld_rust_crop_stage <- as.data.frame.list(cld_rust_crop_stage)
+
+#  values on boxplots geom_text
+summary_rust_crop_stage_bp <-
   summary_rust %>% 
   group_by(crop_stage) %>% 
-  summarise(w=median(percent_incidence_rust), sd = mean_sd(percent_incidence_rust)) %>% 
-  arrange(desc(w))
+  summarise(w=mean(percent_incidence_rust), sd = mean_sd(percent_incidence_rust)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_rust_crop_stage, 
+                  by=c("crop_stage"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(crop_stage = crop_stage.x) 
 
-aov_stage_rust <- aov(percent_incidence_rust ~ crop_stage, data = summary_rust)
-tukeyhsd_stage_rust <- TukeyHSD(aov_stage_rust)
-letters_stage_rust <- multcompLetters4(aov_stage_rust, tukeyhsd_stage_rust)
-
-aov_stage_rust %>% summary()
-
-summary_rust_corn_stage_bp$stage_cld <- 
-  as.data.frame.list(letters_stage_rust$crop_stage)$Letters
-
-dunnTest(percent_incidence_rust ~ crop_stage, data = summary_rust)
-
-attach(summary_rust)
-stage_rust_df <- as.list.data.frame(dunn.test(percent_incidence_rust, crop_stage, list = TRUE))
-detach(summary_rust)
+detach("package:MASS", unload = TRUE)
+summary_rust_crop_stage_bp <- summary_rust_crop_stage_bp %>% select(-c(crop_stage.x, crop_stage.y))
+summary_rust <- summary_rust %>% left_join(summary_rust_crop_stage_bp, by=c("crop_stage")) %>% drop_na()
 
 
 summary_rust %>%
   ggplot(aes(crop_stage, percent_incidence_rust)) + 
-  geom_boxplot() +
-  geom_text(data = summary_rust_corn_stage_bp, aes(label = stage_cld,
-                y = letters_height ), vjust = -3, color="red", size = 4) +
-  geom_text(data = summary_rust_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
-  scale_x_discrete(limits = crop_growth_stages, labels=stage_labels) +
+  geom_boxplot(aes(fill=`Crop Stage`), show.legend=FALSE) +
+  geom_text(data = summary_rust_crop_stage_bp, aes(label = Letter, y = sd$ymax ), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_rust_crop_stage_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.1, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels = stage_labels) +
   labs(x = "Corn Growth Stages", 
        y = "Percent Incidence Common Rust",
-       title = "Corn Crop Growth Stages and Common Rust Incidence") + 
-  theme_classic()
-ggsave(path = "../stage", filename = "Common Rust Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+       title = "Corn Crop Growth Stages and Common Rust Incidence",
+       caption = "Emergence NOT COUNTED") + 
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../stage", filename = "Common Rust Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
 detach("package:nortest", unload = TRUE)
-detach("package:MASS", unload = TRUE)
 detach("package:DescTools", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
@@ -1119,84 +1148,110 @@ summary_southrust %>%
   theme_classic()
 ggsave(path = "../diseases", filename = "Southern Rust Percent Incidence vs Fertilizer Treatment.png")
 
-# by province
-aov_province_southrust <- aov(percent_incidence_southrust ~ Province, data = summary_southrust)
-tukeyhsd_province_southrust <- TukeyHSD(aov_province_southrust)
-letters_province_southrust <- multcompLetters4(aov_province_southrust, tukeyhsd_province_southrust)
 
-# median values on boxplots
+# by province
+# kruskall-wallis test by province
+attach(summary_southrust)
+kruskal_province_southrust<- kruskal.test(percent_incidence_southrust ~ factor(Province), 
+                                        summary_southrust)
+DunnTest_province_southrust <- DunnTest(percent_incidence_southrust ~ Province, summary_southrust)
+dunn_southrust_province_groups <- dunnTest(percent_incidence_southrust ~ factor(Province),
+                                         method="bonferroni")
+dunn_southrust_province_groups <- dunn_southrust_province_groups$res
+cld_southrust_province <- cldList(comparison = dunn_southrust_province_groups$Comparison,
+                                p.value = dunn_southrust_province_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_southrust_province$Province <- cld_southrust_province$Group
+cld_southrust_province <- as.data.frame.list(cld_southrust_province)
+
+#  values on boxplots geom_text
+
+detach("package:MASS", unload = TRUE)
 summary_southrust_province_bp <-
   summary_southrust %>% 
   group_by(Province) %>% 
-  summarise(w=median(percent_incidence_southrust), sd = mean_sd(percent_incidence_southrust)) %>% 
-  arrange(desc(w)) 
+  summarise(w=mean(percent_incidence_southrust), sd = mean_sd(percent_incidence_southrust)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_southrust_province, 
+                  by=c("Province"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(Province = Province.x)
+  
+summary_southrust_province_bp <- summary_southrust_province_bp %>% select(-c(Province.x, Province.y))
 
-summary_southrust_province_bp$province_cld <- 
-  as.data.frame.list(letters_province_southrust$Province)$Letters
 
-dunnTest(percent_incidence_southrust ~ Province, data = summary_southrust)
-
-attach(summary_southrust)
-province_southrust_df <- as.list.data.frame(dunn.test(percent_incidence_southrust, Province, list = TRUE))
-detach(summary_southrust)
-
+summary_southrust <- summary_southrust %>% left_join(summary_southrust_province_bp, by=c("Province"))
 
 
 summary_southrust %>%
   ggplot(aes(Province, percent_incidence_southrust)) + 
-  geom_boxplot() +
-  geom_text(data = summary_southrust_province_bp, aes(label = province_cld,
-                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
-  geom_text(data = summary_southrust_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=Province), show.legend = FALSE) +
+  geom_text(data = summary_southrust_province_bp, aes(y = sd$ymax, label = Letter), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_southrust_province_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.5, alpha = 0.75, color = "darkblue") +
   labs(x = "Provinces", 
        y = "Percent Incidence Southern Rust",
        title = "Provinces to Southern Rust Incidence") + 
-  theme_classic()
-ggsave(path = "../province", filename = "Southern Rust Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1") 
+ggsave(path = "../province", filename = "Southern Rust Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
 # by Crop stage
-# median values on boxplots
-summary_southrust_corn_stage_bp <- 
+# kruskall-wallis test by corn stage
+library("MASS")
+attach(summary_southrust)
+kruskal_crop_stage_southrust<- kruskal.test(percent_incidence_southrust ~ factor(crop_stage), 
+                                        summary_southrust)
+DunnTest_crop_stage_southrust <- DunnTest(percent_incidence_southrust ~ crop_stage, summary_southrust)
+dunn_southrust_crop_stage_groups <- dunnTest(percent_incidence_southrust ~ factor(crop_stage),
+                                         method="bonferroni")
+dunn_southrust_crop_stage_groups <- dunn_southrust_crop_stage_groups$res
+cld_southrust_crop_stage <- cldList(comparison = dunn_southrust_crop_stage_groups$Comparison,
+                                p.value = dunn_southrust_crop_stage_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_southrust_crop_stage$crop_stage <- cld_southrust_crop_stage$Group
+cld_southrust_crop_stage <- as.data.frame.list(cld_southrust_crop_stage)
+
+#  values on boxplots geom_text
+summary_southrust_crop_stage_bp <-
   summary_southrust %>% 
   group_by(crop_stage) %>% 
-  summarise(w=median(percent_incidence_southrust), sd = mean_sd(percent_incidence_southrust)) %>% 
-  arrange(desc(w))
+  summarise(w=mean(percent_incidence_southrust), sd = mean_sd(percent_incidence_southrust)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_southrust_crop_stage, 
+                  by=c("crop_stage"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(crop_stage = crop_stage.x) 
 
-aov_stage_southrust <- aov(percent_incidence_southrust ~ crop_stage, data = summary_southrust)
-tukeyhsd_stage_southrust <- TukeyHSD(aov_stage_southrust)
-letters_stage_southrust <- multcompLetters4(aov_stage_southrust, tukeyhsd_stage_southrust)
-
-aov_stage_southrust %>% summary()
-
-summary_southrust_corn_stage_bp$stage_cld <- 
-  as.data.frame.list(letters_stage_southrust$crop_stage)$Letters
-
-dunnTest(percent_incidence_southrust ~ crop_stage, data = summary_southrust)
-
-attach(summary_southrust)
-stage_southrust_df <- as.list.data.frame(dunn.test(percent_incidence_southrust, crop_stage, list = TRUE))
-detach(summary_southrust)
+detach("package:MASS", unload = TRUE)
+summary_southrust_crop_stage_bp <- summary_southrust_crop_stage_bp %>% select(-c(crop_stage.x, crop_stage.y))
+summary_southrust <- summary_southrust %>% left_join(summary_southrust_crop_stage_bp, by=c("crop_stage")) %>% drop_na()
 
 
 summary_southrust %>%
   ggplot(aes(crop_stage, percent_incidence_southrust)) + 
-  geom_boxplot() +
-  geom_text(data = summary_southrust_corn_stage_bp, aes(label = stage_cld,
-                y = letters_height ), vjust = -3, color="red", size = 4) +
-  geom_text(data = summary_southrust_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
-  scale_x_discrete(limits = crop_growth_stages, labels=stage_labels) +
+  geom_boxplot(aes(fill=`Crop Stage`), show.legend=FALSE) +
+  geom_text(data = summary_southrust_crop_stage_bp, aes(label = Letter, y = sd$ymax ), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_southrust_crop_stage_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.1, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels = stage_labels) +
   labs(x = "Corn Growth Stages", 
        y = "Percent Incidence Southern Rust",
-       title = "Corn Crop Growth Stages and Southern Rust Incidence") + 
-  theme_classic()
-ggsave(path = "../stage", filename = "Southern Rust Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+       title = "Corn Crop Growth Stages and Southern Rust Incidence",
+       caption = "Emergence NOT COUNTED") + 
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../stage", filename = "Southern Rust Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
 detach("package:nortest", unload = TRUE)
-detach("package:MASS", unload = TRUE)
 detach("package:DescTools", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
@@ -1499,84 +1554,111 @@ summary_mildew %>%
   theme_classic()
 ggsave(path = "../diseases", filename = "Downy Mildew Percent Incidence vs Fertilizer Treatment.png")
 
-# by province
-aov_province_mildew <- aov(percent_incidence_mildew ~ Province, data = summary_mildew)
-tukeyhsd_province_mildew <- TukeyHSD(aov_province_mildew)
-letters_province_mildew <- multcompLetters4(aov_province_mildew, tukeyhsd_province_mildew)
 
-# median values on boxplots
+# by province
+# kruskall-wallis test by province
+attach(summary_mildew)
+kruskal_province_mildew<- kruskal.test(percent_incidence_mildew ~ factor(Province), 
+                                        summary_mildew)
+DunnTest_province_mildew <- DunnTest(percent_incidence_mildew ~ Province, summary_mildew)
+dunn_mildew_province_groups <- dunnTest(percent_incidence_mildew ~ factor(Province),
+                                         method="bonferroni")
+dunn_mildew_province_groups <- dunn_mildew_province_groups$res
+cld_mildew_province <- cldList(comparison = dunn_mildew_province_groups$Comparison,
+                                p.value = dunn_mildew_province_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_mildew_province$Province <- cld_mildew_province$Group
+cld_mildew_province <- as.data.frame.list(cld_mildew_province)
+
+#  values on boxplots geom_text
+
+detach("package:MASS", unload = TRUE)
 summary_mildew_province_bp <-
   summary_mildew %>% 
   group_by(Province) %>% 
-  summarise(w=median(percent_incidence_mildew), sd = mean_sd(percent_incidence_mildew)) %>% 
-  arrange(desc(w)) 
+  summarise(w=mean(percent_incidence_mildew), sd = mean_sd(percent_incidence_mildew)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_mildew_province, 
+                  by=c("Province"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(Province = Province.x)
+  
+summary_mildew_province_bp <- summary_mildew_province_bp %>% select(-c(Province.x, Province.y))
 
-summary_mildew_province_bp$province_cld <- 
-  as.data.frame.list(letters_province_mildew$Province)$Letters
 
-dunnTest(percent_incidence_mildew ~ Province, data = summary_mildew)
-
-attach(summary_mildew)
-province_mildew_df <- as.list.data.frame(dunn.test(percent_incidence_mildew, Province, list = TRUE))
-detach(summary_mildew)
-
+summary_mildew <- summary_mildew %>% left_join(summary_mildew_province_bp, by=c("Province"))
 
 
 summary_mildew %>%
   ggplot(aes(Province, percent_incidence_mildew)) + 
-  geom_boxplot() +
-  geom_text(data = summary_mildew_province_bp, aes(label = province_cld,
-                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
-  geom_text(data = summary_mildew_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=Province), show.legend = FALSE) +
+  geom_text(data = summary_mildew_province_bp, aes(y = sd$ymax, label = Letter), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_mildew_province_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.5, alpha = 0.75, color = "darkblue") +
   labs(x = "Provinces", 
        y = "Percent Incidence Downy Mildew",
        title = "Provinces to Downy Mildew Incidence") + 
-  theme_classic()
-ggsave(path = "../province", filename = "Downy Mildew Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1") 
+ggsave(path = "../province", filename = "Downy Mildew Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
 # by Crop stage
-# median values on boxplots
-summary_mildew_corn_stage_bp <- 
+# kruskall-wallis test by corn stage
+library("MASS")
+attach(summary_mildew)
+kruskal_crop_stage_mildew<- kruskal.test(percent_incidence_mildew ~ factor(crop_stage), 
+                                        summary_mildew)
+DunnTest_crop_stage_mildew <- DunnTest(percent_incidence_mildew ~ crop_stage, summary_mildew)
+dunn_mildew_crop_stage_groups <- dunnTest(percent_incidence_mildew ~ factor(crop_stage),
+                                         method="bonferroni")
+dunn_mildew_crop_stage_groups <- dunn_mildew_crop_stage_groups$res
+cld_mildew_crop_stage <- cldList(comparison = dunn_mildew_crop_stage_groups$Comparison,
+                                p.value = dunn_mildew_crop_stage_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_mildew_crop_stage$crop_stage <- cld_mildew_crop_stage$Group
+cld_mildew_crop_stage <- as.data.frame.list(cld_mildew_crop_stage)
+
+#  values on boxplots geom_text
+summary_mildew_crop_stage_bp <-
   summary_mildew %>% 
   group_by(crop_stage) %>% 
-  summarise(w=median(percent_incidence_mildew), sd = mean_sd(percent_incidence_mildew)) %>% 
-  arrange(desc(w))
+  summarise(w=mean(percent_incidence_mildew), sd = mean_sd(percent_incidence_mildew)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_mildew_crop_stage, 
+                  by=c("crop_stage"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(crop_stage = crop_stage.x) 
 
-aov_stage_mildew <- aov(percent_incidence_mildew ~ crop_stage, data = summary_mildew)
-tukeyhsd_stage_mildew <- TukeyHSD(aov_stage_mildew)
-letters_stage_mildew <- multcompLetters4(aov_stage_mildew, tukeyhsd_stage_mildew)
-
-aov_stage_mildew %>% summary()
-
-summary_mildew_corn_stage_bp$stage_cld <- 
-  as.data.frame.list(letters_stage_mildew$crop_stage)$Letters
-
-dunnTest(percent_incidence_mildew ~ crop_stage, data = summary_mildew)
-
-attach(summary_mildew)
-stage_mildew_df <- as.list.data.frame(dunn.test(percent_incidence_mildew, crop_stage, list = TRUE))
-detach(summary_mildew)
+detach("package:MASS", unload = TRUE)
+summary_mildew_crop_stage_bp <- summary_mildew_crop_stage_bp %>% select(-c(crop_stage.x, crop_stage.y))
+summary_mildew <- summary_mildew %>% left_join(summary_mildew_crop_stage_bp, by=c("crop_stage")) %>% drop_na()
 
 
 summary_mildew %>%
   ggplot(aes(crop_stage, percent_incidence_mildew)) + 
-  geom_boxplot() +
-  geom_text(data = summary_mildew_corn_stage_bp, aes(label = stage_cld,
-                y = letters_height ), vjust = -3, color="red", size = 4) +
-  geom_text(data = summary_mildew_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
-  scale_x_discrete(limits = crop_growth_stages, labels=stage_labels) +
+  geom_boxplot(aes(fill=`Crop Stage`), show.legend=FALSE) +
+  geom_text(data = summary_mildew_crop_stage_bp, aes(label = Letter, y = sd$ymax ), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_mildew_crop_stage_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.1, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels = stage_labels) +
   labs(x = "Corn Growth Stages", 
        y = "Percent Incidence Downy Mildew",
-       title = "Corn Crop Growth Stages and Downy Mildew Incidence") + 
-  theme_classic()
-ggsave(path = "../stage", filename = "Downy Mildew Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+       title = "Corn Crop Growth Stages and Downy Mildew Incidence",
+       caption = "Emergence NOT COUNTED") + 
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../stage", filename = "Downy Mildew Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
+
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
 detach("package:nortest", unload = TRUE)
-detach("package:MASS", unload = TRUE)
 detach("package:DescTools", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
@@ -1879,83 +1961,108 @@ summary_brown %>%
 ggsave(path = "../diseases", filename = "Brown Spot Percent Incidence vs Fertilizer Treatment.png")
 
 # by province
-aov_province_brown <- aov(percent_incidence_brown ~ Province, data = summary_brown)
-tukeyhsd_province_brown <- TukeyHSD(aov_province_brown)
-letters_province_brown <- multcompLetters4(aov_province_brown, tukeyhsd_province_brown)
+# kruskall-wallis test by province
+attach(summary_brown)
+kruskal_province_brown<- kruskal.test(percent_incidence_brown ~ factor(Province), 
+                                        summary_brown)
+DunnTest_province_brown <- DunnTest(percent_incidence_brown ~ Province, summary_brown)
+dunn_brown_province_groups <- dunnTest(percent_incidence_brown ~ factor(Province),
+                                         method="bonferroni")
+dunn_brown_province_groups <- dunn_brown_province_groups$res
+cld_brown_province <- cldList(comparison = dunn_brown_province_groups$Comparison,
+                                p.value = dunn_brown_province_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_brown_province$Province <- cld_brown_province$Group
+cld_brown_province <- as.data.frame.list(cld_brown_province)
 
-# median values on boxplots
+#  values on boxplots geom_text
+
+detach("package:MASS", unload = TRUE)
 summary_brown_province_bp <-
   summary_brown %>% 
   group_by(Province) %>% 
-  summarise(w=median(percent_incidence_brown), sd = mean_sd(percent_incidence_brown)) %>% 
-  arrange(desc(w)) 
+  summarise(w=mean(percent_incidence_brown), sd = mean_sd(percent_incidence_brown)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_brown_province, 
+                  by=c("Province"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(Province = Province.x)
+  
+summary_brown_province_bp <- summary_brown_province_bp %>% select(-c(Province.x, Province.y))
 
-summary_brown_province_bp$province_cld <- 
-  as.data.frame.list(letters_province_brown$Province)$Letters
 
-dunnTest(percent_incidence_brown ~ Province, data = summary_brown)
-
-attach(summary_brown)
-province_brown_df <- as.list.data.frame(dunn.test(percent_incidence_brown, Province, list = TRUE))
-detach(summary_brown)
-
+summary_brown <- summary_brown %>% left_join(summary_brown_province_bp, by=c("Province"))
 
 
 summary_brown %>%
   ggplot(aes(Province, percent_incidence_brown)) + 
-  geom_boxplot() +
-  geom_text(data = summary_brown_province_bp, aes(label = province_cld,
-                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
-  geom_text(data = summary_brown_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=Province), show.legend = FALSE) +
+  geom_text(data = summary_brown_province_bp, aes(y = sd$ymax, label = Letter), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_brown_province_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.5, alpha = 0.75, color = "darkblue") +
   labs(x = "Provinces", 
        y = "Percent Incidence Brown Spot",
        title = "Provinces to Brown Spot Incidence") + 
-  theme_classic()
-ggsave(path = "../province", filename = "Brown Spot Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1") 
+ggsave(path = "../province", filename = "Brown Spot Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
 # by Crop stage
-# median values on boxplots
-summary_brown_corn_stage_bp <- 
+# kruskall-wallis test by corn stage
+library("MASS")
+attach(summary_brown)
+kruskal_crop_stage_brown<- kruskal.test(percent_incidence_brown ~ factor(crop_stage), 
+                                        summary_brown)
+DunnTest_crop_stage_brown <- DunnTest(percent_incidence_brown ~ crop_stage, summary_brown)
+dunn_brown_crop_stage_groups <- dunnTest(percent_incidence_brown ~ factor(crop_stage),
+                                         method="bonferroni")
+dunn_brown_crop_stage_groups <- dunn_brown_crop_stage_groups$res
+cld_brown_crop_stage <- cldList(comparison = dunn_brown_crop_stage_groups$Comparison,
+                                p.value = dunn_brown_crop_stage_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_brown_crop_stage$crop_stage <- cld_brown_crop_stage$Group
+cld_brown_crop_stage <- as.data.frame.list(cld_brown_crop_stage)
+
+#  values on boxplots geom_text
+summary_brown_crop_stage_bp <-
   summary_brown %>% 
   group_by(crop_stage) %>% 
-  summarise(w=median(percent_incidence_brown), sd = mean_sd(percent_incidence_brown)) %>% 
-  arrange(desc(w))
+  summarise(w=mean(percent_incidence_brown), sd = mean_sd(percent_incidence_brown)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_brown_crop_stage, 
+                  by=c("crop_stage"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(crop_stage = crop_stage.x) 
 
-aov_stage_brown <- aov(percent_incidence_brown ~ crop_stage, data = summary_brown)
-tukeyhsd_stage_brown <- TukeyHSD(aov_stage_brown)
-letters_stage_brown <- multcompLetters4(aov_stage_brown, tukeyhsd_stage_brown)
-
-aov_stage_brown %>% summary()
-
-summary_brown_corn_stage_bp$stage_cld <- 
-  as.data.frame.list(letters_stage_brown$crop_stage)$Letters
-
-dunnTest(percent_incidence_brown ~ crop_stage, data = summary_brown)
-
-attach(summary_brown)
-stage_brown_df <- as.list.data.frame(dunn.test(percent_incidence_brown, crop_stage, list = TRUE))
-detach(summary_brown)
+detach("package:MASS", unload = TRUE)
+summary_brown_crop_stage_bp <- summary_brown_crop_stage_bp %>% select(-c(crop_stage.x, crop_stage.y))
+summary_brown <- summary_brown %>% left_join(summary_brown_crop_stage_bp, by=c("crop_stage")) %>% drop_na()
 
 
 summary_brown %>%
   ggplot(aes(crop_stage, percent_incidence_brown)) + 
-  geom_boxplot() +
-  geom_text(data = summary_brown_corn_stage_bp, aes(label = stage_cld,
-                y = letters_height ), vjust = -3, color="red", size = 4) +
-  geom_text(data = summary_brown_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
-  scale_x_discrete(limits = crop_growth_stages, labels=stage_labels) +
+  geom_boxplot(aes(fill=`Crop Stage`), show.legend=FALSE) +
+  geom_text(data = summary_brown_crop_stage_bp, aes(label = Letter, y = sd$ymax ), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_brown_crop_stage_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.1, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels = stage_labels) +
   labs(x = "Corn Growth Stages", 
        y = "Percent Incidence Brown Spot",
-       title = "Corn Crop Growth Stages and Brown Spot Incidence") + 
-  theme_classic()
-ggsave(path = "../stage", filename = "Brown Spot Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+       title = "Corn Crop Growth Stages and Brown Spot Incidence",
+       caption = "Emergence NOT COUNTED") + 
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../stage", filename = "Brown Spot Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
 detach("package:nortest", unload = TRUE)
-detach("package:MASS", unload = TRUE)
 detach("package:DescTools", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
@@ -2260,83 +2367,108 @@ summary_leaf %>%
 ggsave(path = "../diseases", filename = "Leaf Spot Percent Incidence vs Fertilizer Treatment.png")
 
 # by province
-aov_province_leaf <- aov(percent_incidence_leaf ~ Province, data = summary_leaf)
-tukeyhsd_province_leaf <- TukeyHSD(aov_province_leaf)
-letters_province_leaf <- multcompLetters4(aov_province_leaf, tukeyhsd_province_leaf)
+# kruskall-wallis test by province
+attach(summary_leaf)
+kruskal_province_leaf<- kruskal.test(percent_incidence_leaf ~ factor(Province), 
+                                        summary_leaf)
+DunnTest_province_leaf <- DunnTest(percent_incidence_leaf ~ Province, summary_leaf)
+dunn_leaf_province_groups <- dunnTest(percent_incidence_leaf ~ factor(Province),
+                                         method="bonferroni")
+dunn_leaf_province_groups <- dunn_leaf_province_groups$res
+cld_leaf_province <- cldList(comparison = dunn_leaf_province_groups$Comparison,
+                                p.value = dunn_leaf_province_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_leaf_province$Province <- cld_leaf_province$Group
+cld_leaf_province <- as.data.frame.list(cld_leaf_province)
 
-# median values on boxplots
+#  values on boxplots geom_text
+
+detach("package:MASS", unload = TRUE)
 summary_leaf_province_bp <-
   summary_leaf %>% 
   group_by(Province) %>% 
-  summarise(w=median(percent_incidence_leaf), sd = mean_sd(percent_incidence_leaf)) %>% 
-  arrange(desc(w)) 
+  summarise(w=mean(percent_incidence_leaf), sd = mean_sd(percent_incidence_leaf)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_leaf_province, 
+                  by=c("Province"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(Province = Province.x)
+  
+summary_leaf_province_bp <- summary_leaf_province_bp %>% select(-c(Province.x, Province.y))
 
-summary_leaf_province_bp$province_cld <- 
-  as.data.frame.list(letters_province_leaf$Province)$Letters
 
-dunnTest(percent_incidence_leaf ~ Province, data = summary_leaf)
-
-attach(summary_leaf)
-province_leaf_df <- as.list.data.frame(dunn.test(percent_incidence_leaf, Province, list = TRUE))
-detach(summary_leaf)
-
+summary_leaf <- summary_leaf %>% left_join(summary_leaf_province_bp, by=c("Province"))
 
 
 summary_leaf %>%
   ggplot(aes(Province, percent_incidence_leaf)) + 
-  geom_boxplot() +
-  geom_text(data = summary_leaf_province_bp, aes(label = province_cld,
-                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
-  geom_text(data = summary_leaf_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=Province), show.legend = FALSE) +
+  geom_text(data = summary_leaf_province_bp, aes(y = sd$ymax, label = Letter), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_leaf_province_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.5, alpha = 0.75, color = "darkblue") +
   labs(x = "Provinces", 
        y = "Percent Incidence Leaf Spot",
        title = "Provinces to Leaf Spot Incidence") + 
-  theme_classic()
-ggsave(path = "../province", filename = "Leaf Spot Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1") 
+ggsave(path = "../province", filename = "Leaf Spot Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
 # by Crop stage
-# median values on boxplots
-summary_leaf_corn_stage_bp <- 
+# kruskall-wallis test by corn stage
+library("MASS")
+attach(summary_leaf)
+kruskal_crop_stage_leaf<- kruskal.test(percent_incidence_leaf ~ factor(crop_stage), 
+                                        summary_leaf)
+DunnTest_crop_stage_leaf <- DunnTest(percent_incidence_leaf ~ crop_stage, summary_leaf)
+dunn_leaf_crop_stage_groups <- dunnTest(percent_incidence_leaf ~ factor(crop_stage),
+                                         method="bonferroni")
+dunn_leaf_crop_stage_groups <- dunn_leaf_crop_stage_groups$res
+cld_leaf_crop_stage <- cldList(comparison = dunn_leaf_crop_stage_groups$Comparison,
+                                p.value = dunn_leaf_crop_stage_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_leaf_crop_stage$crop_stage <- cld_leaf_crop_stage$Group
+cld_leaf_crop_stage <- as.data.frame.list(cld_leaf_crop_stage)
+
+#  values on boxplots geom_text
+summary_leaf_crop_stage_bp <-
   summary_leaf %>% 
   group_by(crop_stage) %>% 
-  summarise(w=median(percent_incidence_leaf), sd = mean_sd(percent_incidence_leaf)) %>% 
-  arrange(desc(w))
+  summarise(w=mean(percent_incidence_leaf), sd = mean_sd(percent_incidence_leaf)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_leaf_crop_stage, 
+                  by=c("crop_stage"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(crop_stage = crop_stage.x) 
 
-aov_stage_leaf <- aov(percent_incidence_leaf ~ crop_stage, data = summary_leaf)
-tukeyhsd_stage_leaf <- TukeyHSD(aov_stage_leaf)
-letters_stage_leaf <- multcompLetters4(aov_stage_leaf, tukeyhsd_stage_leaf)
-
-aov_stage_leaf %>% summary()
-
-summary_leaf_corn_stage_bp$stage_cld <- 
-  as.data.frame.list(letters_stage_leaf$crop_stage)$Letters
-
-dunnTest(percent_incidence_leaf ~ crop_stage, data = summary_leaf)
-
-attach(summary_leaf)
-stage_leaf_df <- as.list.data.frame(dunn.test(percent_incidence_leaf, crop_stage, list = TRUE))
-detach(summary_leaf)
+detach("package:MASS", unload = TRUE)
+summary_leaf_crop_stage_bp <- summary_leaf_crop_stage_bp %>% select(-c(crop_stage.x, crop_stage.y))
+summary_leaf <- summary_leaf %>% left_join(summary_leaf_crop_stage_bp, by=c("crop_stage")) %>% drop_na()
 
 
 summary_leaf %>%
   ggplot(aes(crop_stage, percent_incidence_leaf)) + 
-  geom_boxplot() +
-  geom_text(data = summary_leaf_corn_stage_bp, aes(label = stage_cld,
-                y = letters_height ), vjust = -3, color="red", size = 4) +
-  geom_text(data = summary_leaf_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
-  scale_x_discrete(limits = crop_growth_stages, labels=stage_labels) +
+  geom_boxplot(aes(fill=`Crop Stage`), show.legend=FALSE) +
+  geom_text(data = summary_leaf_crop_stage_bp, aes(label = Letter, y = sd$ymax ), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_leaf_crop_stage_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.1, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels = stage_labels) +
   labs(x = "Corn Growth Stages", 
        y = "Percent Incidence Leaf Spot",
-       title = "Corn Crop Growth Stages and Leaf Spot Incidence") + 
-  theme_classic()
-ggsave(path = "../stage", filename = "Leaf Spot Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+       title = "Corn Crop Growth Stages and Leaf Spot Incidence",
+       caption = "Emergence NOT COUNTED") + 
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../stage", filename = "Leaf Spot Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
 detach("package:nortest", unload = TRUE)
-detach("package:MASS", unload = TRUE)
 detach("package:DescTools", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
@@ -2639,85 +2771,111 @@ summary_blight %>%
   theme_classic()
 ggsave(path = "../diseases", filename = "Leaf Blight Percent Incidence vs Fertilizer Treatment.png")
 
-# by province
-aov_province_blight <- aov(percent_incidence_blight ~ Province, data = summary_blight)
-tukeyhsd_province_blight <- TukeyHSD(aov_province_blight)
-letters_province_blight <- multcompLetters4(aov_province_blight, tukeyhsd_province_blight)
 
-# median values on boxplots
+# by province
+# kruskall-wallis test by province
+attach(summary_blight)
+kruskal_province_blight<- kruskal.test(percent_incidence_blight ~ factor(Province), 
+                                        summary_blight)
+DunnTest_province_blight <- DunnTest(percent_incidence_blight ~ Province, summary_blight)
+dunn_blight_province_groups <- dunnTest(percent_incidence_blight ~ factor(Province),
+                                         method="bonferroni")
+dunn_blight_province_groups <- dunn_blight_province_groups$res
+cld_blight_province <- cldList(comparison = dunn_blight_province_groups$Comparison,
+                                p.value = dunn_blight_province_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_blight_province$Province <- cld_blight_province$Group
+cld_blight_province <- as.data.frame.list(cld_blight_province)
+
+#  values on boxplots geom_text
+
+detach("package:MASS", unload = TRUE)
 summary_blight_province_bp <-
   summary_blight %>% 
   group_by(Province) %>% 
-  summarise(w=median(percent_incidence_blight), sd = mean_sd(percent_incidence_blight)) %>% 
-  arrange(desc(w)) 
+  summarise(w=mean(percent_incidence_blight), sd = mean_sd(percent_incidence_blight)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_blight_province, 
+                  by=c("Province"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(Province = Province.x)
+  
+summary_blight_province_bp <- summary_blight_province_bp %>% select(-c(Province.x, Province.y))
 
-summary_blight_province_bp$province_cld <- 
-  as.data.frame.list(letters_province_blight$Province)$Letters
 
-dunnTest(percent_incidence_blight ~ Province, data = summary_blight)
-
-attach(summary_blight)
-province_blight_df <- as.list.data.frame(dunn.test(percent_incidence_blight, Province, list = TRUE))
-detach(summary_blight)
-
+summary_blight <- summary_blight %>% left_join(summary_blight_province_bp, by=c("Province"))
 
 
 summary_blight %>%
   ggplot(aes(Province, percent_incidence_blight)) + 
-  geom_boxplot() +
-  geom_text(data = summary_blight_province_bp, aes(label = province_cld,
-                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
-  geom_text(data = summary_blight_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=Province), show.legend = FALSE) +
+  geom_text(data = summary_blight_province_bp, aes(y = sd$ymax, label = Letter), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_blight_province_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.5, alpha = 0.75, color = "darkblue") +
   labs(x = "Provinces", 
        y = "Percent Incidence Leaf Blight",
        title = "Provinces to Leaf Blight Incidence") + 
-  theme_classic()
-ggsave(path = "../province", filename = "Leaf Blight Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1") 
+ggsave(path = "../province", filename = "Leaf Blight Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
 # by Crop stage
-# median values on boxplots
-summary_blight_corn_stage_bp <- 
+# kruskall-wallis test by corn stage
+library("MASS")
+attach(summary_blight)
+kruskal_crop_stage_blight<- kruskal.test(percent_incidence_blight ~ factor(crop_stage), 
+                                        summary_blight)
+DunnTest_crop_stage_blight <- DunnTest(percent_incidence_blight ~ crop_stage, summary_blight)
+dunn_blight_crop_stage_groups <- dunnTest(percent_incidence_blight ~ factor(crop_stage),
+                                         method="bonferroni")
+dunn_blight_crop_stage_groups <- dunn_blight_crop_stage_groups$res
+cld_blight_crop_stage <- cldList(comparison = dunn_blight_crop_stage_groups$Comparison,
+                                p.value = dunn_blight_crop_stage_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_blight_crop_stage$crop_stage <- cld_blight_crop_stage$Group
+cld_blight_crop_stage <- as.data.frame.list(cld_blight_crop_stage)
+
+#  values on boxplots geom_text
+summary_blight_crop_stage_bp <-
   summary_blight %>% 
   group_by(crop_stage) %>% 
-  summarise(w=median(percent_incidence_blight), sd = mean_sd(percent_incidence_blight)) %>% 
-  arrange(desc(w))
+  summarise(w=mean(percent_incidence_blight), sd = mean_sd(percent_incidence_blight)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_blight_crop_stage, 
+                  by=c("crop_stage"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(crop_stage = crop_stage.x) 
 
-aov_stage_blight <- aov(percent_incidence_blight ~ crop_stage, data = summary_blight)
-tukeyhsd_stage_blight <- TukeyHSD(aov_stage_blight)
-letters_stage_blight <- multcompLetters4(aov_stage_blight, tukeyhsd_stage_blight)
-
-aov_stage_blight %>% summary()
-
-summary_blight_corn_stage_bp$stage_cld <- 
-  as.data.frame.list(letters_stage_blight$crop_stage)$Letters
-
-dunnTest(percent_incidence_blight ~ crop_stage, data = summary_blight)
-
-attach(summary_blight)
-stage_blight_df <- as.list.data.frame(dunn.test(percent_incidence_blight, crop_stage, list = TRUE))
-detach(summary_blight)
+detach("package:MASS", unload = TRUE)
+summary_blight_crop_stage_bp <- summary_blight_crop_stage_bp %>% select(-c(crop_stage.x, crop_stage.y))
+summary_blight <- summary_blight %>% left_join(summary_blight_crop_stage_bp, by=c("crop_stage")) %>% drop_na()
 
 
 summary_blight %>%
   ggplot(aes(crop_stage, percent_incidence_blight)) + 
-  geom_boxplot() +
-  geom_text(data = summary_blight_corn_stage_bp, aes(label = stage_cld,
-                y = letters_height ), vjust = -3, color="red", size = 4) +
-  geom_text(data = summary_blight_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
-  scale_x_discrete(limits = crop_growth_stages, labels=stage_labels) +
+  geom_boxplot(aes(fill=`Crop Stage`), show.legend=FALSE) +
+  geom_text(data = summary_blight_crop_stage_bp, aes(label = Letter, y = sd$ymax ), 
+            vjust = -1.75, hjust = -0.1, color="red", size = 4) +
+  geom_text(data = summary_blight_crop_stage_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.1, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels = stage_labels) +
   labs(x = "Corn Growth Stages", 
        y = "Percent Incidence Leaf Blight",
-       title = "Corn Crop Growth Stages and Leaf Blight Incidence") + 
-  theme_classic()
-ggsave(path = "../stage", filename = "Leaf Blight Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+       title = "Corn Crop Growth Stages and Leaf Blight Incidence",
+       caption = "Emergence NOT COUNTED") + 
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../stage", filename = "Leaf Blight Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
 detach("package:nortest", unload = TRUE)
-detach("package:MASS", unload = TRUE)
 detach("package:DescTools", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
@@ -2747,9 +2905,9 @@ stalk_joined_ev <-
          sum_moderate = sum(c_across(starts_with("Stalk Rot")) == "5"),
          sum_heavy = sum(c_across(starts_with("Stalk Rot")) == "7"),
          sum_very = sum(c_across(starts_with("Stalk Rot")) == "9"),
-         average_damage_stalk = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
-         damage_rating_stalk = (((1 * sum_slight) + (3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
-         incidence_stalk = ((sum(c_across(sum_slight:sum_very))) * percent_100) / number_sampled_plants,
+         average_damage_stalk = (((3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants)),
+         damage_rating_stalk = (((3 * sum_light) + (5 * sum_moderate) + (7 * sum_heavy) + (9 * sum_very)) / (number_sampled_plants * 9)) * percent_100,
+         incidence_stalk = ((sum(c_across(sum_light:sum_very))) * percent_100) / number_sampled_plants,
          )
 
 
@@ -3023,83 +3181,108 @@ ggsave(path = "../diseases", filename = "Stalk Rot Percent Incidence vs Fertiliz
 
 
 # by province
-aov_province_stalk <- aov(percent_incidence_stalk ~ Province, data = summary_stalk)
-tukeyhsd_province_stalk <- TukeyHSD(aov_province_stalk)
-letters_province_stalk <- multcompLetters4(aov_province_stalk, tukeyhsd_province_stalk)
+# kruskall-wallis test by province
+attach(summary_stalk)
+kruskal_province_stalk<- kruskal.test(percent_incidence_stalk ~ factor(Province), 
+                                        summary_stalk)
+DunnTest_province_stalk <- DunnTest(percent_incidence_stalk ~ Province, summary_stalk)
+dunn_stalk_province_groups <- dunnTest(percent_incidence_stalk ~ factor(Province),
+                                         method="bonferroni")
+dunn_stalk_province_groups <- dunn_stalk_province_groups$res
+cld_stalk_province <- cldList(comparison = dunn_stalk_province_groups$Comparison,
+                                p.value = dunn_stalk_province_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_stalk_province$Province <- cld_stalk_province$Group
+cld_stalk_province <- as.data.frame.list(cld_stalk_province)
 
-# median values on boxplots
+#  values on boxplots geom_text
+
+detach("package:MASS", unload = TRUE)
 summary_stalk_province_bp <-
   summary_stalk %>% 
   group_by(Province) %>% 
-  summarise(w=median(percent_incidence_stalk), sd = mean_sd(percent_incidence_stalk)) %>% 
-  arrange(desc(w)) 
+  summarise(w=mean(percent_incidence_stalk), sd = mean_sd(percent_incidence_stalk)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_stalk_province, 
+                  by=c("Province"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(Province = Province.x)
+  
+summary_stalk_province_bp <- summary_stalk_province_bp %>% select(-c(Province.x, Province.y))
 
-summary_stalk_province_bp$province_cld <- 
-  as.data.frame.list(letters_province_stalk$Province)$Letters
 
-dunnTest(percent_incidence_stalk ~ Province, data = summary_stalk)
-
-attach(summary_stalk)
-province_stalk_df <- as.list.data.frame(dunn.test(percent_incidence_stalk, Province, list = TRUE))
-detach(summary_stalk)
-
+summary_stalk <- summary_stalk %>% left_join(summary_stalk_province_bp, by=c("Province"))
 
 
 summary_stalk %>%
   ggplot(aes(Province, percent_incidence_stalk)) + 
-  geom_boxplot() +
-  geom_text(data = summary_stalk_province_bp, aes(label = province_cld,
-                y = w + sd$ymax - 1 ), vjust = -0.5, color="red", size = 4) +
-  geom_text(data = summary_stalk_province_bp, aes(label = round(w, 2), y = sd$ymax), vjust = -5.5, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=Province), show.legend = FALSE) +
+  geom_text(data = summary_stalk_province_bp, aes(y = sd$ymax, label = Letter), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_stalk_province_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.5, alpha = 0.75, color = "darkblue") +
   labs(x = "Provinces", 
        y = "Percent Incidence Stalk Rot",
        title = "Provinces to Stalk Rot Incidence") + 
-  theme_classic()
-ggsave(path = "../province", filename = "Corn Stalk Rot Percent Incidence vs Province.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1") 
+ggsave(path = "../province", filename = "Stalk Rot Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
 # by Crop stage
-# median values on boxplots
-summary_stalk_corn_stage_bp <- 
+# kruskall-wallis test by corn stage
+library("MASS")
+attach(summary_stalk)
+kruskal_crop_stage_stalk<- kruskal.test(percent_incidence_stalk ~ factor(crop_stage), 
+                                        summary_stalk)
+DunnTest_crop_stage_stalk <- DunnTest(percent_incidence_stalk ~ crop_stage, summary_stalk)
+dunn_stalk_crop_stage_groups <- dunnTest(percent_incidence_stalk ~ factor(crop_stage),
+                                         method="bonferroni")
+dunn_stalk_crop_stage_groups <- dunn_stalk_crop_stage_groups$res
+cld_stalk_crop_stage <- cldList(comparison = dunn_stalk_crop_stage_groups$Comparison,
+                                p.value = dunn_stalk_crop_stage_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_stalk_crop_stage$crop_stage <- cld_stalk_crop_stage$Group
+cld_stalk_crop_stage <- as.data.frame.list(cld_stalk_crop_stage)
+
+#  values on boxplots geom_text
+summary_stalk_crop_stage_bp <-
   summary_stalk %>% 
   group_by(crop_stage) %>% 
-  summarise(w=median(percent_incidence_stalk), sd = mean_sd(percent_incidence_stalk)) %>% 
-  arrange(desc(w))
+  summarise(w=mean(percent_incidence_stalk), sd = mean_sd(percent_incidence_stalk)) %>% 
+  arrange(desc(w)) %>%
+  fuzzy_left_join(cld_stalk_crop_stage, 
+                  by=c("crop_stage"), 
+                  match_fun = list(function(x, y) stringdist(x, y) < 2))  %>%
+  mutate(crop_stage = crop_stage.x) 
 
-aov_stage_stalk <- aov(percent_incidence_stalk ~ crop_stage, data = summary_stalk)
-tukeyhsd_stage_stalk <- TukeyHSD(aov_stage_stalk)
-letters_stage_stalk <- multcompLetters4(aov_stage_stalk, tukeyhsd_stage_stalk)
-
-aov_stage_stalk %>% summary()
-
-summary_stalk_corn_stage_bp$stage_cld <- 
-  as.data.frame.list(letters_stage_stalk$crop_stage)$Letters
-
-dunnTest(percent_incidence_stalk ~ crop_stage, data = summary_stalk)
-
-attach(summary_stalk)
-stage_stalk_df <- as.list.data.frame(dunn.test(percent_incidence_stalk, crop_stage, list = TRUE))
-detach(summary_stalk)
+detach("package:MASS", unload = TRUE)
+summary_stalk_crop_stage_bp <- summary_stalk_crop_stage_bp %>% select(-c(crop_stage.x, crop_stage.y))
+summary_stalk <- summary_stalk %>% left_join(summary_stalk_crop_stage_bp, by=c("crop_stage")) %>% drop_na()
 
 
 summary_stalk %>%
   ggplot(aes(crop_stage, percent_incidence_stalk)) + 
-  geom_boxplot() +
-  geom_text(data = summary_stalk_corn_stage_bp, aes(label = stage_cld,
-                y = letters_height ), vjust = -3, color="red", size = 4) +
-  geom_text(data = summary_stalk_corn_stage_bp, aes(label = round(w, 2), y = median_height), vjust = -5.5, alpha = 0.75, color = "darkblue") +
-  scale_x_discrete(limits = crop_growth_stages, labels=stage_labels) +
+  geom_boxplot(aes(fill=`Crop Stage`), show.legend=FALSE) +
+  geom_text(data = summary_stalk_crop_stage_bp, aes(label = Letter, y = sd$ymax ), 
+            vjust = -1, hjust = -0.5, color="red", size = 4) +
+  geom_text(data = summary_stalk_crop_stage_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
+            vjust = -1, hjust = -0.1, alpha = 0.75, color = "darkblue") +
+  scale_x_discrete(limits = crop_growth_stages, labels = stage_labels) +
   labs(x = "Corn Growth Stages", 
        y = "Percent Incidence Stalk Rot",
-       title = "Corn Crop Growth Stages and Stalk Rot Incidence") + 
-  theme_classic()
-ggsave(path = "../stage", filename = "Stalk Rot Percent Incidence vs Crop Growth Stages.png", width=plot_width, height=plot_height, dpi=plot_dpi)
+       title = "Corn Crop Growth Stages and Stalk Rot Incidence",
+       caption = "Emergence NOT COUNTED") + 
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../stage", filename = "Stalk Rot Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
 detach("package:nortest", unload = TRUE)
-detach("package:MASS", unload = TRUE)
 detach("package:DescTools", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
