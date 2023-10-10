@@ -3439,7 +3439,6 @@ detach("package:correlation", unload = TRUE)
 ```
 ``` Diseases vs Weather Parameters with rstatix```
 
-
 ```Levene's tests on diseases```
 ```{r}
 levenes_p_val_fert_blsb <- levenes_fertilizer_blsb$`Pr(>F)`[1]
@@ -3572,6 +3571,151 @@ write.csv(levenes_disease_values, "../Levenes_Values_Diseases.csv")
 
 
 ```
+
+```Values on Anova or Kruskal-Wallis Tests on Diseases by Different Parameters```
+```{r}
+# BLSB
+p_val_blsb_fertilizer <- summary(aov_fert_blsb)[[1]][["Pr(>F)"]][[1]]
+stat_val_blsb_fertilizer <- summary(aov_fert_blsb)[[1]][["F value"]][[1]] # test statistic
+
+p_val_blsb_corntype <- ttest_corn_blsb$p.value
+stat_val_blsb_corntype <- ttest_corn_blsb$statistic
+
+p_val_blsb_province <- kruskal_province_blsb$p.value
+stat_val_blsb_province <- kruskal_province_blsb$statistic[[1]]
+
+p_val_blsb_cropstage <- kruskal_crop_stage_blsb$p.value
+stat_val_blsb_cropstage <- kruskal_crop_stage_blsb$statistic[[1]]
+
+# Common Rust
+p_val_rust_fertilizer <- summary(aov_fert_rust)[[1]][["Pr(>F)"]][[1]]
+stat_val_rust_fertilizer <- summary(aov_fert_rust)[[1]][["F value"]][[1]] # test statistic
+
+p_val_rust_corntype <- ttest_corn_rust$p.value
+stat_val_rust_corntype <- ttest_corn_rust$statistic
+
+p_val_rust_province <- kruskal_province_rust$p.value
+stat_val_rust_province <- kruskal_province_rust$statistic[[1]]
+
+p_val_rust_cropstage <- kruskal_crop_stage_rust$p.value
+stat_val_rust_cropstage <- kruskal_crop_stage_rust$statistic[[1]]
+
+
+# Leaf Spot
+p_val_leaf_fertilizer <- summary(aov_fert_leaf)[[1]][["Pr(>F)"]][[1]]
+stat_val_leaf_fertilizer <- summary(aov_fert_leaf)[[1]][["F value"]][[1]] # test statistic
+
+p_val_leaf_corntype <- ttest_corn_leaf$p.value
+stat_val_leaf_corntype <- ttest_corn_leaf$statistic
+
+p_val_leaf_province <- kruskal_province_leaf$p.value
+stat_val_leaf_province <- kruskal_province_leaf$statistic[[1]]
+
+p_val_leaf_cropstage <- kruskal_crop_stage_leaf$p.value
+stat_val_leaf_cropstage <- kruskal_crop_stage_leaf$statistic[[1]]
+
+
+# Southern Rust
+p_val_southrust_fertilizer <- summary(aov_fert_southrust)[[1]][["Pr(>F)"]][[1]]
+stat_val_southrust_fertilizer <- summary(aov_fert_southrust)[[1]][["F value"]][[1]] # test statistic
+
+p_val_southrust_corntype <- ttest_corn_southrust$p.value
+stat_val_southrust_corntype <- ttest_corn_southrust$statistic
+
+p_val_southrust_province <- kruskal_province_southrust$p.value
+stat_val_southrust_province <- kruskal_province_southrust$statistic[[1]]
+
+p_val_southrust_cropstage <- kruskal_crop_stage_southrust$p.value
+stat_val_southrust_cropstage <- kruskal_crop_stage_southrust$statistic[[1]]
+
+
+# Downy mildew
+p_val_mildew_fertilizer <- summary(aov_fert_mildew)[[1]][["Pr(>F)"]][[1]]
+stat_val_mildew_fertilizer <- summary(aov_fert_mildew)[[1]][["F value"]][[1]] # test statistic
+
+p_val_mildew_corntype <- ttest_corn_mildew$p.value
+stat_val_mildew_corntype <- ttest_corn_mildew$statistic
+
+p_val_mildew_province <- kruskal_province_mildew$p.value
+stat_val_mildew_province <- kruskal_province_mildew$statistic[[1]]
+
+p_val_mildew_cropstage <- kruskal_crop_stage_mildew$p.value
+stat_val_mildew_cropstage <- kruskal_crop_stage_mildew$statistic[[1]]
+
+
+# Leaf Blight
+p_val_blight_fertilizer <- summary(aov_fert_blight)[[1]][["Pr(>F)"]][[1]]
+stat_val_blight_fertilizer <- summary(aov_fert_blight)[[1]][["F value"]][[1]] # test statistic
+
+p_val_blight_corntype <- ttest_corn_blight$p.value
+stat_val_blight_corntype <- ttest_corn_blight$statistic
+
+p_val_blight_province <- kruskal_province_blight$p.value
+stat_val_blight_province <- kruskal_province_blight$statistic[[1]]
+
+p_val_blight_cropstage <- kruskal_crop_stage_blight$p.value
+stat_val_blight_cropstage <- kruskal_crop_stage_blight$statistic[[1]]
+
+
+# Brown Spot
+p_val_brown_fertilizer <- summary(aov_fert_brown)[[1]][["Pr(>F)"]][[1]]
+stat_val_brown_fertilizer <- summary(aov_fert_brown)[[1]][["F value"]][[1]] # test statistic
+
+p_val_brown_corntype <- ttest_corn_brown$p.value
+stat_val_brown_corntype <- ttest_corn_brown$statistic
+
+p_val_brown_province <- kruskal_province_brown$p.value
+stat_val_brown_province <- kruskal_province_brown$statistic[[1]]
+
+p_val_brown_cropstage <- kruskal_crop_stage_brown$p.value
+stat_val_brown_cropstage <- kruskal_crop_stage_brown$statistic[[1]]
+
+
+# Stalk Rot
+p_val_stalk_fertilizer <- summary(aov_fert_stalk)[[1]][["Pr(>F)"]][[1]]
+stat_val_stalk_fertilizer <- summary(aov_fert_stalk)[[1]][["F value"]][[1]] # test statistic
+
+p_val_stalk_corntype <- utest_corn_stalk$p.value[[1]]
+stat_val_stalk_corntype <- utest_corn_stalk$statistic[[1]]
+
+p_val_stalk_province <- kruskal_province_stalk$p.value
+stat_val_stalk_province <- kruskal_province_stalk$statistic[[1]]
+
+p_val_stalk_cropstage <- kruskal_crop_stage_stalk$p.value
+stat_val_stalk_cropstage <- kruskal_crop_stage_stalk$statistic[[1]]
+
+
+# anova or kruskal-wallis values
+diseases_test_values <-
+  tibble(
+    Diseases = c("BLSB", "Common Rust", "Leaf Spot", "Southern Rust", "Downy mildew", "Leaf Blight", "Brown Spot", "Stalk Rot"),
+    
+    P_Fertilizer = c(p_val_blsb_fertilizer, p_val_rust_fertilizer, p_val_leaf_fertilizer, p_val_southrust_fertilizer, p_val_mildew_fertilizer, p_val_blight_fertilizer, p_val_brown_fertilizer, p_val_stalk_fertilizer),
+    
+    Stat_Fertilizer = c(stat_val_blsb_fertilizer, stat_val_rust_fertilizer, stat_val_leaf_fertilizer, stat_val_southrust_fertilizer, stat_val_mildew_fertilizer, stat_val_blight_fertilizer, stat_val_brown_fertilizer, stat_val_stalk_fertilizer),
+    
+    
+    P_CornType = c(p_val_blsb_corntype, p_val_rust_corntype, p_val_leaf_corntype, p_val_southrust_corntype, p_val_mildew_corntype, p_val_blight_corntype, p_val_brown_corntype, p_val_stalk_corntype),
+    
+    Stat_CornType = c(stat_val_blsb_corntype, stat_val_rust_corntype, stat_val_leaf_corntype, stat_val_southrust_corntype, stat_val_mildew_corntype, stat_val_blight_corntype, stat_val_brown_corntype, stat_val_stalk_corntype),
+    
+    
+    P_Province = c(p_val_blsb_province, p_val_rust_province, p_val_leaf_province, p_val_southrust_province, p_val_mildew_province, p_val_blight_province, p_val_brown_province, p_val_stalk_province),
+    
+    Stat_Province = c(stat_val_blsb_province, stat_val_rust_province, stat_val_leaf_province, stat_val_southrust_province, stat_val_mildew_province, stat_val_blight_province, stat_val_brown_province, stat_val_stalk_province),
+    
+    
+    P_CropStage = c(p_val_blsb_cropstage, p_val_rust_cropstage, p_val_leaf_cropstage, p_val_southrust_cropstage, p_val_mildew_cropstage, p_val_blight_cropstage, p_val_brown_cropstage, p_val_stalk_cropstage),
+    
+    Stat_CropStage = c(stat_val_blsb_cropstage, stat_val_rust_cropstage, stat_val_leaf_cropstage, stat_val_southrust_cropstage, stat_val_mildew_cropstage, stat_val_blight_cropstage, stat_val_brown_cropstage, stat_val_stalk_cropstage),
+  )
+
+
+write_csv(diseases_test_values, "../Anova_KruskalWallis_Test_Values_on_Diseases.csv")
+
+```
+
+
 
 ```{r}
 library("rstatix")

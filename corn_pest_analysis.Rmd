@@ -1666,8 +1666,8 @@ summary_hopper %>%
   geom_text(data = summary_hopper_province_bp, aes(label = round(w, 2), y = sd$ymax - 5), 
             vjust = -1, hjust = -0.5, alpha = 0.75, color = "darkblue") +
   labs(x = "Provinces", 
-       y = "Percent Incidence Earworm",
-       title = "Provinces to Earworm Incidence") + 
+       y = "Percent Incidence Hopper",
+       title = "Provinces to Hopper Incidence") + 
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
@@ -1716,8 +1716,8 @@ summary_hopper %>%
             vjust = -1, hjust = -0.1, alpha = 0.75, color = "darkblue") +
   scale_x_discrete(limits = crop_growth_stages, labels = stage_labels) +
   labs(x = "Corn Growth Stages", 
-       y = "Percent Incidence Earworm",
-       title = "Corn Crop Growth Stages and Earworm Incidence",
+       y = "Percent Incidence Hopper",
+       title = "Corn Crop Growth Stages and Hopper Incidence",
        caption = "Emergence NOT COUNTED") + 
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
@@ -3075,7 +3075,7 @@ levenes_crop_stage_faw <- leveneTest(percent_incidence_faw ~ crop_stage, summary
 # AnOVa
 aov_fert_faw <- aov(percent_incidence_faw ~ order_treat, summary_faw)
 aov_corn_faw <- aov(percent_incidence_faw ~ factor_corn, summary_faw)
-aov_crop_stage <- aov(percent_incidence_faw ~ crop_stage, summary_faw)
+aov_crop_stage_faw <- aov(percent_incidence_faw ~ crop_stage, summary_faw)
 
 ttest_corn_faw <- t.test(percent_incidence_faw ~ factor_corn, summary_faw)
 
@@ -3085,7 +3085,7 @@ ttest_corn_faw <- t.test(percent_incidence_faw ~ factor_corn, summary_faw)
 # Two way AnOVa
 twoway_fert_corn_faw <- aov(percent_incidence_faw ~ order_treat + factor_corn, summary_faw) 
 tukey_fert_corn_faw <- TukeyHSD(twoway_fert_corn_faw)
-tukey_stage_faw <- TukeyHSD(aov_crop_stage)
+tukey_stage_faw <- TukeyHSD(aov_crop_stage_faw)
 
 # AnOVa with Interaction
 aov_fert_corn_inter_faw <- aov(percent_incidence_faw ~ order_treat*factor_corn, summary_faw)
@@ -3316,7 +3316,7 @@ ggsave(path = "../province", filename = "FAW Percent Incidence vs Province.png",
 
 # by Crop stage
 # anova by corn stage
-tukey_crop_stage_faw_letters <- multcompLetters4(aov_crop_stage, tukey_stage_faw)
+tukey_crop_stage_faw_letters <- multcompLetters4(aov_crop_stage_faw, tukey_stage_faw)
 
 summary_faw_crop_stage_bp <-
   summary_faw %>% 
@@ -3717,6 +3717,151 @@ write.csv(levenes_pest_values, "../Levenes_Values_Pests.csv")
 
 
 ```
+
+```Values on Anova or Kruskal-Wallis Tests on Pests by Different Parameters```
+```{r}
+
+# anova or kruskal-wallis values
+# Borer
+p_val_borer_fertilizer <- summary(aov_fert_borer)[[1]][["Pr(>F)"]][[1]]
+stat_val_borer_fertilizer <- summary(aov_fert_borer)[[1]][["F value"]][[1]] # test statistic
+
+p_val_borer_corntype <- utest_corn_borer$p.value
+stat_val_borer_corntype <- utest_corn_borer$statistic
+
+p_val_borer_province <- kruskal_province_borer$p.value
+stat_val_borer_province <- kruskal_province_borer$statistic[[1]]
+
+p_val_borer_cropstage <- kruskal_stage_borer$p.value
+stat_val_borer_cropstage <- kruskal_stage_borer$statistic[[1]]
+
+
+# Semi-looper
+p_val_semilooper_fertilizer <- summary(aov_fert_semilooper)[[1]][["Pr(>F)"]][[1]]
+stat_val_semilooper_fertilizer <- summary(aov_fert_semilooper)[[1]][["F value"]][[1]] # test statistic
+
+p_val_semilooper_corntype <- ttest_corn_semilooper$p.value[[1]]
+stat_val_semilooper_corntype <- ttest_corn_semilooper$statistic[[1]]
+
+p_val_semilooper_province <- summary(aov_province_semilooper)[[1]][["Pr(>F)"]][[1]]
+stat_val_semilooper_province <- summary(aov_province_semilooper)[[1]][["F value"]][[1]]
+
+p_val_semilooper_cropstage <- summary(aov_stage_semilooper)[[1]][["Pr(>F)"]][[1]]
+stat_val_semilooper_cropstage <- summary(aov_stage_semilooper)[[1]][["Pr(>F)"]][[1]]
+
+
+# Earworm
+p_val_earworm_fertilizer <- summary(aov_fert_earworm)[[1]][["Pr(>F)"]][[1]]
+stat_val_earworm_fertilizer <- summary(aov_fert_earworm)[[1]][["F value"]][[1]] # test statistic
+
+p_val_earworm_corntype <- ttest_corn_earworm$p.value[[1]]
+stat_val_earworm_corntype <- ttest_corn_earworm$statistic[[1]]
+
+p_val_earworm_province <- kruskal_province_earworm$p.value
+stat_val_earworm_province <- kruskal_province_earworm$statistic[[1]]
+
+p_val_earworm_cropstage <- kruskal_crop_stage_earworm$p.value
+stat_val_earworm_cropstage <- kruskal_crop_stage_earworm$statistic[[1]]
+
+
+# Hopper
+p_val_hopper_fertilizer <- summary(aov_fert_hopper)[[1]][["Pr(>F)"]][[1]]
+stat_val_hopper_fertilizer <- summary(aov_fert_hopper)[[1]][["F value"]][[1]] # test statistic
+
+p_val_hopper_corntype <- ttest_corn_hopper$p.value[[1]]
+stat_val_hopper_corntype <- ttest_corn_hopper$statistic[[1]]
+
+p_val_hopper_province <- kruskal_province_hopper$p.value
+stat_val_hopper_province <- kruskal_province_hopper$statistic[[1]]
+
+p_val_hopper_cropstage <- kruskal_crop_stage_hopper$p.value
+stat_val_hopper_cropstage <- kruskal_crop_stage_hopper$statistic[[1]]
+
+
+# Cutworm
+p_val_cutworm_fertilizer <- summary(aov_fert_cutworm)[[1]][["Pr(>F)"]][[1]]
+stat_val_cutworm_fertilizer <- summary(aov_fert_cutworm)[[1]][["F value"]][[1]] # test statistic
+
+p_val_cutworm_corntype <- ttest_corn_cutworm$p.value[[1]]
+stat_val_cutworm_corntype <- ttest_corn_cutworm$statistic[[1]]
+
+p_val_cutworm_province <- kruskal_province_cutworm$p.value
+stat_val_cutworm_province <- kruskal_province_cutworm$statistic[[1]]
+
+p_val_cutworm_cropstage <- summary(aov_stage_cutworm)[[1]][["Pr(>F)"]][[1]]
+stat_val_cutworm_cropstage <- summary(aov_stage_cutworm)[[1]][["F value"]][[1]]
+
+
+# Armyworm
+p_val_armyworm_fertilizer <- summary(aov_fert_armyworm)[[1]][["Pr(>F)"]][[1]]
+stat_val_armyworm_fertilizer <- summary(aov_fert_armyworm)[[1]][["F value"]][[1]] # test statistic
+
+p_val_armyworm_corntype <- utest_corn_armyworm$p.value
+stat_val_armyworm_corntype <- utest_corn_armyworm$statistic
+
+p_val_armyworm_province <- kruskal_province_armyworm$p.value
+stat_val_armyworm_province <- kruskal_province_armyworm$statistic[[1]]
+
+p_val_armyworm_cropstage <- kruskal_crop_stage_armyworm$p.value
+stat_val_armyworm_cropstage <- kruskal_crop_stage_armyworm$statistic[[1]]
+
+
+# Aphids
+p_val_aphids_fertilizer <- summary(aov_fert_aphids)[[1]][["Pr(>F)"]][[1]]
+stat_val_aphids_fertilizer <- summary(aov_fert_aphids)[[1]][["F value"]][[1]] # test statistic
+
+p_val_aphids_corntype <- utest_corn_aphids$p.value
+stat_val_aphids_corntype <- utest_corn_aphids$statistic
+
+p_val_aphids_province <- kruskal_province_aphids$p.value
+stat_val_aphids_province <- kruskal_province_aphids$statistic[[1]]
+
+p_val_aphids_cropstage <- kruskal_crop_stage_aphids$p.value
+stat_val_aphids_cropstage <- kruskal_crop_stage_aphids$statistic[[1]]
+
+# FAW
+p_val_faw_fertilizer <- summary(aov_fert_faw)[[1]][["Pr(>F)"]][[1]]
+stat_val_faw_fertilizer <- summary(aov_fert_faw)[[1]][["F value"]][[1]] # test statistic
+
+p_val_faw_corntype <- ttest_corn_faw$p.value[[1]]
+stat_val_faw_corntype <- ttest_corn_faw$statistic[[1]]
+
+p_val_faw_province <- kruskal_province_faw$p.value
+stat_val_faw_province <- kruskal_province_faw$statistic[[1]]
+
+p_val_faw_cropstage <- summary(aov_crop_stage_faw)[[1]][["Pr(>F)"]][[1]]
+stat_val_faw_cropstage <- summary(aov_crop_stage_faw)[[1]][["F value"]][[1]]
+
+
+# anova or kruskal-wallis values
+pests_test_values <-
+  tibble(
+    Pests = c("Borer", "Semi-looper", "Earworm", "Hopper", "Cutworm", "Armyworm", "Aphids", "FAW"),
+    
+    P_Fertilizer = c(p_val_borer_fertilizer, p_val_semilooper_fertilizer, p_val_earworm_fertilizer, p_val_hopper_fertilizer, p_val_cutworm_fertilizer, p_val_armyworm_fertilizer, p_val_aphids_fertilizer, p_val_faw_fertilizer),
+    
+    Stat_Fertilizer = c(stat_val_borer_fertilizer, stat_val_semilooper_fertilizer, stat_val_earworm_fertilizer, stat_val_hopper_fertilizer, stat_val_cutworm_fertilizer, stat_val_armyworm_fertilizer, stat_val_aphids_fertilizer, stat_val_faw_fertilizer),
+    
+    
+    P_CornType = c(p_val_borer_corntype, p_val_semilooper_corntype, p_val_earworm_corntype, p_val_hopper_corntype, p_val_cutworm_corntype, p_val_armyworm_corntype, p_val_aphids_corntype, p_val_faw_corntype),
+    
+    Stat_CornType = c(stat_val_borer_corntype, stat_val_semilooper_corntype, stat_val_earworm_corntype, stat_val_hopper_corntype, stat_val_cutworm_corntype, stat_val_armyworm_corntype, stat_val_aphids_corntype, stat_val_faw_corntype),
+    
+    
+    P_Province = c(p_val_borer_province, p_val_semilooper_province, p_val_earworm_province, p_val_hopper_province, p_val_cutworm_province, p_val_armyworm_province, p_val_aphids_province, p_val_faw_province),
+    
+    Stat_Province = c(stat_val_borer_province, stat_val_semilooper_province, stat_val_earworm_province, stat_val_hopper_province, stat_val_cutworm_province, stat_val_armyworm_province, stat_val_aphids_province, stat_val_faw_province),
+    
+    
+    P_CropStage = c(p_val_borer_cropstage, p_val_semilooper_cropstage, p_val_earworm_cropstage, p_val_hopper_cropstage, p_val_cutworm_cropstage, p_val_armyworm_cropstage, p_val_aphids_cropstage, p_val_faw_cropstage),
+    
+    Stat_CropStage = c(stat_val_borer_cropstage, stat_val_semilooper_cropstage, stat_val_earworm_cropstage, stat_val_hopper_cropstage, stat_val_cutworm_cropstage, stat_val_armyworm_cropstage, stat_val_aphids_cropstage, stat_val_faw_cropstage),
+  )
+
+
+write_csv(pests_test_values, "../Anova_KruskalWallis_Test_Values_on_Pests.csv")
+```
+
 
 ```Pest correlation with rstatix package```
 ```{r}
