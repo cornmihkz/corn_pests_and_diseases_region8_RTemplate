@@ -16,7 +16,6 @@ library("multcompView")
 library("car")
 library("rstatix")
 library("FSA")
-library("stats")
 library("rcompanion")
 library("dunn.test")
 library("fuzzyjoin")
@@ -356,20 +355,32 @@ borer_joined_ev %>%
   theme_classic()
 ggsave(path = "../pests", filename = "Corn Borer vs Rain.png", dpi=plot_dpi)
 
+
+# by corn type Mann-Whitney U test
+utest_corn_borer <- wilcox.test(percent_incidence_borer ~ factor_corn, summary_borer)
+
+DunnTest_corn_type_borer <- DunnTest(percent_incidence_borer ~ factor_corn, summary_borer)
+dunn_borer_corn_type_groups <- dunnTest(percent_incidence_borer ~ factor_corn, summary_borer,
+                                         method="none")
+dunn_borer_corn_type_groups <- dunn_borer_corn_type_groups$res
+cld_borer_corn_type <- cldList(comparison = dunn_borer_corn_type_groups$Comparison,
+                                p.value = dunn_borer_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_borer_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_borer_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_borer_corntype_bp <-
   summary_borer %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_borer), sd = mean_sd(percent_incidence_borer)) %>% 
-  arrange(desc(w))
-
-summary_borer_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_borer_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>% 
+  left_join(cld_borer_corn_type, by=c("factor_corn"))
+  
 
 summary_borer %>%
   ggplot(aes(factor_corn, percent_incidence_borer)) + 
   geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
-  geom_text(data = summary_borer_corntype_bp, aes(label = treatment_cld,
+  geom_text(data = summary_borer_corntype_bp, aes(label = Letter,
                 y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_borer_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
@@ -381,6 +392,7 @@ summary_borer %>%
 ggsave(path = "../pests", filename = "Corn Borer Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
 
+# by fertilizer type
 summary_borer_fert_bp <-
   summary_borer %>% 
   group_by(order_treat) %>% 
@@ -627,7 +639,6 @@ levenes_stage_semilooper <- leveneTest(percent_incidence_semilooper ~ `Crop Stag
 # AnOVa
 aov_fert_semilooper <- aov(percent_incidence_semilooper ~ order_treat, summary_semilooper)
 aov_corn_semilooper <- aov(percent_incidence_semilooper ~ factor_corn, summary_semilooper)
-ttest_corn_semilooper <- t.test(percent_incidence_semilooper ~ factor_corn, summary_semilooper)
 
 # Two way AnOVa
 twoway_fert_corn_semilooper <- aov(percent_incidence_semilooper ~ order_treat + factor_corn, summary_semilooper) 
@@ -780,20 +791,31 @@ semilooper_joined_ev %>%
   theme_classic()
 ggsave(path = "../pests", filename = "Semi-looper vs Rain.png", dpi=plot_dpi)
 
+
+# by corn type T-test
+ttest_corn_semilooper <- t.test(percent_incidence_semilooper ~ factor_corn, summary_semilooper)
+
+DunnTest_corn_type_semilooper <- DunnTest(percent_incidence_semilooper ~ factor_corn, summary_semilooper)
+dunn_semilooper_corn_type_groups <- dunnTest(percent_incidence_semilooper ~ factor_corn, summary_semilooper,
+                                         method="none")
+dunn_semilooper_corn_type_groups <- dunn_semilooper_corn_type_groups$res
+cld_semilooper_corn_type <- cldList(comparison = dunn_semilooper_corn_type_groups$Comparison,
+                                p.value = dunn_semilooper_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_semilooper_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_semilooper_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_semilooper_corntype_bp <-
   summary_semilooper %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_semilooper), sd = mean_sd(percent_incidence_semilooper)) %>% 
-  arrange(desc(w))
-
-summary_semilooper_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_semilooper_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>%
+  left_join(cld_semilooper_corn_type, by=c("factor_corn"))
 
 summary_semilooper %>%
   ggplot(aes(factor_corn, percent_incidence_semilooper)) + 
   geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
-  geom_text(data = summary_semilooper_corntype_bp, aes(label = treatment_cld,
+  geom_text(data = summary_semilooper_corntype_bp, aes(label = Letter,
                 y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_semilooper_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
@@ -804,7 +826,7 @@ summary_semilooper %>%
   scale_fill_brewer(palette = "Pastel1")
 ggsave(path = "../pests", filename = "Semi-looper Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
-
+# by fertilizer treatment
 summary_semilooper_fert_bp <-
   summary_semilooper %>% 
   group_by(order_treat) %>% 
@@ -1157,20 +1179,32 @@ earworm_joined_ev %>%
   theme_classic()
 ggsave(path = "../pests", filename = "Corn Earworm vs Rain.png", dpi=plot_dpi)
 
+
+# by corn type T-test
+ttest_corn_earworm <- t.test(percent_incidence_earworm ~ factor_corn, summary_earworm)
+
+DunnTest_corn_type_earworm <- DunnTest(percent_incidence_earworm ~ factor_corn, summary_earworm)
+dunn_earworm_corn_type_groups <- dunnTest(percent_incidence_earworm ~ factor_corn, summary_earworm,
+                                         method="none")
+dunn_earworm_corn_type_groups <- dunn_earworm_corn_type_groups$res
+cld_earworm_corn_type <- cldList(comparison = dunn_earworm_corn_type_groups$Comparison,
+                                p.value = dunn_earworm_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_earworm_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_earworm_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_earworm_corntype_bp <-
   summary_earworm %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_earworm), sd = mean_sd(percent_incidence_earworm)) %>% 
-  arrange(desc(w))
-
-summary_earworm_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_earworm_letters$factor_corn)$Letters
+  arrange(desc(w)) %>%
+  left_join(cld_earworm_corn_type, by=c("factor_corn"))
 
 
 summary_earworm %>%
   ggplot(aes(factor_corn, percent_incidence_earworm)) + 
   geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
-  geom_text(data = summary_earworm_corntype_bp, aes(label = treatment_cld,
+  geom_text(data = summary_earworm_corntype_bp, aes(label = Letter,
                 y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_earworm_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
@@ -1183,7 +1217,7 @@ ggsave(path = "../pests", filename = "Corn Earworm Percent Incidence vs Corn Typ
 
 
 
-
+# by fertilizer treatment rate
 summary_earworm_fert_bp <-
   summary_earworm %>% 
   group_by(order_treat) %>% 
@@ -1574,25 +1608,35 @@ hopper_joined_ev %>%
   theme_classic()
 ggsave(path = "../pests", filename = "Corn Plant Hopper vs Rain.png", dpi=plot_dpi)
 
+# by corn type T-test
+ttest_corn_hopper <- t.test(percent_incidence_hopper ~ factor_corn, summary_hopper)
+
+DunnTest_corn_type_hopper <- DunnTest(percent_incidence_hopper ~ factor_corn, summary_hopper)
+dunn_hopper_corn_type_groups <- dunnTest(percent_incidence_hopper ~ factor_corn, summary_hopper,
+                                         method="none")
+dunn_hopper_corn_type_groups <- dunn_hopper_corn_type_groups$res
+cld_hopper_corn_type <- cldList(comparison = dunn_hopper_corn_type_groups$Comparison,
+                                p.value = dunn_hopper_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_hopper_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_hopper_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_hopper_corntype_bp <-
   summary_hopper %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_hopper), sd = mean_sd(percent_incidence_hopper)) %>% 
-  arrange(desc(w))
-
-summary_hopper_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_hopper_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>%
+  left_join(cld_hopper_corn_type, by=c("factor_corn"))
 
 summary_hopper %>%
   ggplot(aes(factor_corn, percent_incidence_hopper)) + 
   geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
-  geom_text(data = summary_hopper_corntype_bp, aes(label = treatment_cld,
+  geom_text(data = summary_hopper_corntype_bp, aes(label = Letter,
                 y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_hopper_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
-       y = "Percent Incidence Earworm",
-       title = "Effect of Corn Type to Earworm Incidence") +
+       y = "Percent Incidence Hopper",
+       title = "Effect of Corn Type to Hopper Incidence") +
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1")
@@ -1600,7 +1644,7 @@ ggsave(path = "../pests", filename = "Corn Plant Hopper Percent Incidence vs Cor
 
 
 
-
+# by fertilizer treatment rate
 summary_hopper_fert_bp <-
   summary_hopper %>% 
   group_by(order_treat) %>% 
@@ -1861,6 +1905,7 @@ tukey_fert_corn_inter_cutworm <- TukeyHSD(aov_fert_corn_inter_cutworm)
 
 aov_fert_cutworm %>% summary()
 aov_corn_cutworm %>% summary()
+
 ttest_corn_cutworm
 twoway_fert_corn_cutworm %>% summary()
 print(tukey_fert_corn_cutworm)
@@ -1992,20 +2037,31 @@ cutworm_joined_ev %>%
   theme_classic()
 ggsave(path = "../pests", filename = "Cutworm vs Rain.png", dpi=plot_dpi)
 
+# by corn type T-test
+ttest_corn_cutworm <- t.test(percent_incidence_cutworm ~ factor_corn, summary_cutworm)
+
+DunnTest_corn_type_cutworm <- DunnTest(percent_incidence_cutworm ~ factor_corn, summary_cutworm)
+dunn_cutworm_corn_type_groups <- dunnTest(percent_incidence_cutworm ~ factor_corn, summary_cutworm,
+                                         method="none")
+dunn_cutworm_corn_type_groups <- dunn_cutworm_corn_type_groups$res
+cld_cutworm_corn_type <- cldList(comparison = dunn_cutworm_corn_type_groups$Comparison,
+                                p.value = dunn_cutworm_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_cutworm_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_cutworm_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_cutworm_corntype_bp <-
   summary_cutworm %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_cutworm), sd = mean_sd(percent_incidence_cutworm)) %>% 
-  arrange(desc(w))
-
-summary_cutworm_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_cutworm_letters$factor_corn)$Letters
+  arrange(desc(w)) %>%
+  left_join(cld_cutworm_corn_type, by=c("factor_corn"))
 
 
 summary_cutworm %>%
   ggplot(aes(factor_corn, percent_incidence_cutworm)) + 
   geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
-  geom_text(data = summary_cutworm_corntype_bp, aes(label = treatment_cld,
+  geom_text(data = summary_cutworm_corntype_bp, aes(label = Letter,
                 y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
   geom_text(data = summary_cutworm_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
@@ -2017,7 +2073,7 @@ summary_cutworm %>%
 ggsave(path = "../pests", filename = "Cutworm Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
 
-# by fertilizer rate
+# by fertilizer treatment rate
 summary_cutworm_fert_bp <-
   summary_cutworm %>% 
   group_by(order_treat) %>% 
@@ -2093,6 +2149,7 @@ ggsave(path = "../province", filename = "Cutworm Percent Incidence vs Province.p
 
 
 # by Crop stage
+aov_stage_cutworm %>% summary()
 tukey_crop_stage_cutworm_letters <- multcompLetters4(aov_stage_cutworm, tukey_stage_cutworm)
 
 summary_cutworm_crop_stage_bp <-
@@ -2396,29 +2453,43 @@ armyworm_joined_ev %>%
 ggsave(path = "../pests", filename = "Armyworm vs Rain.png")
 
 
+# by corn type Mann-Whitney U test
+utest_corn_armyworm <- wilcox.test(percent_incidence_armyworm ~ factor_corn, summary_armyworm)
+
+DunnTest_corn_type_armyworm <- DunnTest(percent_incidence_armyworm ~ factor_corn, summary_armyworm)
+dunn_armyworm_corn_type_groups <- dunnTest(percent_incidence_armyworm ~ factor_corn, summary_armyworm,
+                                         method="none")
+dunn_armyworm_corn_type_groups <- dunn_armyworm_corn_type_groups$res
+cld_armyworm_corn_type <- cldList(comparison = dunn_armyworm_corn_type_groups$Comparison,
+                                p.value = dunn_armyworm_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_armyworm_corn_type$factor_corn <- cld_armyworm_corn_type$Group
+cld_armyworm_corn_type <- as.data.frame.list(cld_armyworm_corn_type)
+
 summary_armyworm_corntype_bp <-
   summary_armyworm %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_armyworm), sd = mean_sd(percent_incidence_armyworm)) %>% 
-  arrange(desc(w))
-
-summary_armyworm_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_armyworm_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>% 
+  left_join(cld_armyworm_corn_type, by=c("factor_corn"))
 
 summary_armyworm %>%
   ggplot(aes(factor_corn, percent_incidence_armyworm)) + 
-  geom_boxplot() +
-  geom_text(data = summary_armyworm_corntype_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_armyworm_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.8, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
+  geom_text(data = summary_armyworm_corntype_bp, aes(label = Letter,
+                y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
+  geom_text(data = summary_armyworm_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
        y = "Percent Incidence Armyworm",
-       title = "Effect of Corn Type on Armyworm Incidence") +
-  theme_classic()
+       title = "Effect of Corn Type to Armyworm Incidence") +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
 ggsave(path = "../pests", filename = "Armyworm Percent Incidence vs Corn Type.png")
 
 
+
+# by fertilizer treatment rate
 summary_armyworm_fert_bp <-
   summary_armyworm %>% 
   group_by(order_treat) %>% 
@@ -2805,29 +2876,43 @@ aphids_joined_ev %>%
   theme_classic()
 ggsave(path = "../pests", filename = "Aphids vs Rain.png")
 
+
+# by corn type Mann-Whitney U test
+utest_corn_aphids <- wilcox.test(percent_incidence_aphids ~ factor_corn, summary_aphids)
+
+DunnTest_corn_type_aphids <- DunnTest(percent_incidence_aphids ~ factor_corn, summary_aphids)
+dunn_aphids_corn_type_groups <- dunnTest(percent_incidence_aphids ~ factor_corn, summary_aphids,
+                                         method="none")
+dunn_aphids_corn_type_groups <- dunn_aphids_corn_type_groups$res
+cld_aphids_corn_type <- cldList(comparison = dunn_aphids_corn_type_groups$Comparison,
+                                p.value = dunn_aphids_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_aphids_corn_type$factor_corn <- cld_aphids_corn_type$Group
+cld_aphids_corn_type <- as.data.frame.list(cld_aphids_corn_type)
+
 summary_aphids_corntype_bp <-
   summary_aphids %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_aphids), sd = mean_sd(percent_incidence_aphids)) %>% 
-  arrange(desc(w))
-
-summary_aphids_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_aphids_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>% 
+  left_join(cld_aphids_corn_type, by=c("factor_corn"))
 
 summary_aphids %>%
   ggplot(aes(factor_corn, percent_incidence_aphids)) + 
-  geom_boxplot() +
-  geom_text(data = summary_aphids_corntype_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_aphids_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.8, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
+  geom_text(data = summary_aphids_corntype_bp, aes(label = Letter,
+                y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
+  geom_text(data = summary_aphids_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
        y = "Percent Incidence Aphids",
-       title = "Effect of Corn Type on Aphids Incidence") +
-  theme_classic()
+       title = "Effect of Corn Type to Aphids Incidence") +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
 ggsave(path = "../pests", filename = "Aphids Percent Incidence vs Corn Type.png")
 
 
+# by fretilizer treatment rate
 summary_aphids_fert_bp <-
   summary_aphids %>% 
   group_by(order_treat) %>% 
@@ -3219,28 +3304,42 @@ faw_joined_ev %>%
   theme_classic()
 ggsave(path = "../pests", filename = "FAW vs Rain.png")
 
+# by corn type T-test
+ttest_corn_faw <- t.test(percent_incidence_faw ~ factor_corn, summary_faw)
+
+DunnTest_corn_type_faw <- DunnTest(percent_incidence_faw ~ factor_corn, summary_faw)
+dunn_faw_corn_type_groups <- dunnTest(percent_incidence_faw ~ factor_corn, summary_faw,
+                                         method="none")
+dunn_faw_corn_type_groups <- dunn_faw_corn_type_groups$res
+cld_faw_corn_type <- cldList(comparison = dunn_faw_corn_type_groups$Comparison,
+                                p.value = dunn_faw_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_faw_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_faw_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_faw_corntype_bp <-
   summary_faw %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_faw), sd = mean_sd(percent_incidence_faw)) %>% 
-  arrange(desc(w))
-
-summary_faw_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_faw_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>%
+  left_join(cld_faw_corn_type, by=c("factor_corn"))
 
 summary_faw %>%
   ggplot(aes(factor_corn, percent_incidence_faw)) + 
-  geom_boxplot() +
-  geom_text(data = summary_faw_corntype_bp, aes(label = treatment_cld,
-                y = w + sd$y), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_faw_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.8, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
+  geom_text(data = summary_faw_corntype_bp, aes(label = Letter,
+                y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
+  geom_text(data = summary_faw_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
        y = "Percent Incidence FAW",
-       title = "Effect of Corn Type on FAW Incidence") +
-  theme_classic()
-ggsave(path = "../pests", filename = "FAW Percent Incidence vs Corn Type.png")
+       title = "Effect of Corn Type to FAW Incidence") +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../pests", filename = "FAW Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
+
+# by fertilizer treatment rate
 
 summary_faw_fert_bp <-
   summary_faw %>% 
@@ -3694,7 +3793,7 @@ levenes_f_val_crop_stage_cutworm <- levenes_stage_cutworm$`F value`[1]
 
 levenes_pest_values <-
   data.frame(
-    Pest = c("Plant Hopper", "Semilooper", "Corn Borer","FAW", "Aphids", "Earworm", "Armyworm", "Cutworm"),
+    Pests = c("Plant Hopper", "Semilooper", "Corn Borer","FAW", "Aphids", "Earworm", "Armyworm", "Cutworm"),
     `Fertilizer F-value` = c(levenes_f_val_fert_hopper, levenes_f_val_fert_semilooper, levenes_f_val_fert_borer, levenes_f_val_fert_faw, levenes_f_val_fert_aphids, levenes_f_val_fert_earworm, levenes_f_val_fert_armyworm, levenes_f_val_fert_cutworm),
     
     `Fertilizer p-value` = c(levenes_p_val_fert_hopper, levenes_p_val_fert_semilooper, levenes_p_val_fert_borer, levenes_p_val_fert_faw, levenes_p_val_fert_aphids, levenes_p_val_fert_earworm, levenes_p_val_fert_armyworm, levenes_p_val_fert_cutworm),
@@ -3747,7 +3846,7 @@ p_val_semilooper_province <- summary(aov_province_semilooper)[[1]][["Pr(>F)"]][[
 stat_val_semilooper_province <- summary(aov_province_semilooper)[[1]][["F value"]][[1]]
 
 p_val_semilooper_cropstage <- summary(aov_stage_semilooper)[[1]][["Pr(>F)"]][[1]]
-stat_val_semilooper_cropstage <- summary(aov_stage_semilooper)[[1]][["Pr(>F)"]][[1]]
+stat_val_semilooper_cropstage <- summary(aov_stage_semilooper)[[1]][["F value"]][[1]]
 
 
 # Earworm
@@ -3836,7 +3935,7 @@ stat_val_faw_cropstage <- summary(aov_crop_stage_faw)[[1]][["F value"]][[1]]
 # anova or kruskal-wallis values
 pests_test_values <-
   tibble(
-    Pests = c("Borer", "Semi-looper", "Earworm", "Hopper", "Cutworm", "Armyworm", "Aphids", "FAW"),
+    Pests = c("Corn Borer", "Semilooper", "Earworm", "Plant Hopper", "Cutworm", "Armyworm", "Aphids", "FAW"),
     
     P_Fertilizer = c(p_val_borer_fertilizer, p_val_semilooper_fertilizer, p_val_earworm_fertilizer, p_val_hopper_fertilizer, p_val_cutworm_fertilizer, p_val_armyworm_fertilizer, p_val_aphids_fertilizer, p_val_faw_fertilizer),
     
@@ -3860,6 +3959,9 @@ pests_test_values <-
 
 
 write_csv(pests_test_values, "../Anova_KruskalWallis_Test_Values_on_Pests.csv")
+
+lakw <- levenes_pest_values %>% left_join(pests_test_values, by = c("Pests"))
+write.csv(lakw, "../lakw.csv")
 ```
 
 
