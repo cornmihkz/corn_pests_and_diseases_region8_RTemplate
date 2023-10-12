@@ -292,29 +292,40 @@ blsb_joined_ev %>%
   theme_classic()
 ggsave(path = "../diseases", filename = "BLSB vs Rain.png")
 
+# by corn type T-test
+ttest_corn_blsb
+DunnTest_corn_type_blsb <- DunnTest(percent_incidence_blsb ~ factor_corn, summary_blsb)
+dunn_blsb_corn_type_groups <- dunnTest(percent_incidence_blsb ~ factor_corn, summary_blsb,
+                                         method="none")
+dunn_blsb_corn_type_groups <- dunn_blsb_corn_type_groups$res
+cld_blsb_corn_type <- cldList(comparison = dunn_blsb_corn_type_groups$Comparison,
+                                p.value = dunn_blsb_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_blsb_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_blsb_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_blsb_corntype_bp <-
   summary_blsb %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_blsb), sd = mean_sd(percent_incidence_blsb)) %>% 
-  arrange(desc(w))
-
-summary_blsb_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_blsb_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>%
+  left_join(cld_blsb_corn_type, by=c("factor_corn"))
 
 summary_blsb %>%
   ggplot(aes(factor_corn, percent_incidence_blsb)) + 
-  geom_boxplot() +
-  geom_text(data = summary_blsb_corntype_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_blsb_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = -1.82, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
+  geom_text(data = summary_blsb_corntype_bp, aes(label = Letter,
+                y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
+  geom_text(data = summary_blsb_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
        y = "Percent Incidence BLSB",
-       title = "Effect of Corn Type on BLSB Incidence") +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Percent BLSB vs Corn Type.png")
+       title = "Effect of Corn Type to BLSB Incidence") +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_corn_type", filename = "BLSB Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
-
+# by fertilizer treatment rate
 summary_blsb_fert_bp <-
   summary_blsb %>% 
   group_by(order_treat) %>% 
@@ -329,12 +340,14 @@ summary_blsb %>%
   geom_boxplot() +
   geom_text(data = summary_blsb_fert_bp, aes(label = treatment_cld,
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_blsb_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -1.2, alpha = 0.75, color = "darkblue") +
+  geom_text(data = summary_blsb_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence BLSB",
        title = "Effect of Fertilizer Treatment Rate on BLSB Incidence") + 
-  theme_classic()
-ggsave(path = "../diseases", filename = "Percent BLSB vs Fertilizer Treatment.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_fertilizer_rate", filename = "BLSB Percent Incidence vs Fertilizer Treatment.png")
 
 # by province
 # kruskall-wallis test by province
@@ -699,29 +712,40 @@ rust_joined_ev %>%
   theme_classic()
 ggsave(path = "../diseases", filename = "Rust vs Rain.png")
 
+# by corn type T-test
+ttest_corn_rust
+DunnTest_corn_type_rust <- DunnTest(percent_incidence_rust ~ factor_corn, summary_rust)
+dunn_rust_corn_type_groups <- dunnTest(percent_incidence_rust ~ factor_corn, summary_rust,
+                                         method="none")
+dunn_rust_corn_type_groups <- dunn_rust_corn_type_groups$res
+cld_rust_corn_type <- cldList(comparison = dunn_rust_corn_type_groups$Comparison,
+                                p.value = dunn_rust_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_rust_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_rust_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_rust_corntype_bp <-
   summary_rust %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_rust), sd = mean_sd(percent_incidence_rust)) %>% 
-  arrange(desc(w))
-
-summary_rust_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_rust_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>%
+  left_join(cld_rust_corn_type, by=c("factor_corn"))
 
 summary_rust %>%
   ggplot(aes(factor_corn, percent_incidence_rust)) + 
-  geom_boxplot() +
-  geom_text(data = summary_rust_corntype_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_rust_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = -1.82, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
+  geom_text(data = summary_rust_corntype_bp, aes(label = Letter,
+                y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
+  geom_text(data = summary_rust_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
        y = "Percent Incidence Common Rust",
-       title = "Effect of Corn Type on Common Rust Incidence") +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Rust vs Corn Type.png")
+       title = "Effect of Corn Type to Common Rust Incidence") +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_corn_type", filename = "Common Rust Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
-
+# by fertilizer treatment rate
 summary_rust_fert_bp <-
   summary_rust %>% 
   group_by(order_treat) %>% 
@@ -736,12 +760,14 @@ summary_rust %>%
   geom_boxplot() +
   geom_text(data = summary_rust_fert_bp, aes(label = treatment_cld,
                 y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_rust_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -2, alpha = 0.75, color = "darkblue") +
+  geom_text(data = summary_rust_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Common Rust",
        title = "Effect of Fertilizer Treatment Rate on Common Rust Incidence") + 
-  theme_classic()
-ggsave(path = "../diseases", filename = "Rust vs Fertilizer Treatment.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_fertilizer_rate", filename = "Common Rust Percent Incidence vs Fertilizer Treatment.png")
 
 # by province
 # kruskall-wallis test by province
@@ -1104,29 +1130,40 @@ southrust_joined_ev %>%
   theme_classic()
 ggsave(path = "../diseases", filename = "Southern Rust vs Rain.png")
 
+# by corn type T-test
+ttest_corn_southrust
+DunnTest_corn_type_southrust <- DunnTest(percent_incidence_southrust ~ factor_corn, summary_southrust)
+dunn_southrust_corn_type_groups <- dunnTest(percent_incidence_southrust ~ factor_corn, summary_southrust,
+                                         method="none")
+dunn_southrust_corn_type_groups <- dunn_southrust_corn_type_groups$res
+cld_southrust_corn_type <- cldList(comparison = dunn_southrust_corn_type_groups$Comparison,
+                                p.value = dunn_southrust_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_southrust_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_southrust_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_southrust_corntype_bp <-
   summary_southrust %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_southrust), sd = mean_sd(percent_incidence_southrust)) %>% 
-  arrange(desc(w))
-
-summary_southrust_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_southrust_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>%
+  left_join(cld_southrust_corn_type, by=c("factor_corn"))
 
 summary_southrust %>%
   ggplot(aes(factor_corn, percent_incidence_southrust)) + 
-  geom_boxplot() +
-  geom_text(data = summary_southrust_corntype_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_southrust_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.82, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
+  geom_text(data = summary_southrust_corntype_bp, aes(label = Letter,
+                y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
+  geom_text(data = summary_southrust_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
        y = "Percent Incidence Southern Rust",
-       title = "Effect of Corn Type on Southern Rust Incidence") +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Southern Rust Percent Incidence vs Corn Type.png")
+       title = "Effect of Corn Type to Southern Rust Incidence") +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_corn_type", filename = "Southern Rust Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
-
+# by fertilizer treatment rate
 summary_southrust_fert_bp <-
   summary_southrust %>% 
   group_by(order_treat) %>% 
@@ -1145,8 +1182,10 @@ summary_southrust %>%
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Southern Rust",
        title = "Effect of Fertilizer Treatment Rate on Southern Rust Incidence") + 
-  theme_classic()
-ggsave(path = "../diseases", filename = "Southern Rust Percent Incidence vs Fertilizer Treatment.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_fertilizer_rate", filename = "Southern Rust Percent Incidence vs Fertilizer Treatment.png")
 
 
 # by province
@@ -1510,29 +1549,40 @@ mildew_joined_ev %>%
   theme_classic()
 ggsave(path = "../diseases", filename = "Downy Mildew vs Rain.png")
 
+# by corn type T-test
+ttest_corn_mildew
+DunnTest_corn_type_mildew <- DunnTest(percent_incidence_mildew ~ factor_corn, summary_mildew)
+dunn_mildew_corn_type_groups <- dunnTest(percent_incidence_mildew ~ factor_corn, summary_mildew,
+                                         method="none")
+dunn_mildew_corn_type_groups <- dunn_mildew_corn_type_groups$res
+cld_mildew_corn_type <- cldList(comparison = dunn_mildew_corn_type_groups$Comparison,
+                                p.value = dunn_mildew_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_mildew_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_mildew_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_mildew_corntype_bp <-
   summary_mildew %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_mildew), sd = mean_sd(percent_incidence_mildew)) %>% 
-  arrange(desc(w))
-
-summary_mildew_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_mildew_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>%
+  left_join(cld_mildew_corn_type, by=c("factor_corn"))
 
 summary_mildew %>%
   ggplot(aes(factor_corn, percent_incidence_mildew)) + 
-  geom_boxplot() +
-  geom_text(data = summary_mildew_corntype_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_mildew_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.82, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
+  geom_text(data = summary_mildew_corntype_bp, aes(label = Letter,
+                y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
+  geom_text(data = summary_mildew_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
        y = "Percent Incidence Downy Mildew",
-       title = "Effect of Corn Type on Downy Mildew Incidence") +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Downy Mildew Percent Incidence vs Corn Type.png")
+       title = "Effect of Corn Type to Downy Mildew Incidence") +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_corn_type", filename = "Downy Mildew Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
-
+# by fertilizer treatment rate
 summary_mildew_fert_bp <-
   summary_mildew %>% 
   group_by(order_treat) %>% 
@@ -1551,8 +1601,10 @@ summary_mildew %>%
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Downy Mildew",
        title = "Effect of Fertilizer Treatment Rate on Downy Mildew Incidence") + 
-  theme_classic()
-ggsave(path = "../diseases", filename = "Downy Mildew Percent Incidence vs Fertilizer Treatment.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_fertilizer_rate", filename = "Downy Mildew Percent Incidence vs Fertilizer Treatment.png")
 
 
 # by province
@@ -1916,29 +1968,40 @@ brown_joined_ev %>%
   theme_classic()
 ggsave(path = "../diseases", filename = "Brown Spot vs Rain.png")
 
+# by corn type T-test
+ttest_corn_brown
+DunnTest_corn_type_brown <- DunnTest(percent_incidence_brown ~ factor_corn, summary_brown)
+dunn_brown_corn_type_groups <- dunnTest(percent_incidence_brown ~ factor_corn, summary_brown,
+                                         method="none")
+dunn_brown_corn_type_groups <- dunn_brown_corn_type_groups$res
+cld_brown_corn_type <- cldList(comparison = dunn_brown_corn_type_groups$Comparison,
+                                p.value = dunn_brown_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_brown_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_brown_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_brown_corntype_bp <-
   summary_brown %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_brown), sd = mean_sd(percent_incidence_brown)) %>% 
-  arrange(desc(w))
-
-summary_brown_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_brown_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>%
+  left_join(cld_brown_corn_type, by=c("factor_corn"))
 
 summary_brown %>%
   ggplot(aes(factor_corn, percent_incidence_brown)) + 
-  geom_boxplot() +
-  geom_text(data = summary_brown_corntype_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_brown_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.82, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
+  geom_text(data = summary_brown_corntype_bp, aes(label = Letter,
+                y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
+  geom_text(data = summary_brown_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
        y = "Percent Incidence Brown Spot",
-       title = "Effect of Corn Type on Brown Spot Incidence") +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Brown Spot Percent Incidence vs Corn Type.png")
+       title = "Effect of Corn Type to Brown Spot Incidence") +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_corn_type", filename = "Brown Spot Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
-
+# by fertilizer treatment rate
 summary_brown_fert_bp <-
   summary_brown %>% 
   group_by(order_treat) %>% 
@@ -1957,8 +2020,10 @@ summary_brown %>%
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Brown Spot",
        title = "Effect of Fertilizer Treatment Rate on Brown Spot Incidence") + 
-  theme_classic()
-ggsave(path = "../diseases", filename = "Brown Spot Percent Incidence vs Fertilizer Treatment.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_fertilizer_rate", filename = "Brown Spot Percent Incidence vs Fertilizer Treatment.png")
 
 # by province
 # kruskall-wallis test by province
@@ -2322,29 +2387,40 @@ leaf_joined_ev %>%
   theme_classic()
 ggsave(path = "../diseases", filename = "Leaf Spot vs Rain.png")
 
+# by corn type T-test
+ttest_corn_leaf
+DunnTest_corn_type_leaf <- DunnTest(percent_incidence_leaf ~ factor_corn, summary_leaf)
+dunn_leaf_corn_type_groups <- dunnTest(percent_incidence_leaf ~ factor_corn, summary_leaf,
+                                         method="none")
+dunn_leaf_corn_type_groups <- dunn_leaf_corn_type_groups$res
+cld_leaf_corn_type <- cldList(comparison = dunn_leaf_corn_type_groups$Comparison,
+                                p.value = dunn_leaf_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_leaf_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_leaf_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_leaf_corntype_bp <-
   summary_leaf %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_leaf), sd = mean_sd(percent_incidence_leaf)) %>% 
-  arrange(desc(w))
-
-summary_leaf_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_leaf_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>%
+  left_join(cld_leaf_corn_type, by=c("factor_corn"))
 
 summary_leaf %>%
   ggplot(aes(factor_corn, percent_incidence_leaf)) + 
-  geom_boxplot() +
-  geom_text(data = summary_leaf_corntype_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_leaf_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.82, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
+  geom_text(data = summary_leaf_corntype_bp, aes(label = Letter,
+                y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
+  geom_text(data = summary_leaf_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
        y = "Percent Incidence Leaf Spot",
-       title = "Effect of Corn Type on Leaf Spot Incidence") +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Leaf Spot Percent Incidence vs Corn Type.png")
+       title = "Effect of Corn Type to Leaf Spot Incidence") +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_corn_type", filename = "Leaf Spot Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
-
+# by fertilizer treatment rate
 summary_leaf_fert_bp <-
   summary_leaf %>% 
   group_by(order_treat) %>% 
@@ -2363,8 +2439,10 @@ summary_leaf %>%
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Leaf Spot",
        title = "Effect of Fertilizer Treatment Rate on Leaf Spot Incidence") + 
-  theme_classic()
-ggsave(path = "../diseases", filename = "Leaf Spot Percent Incidence vs Fertilizer Treatment.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_fertilizer_rate", filename = "Leaf Spot Percent Incidence vs Fertilizer Treatment.png")
 
 # by province
 # kruskall-wallis test by province
@@ -2727,29 +2805,40 @@ blight_joined_ev %>%
   theme_classic()
 ggsave(path = "../diseases", filename = "Leaf Blight vs Rain.png")
 
+# by corn type T-test
+ttest_corn_blight
+DunnTest_corn_type_blight <- DunnTest(percent_incidence_blight ~ factor_corn, summary_blight)
+dunn_blight_corn_type_groups <- dunnTest(percent_incidence_blight ~ factor_corn, summary_blight,
+                                         method="none")
+dunn_blight_corn_type_groups <- dunn_blight_corn_type_groups$res
+cld_blight_corn_type <- cldList(comparison = dunn_blight_corn_type_groups$Comparison,
+                                p.value = dunn_blight_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_blight_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_blight_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_blight_corntype_bp <-
   summary_blight %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_blight), sd = mean_sd(percent_incidence_blight)) %>% 
-  arrange(desc(w))
-
-summary_blight_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_blight_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>%
+  left_join(cld_blight_corn_type, by=c("factor_corn"))
 
 summary_blight %>%
   ggplot(aes(factor_corn, percent_incidence_blight)) + 
-  geom_boxplot() +
-  geom_text(data = summary_blight_corntype_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_blight_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.82, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
+  geom_text(data = summary_blight_corntype_bp, aes(label = Letter,
+                y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
+  geom_text(data = summary_blight_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
        y = "Percent Incidence Leaf Blight",
-       title = "Effect of Corn Type on Leaf Blight Incidence") +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Leaf Blight Percent Incidence vs Corn Type.png")
+       title = "Effect of Corn Type to Leaf Blight Incidence") +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_corn_type", filename = "Leaf Blight Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
-
+# by fertilizer treatment rate
 summary_blight_fert_bp <-
   summary_blight %>% 
   group_by(order_treat) %>% 
@@ -2768,8 +2857,10 @@ summary_blight %>%
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Leaf Blight",
        title = "Effect of Fertilizer Treatment Rate on Leaf Blight Incidence") + 
-  theme_classic()
-ggsave(path = "../diseases", filename = "Leaf Blight Percent Incidence vs Fertilizer Treatment.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_fertilizer_rate", filename = "Leaf Blight Percent Incidence vs Fertilizer Treatment.png")
 
 
 # by province
@@ -3135,29 +3226,40 @@ stalk_joined_ev %>%
   theme_classic()
 ggsave(path = "../diseases", filename = "Stalk Rot vs Rain.png")
 
+# by corn type T-test
+ttest_corn_stalk
+DunnTest_corn_type_stalk <- DunnTest(percent_incidence_stalk ~ factor_corn, summary_stalk)
+dunn_stalk_corn_type_groups <- dunnTest(percent_incidence_stalk ~ factor_corn, summary_stalk,
+                                         method="none")
+dunn_stalk_corn_type_groups <- dunn_stalk_corn_type_groups$res
+cld_stalk_corn_type <- cldList(comparison = dunn_stalk_corn_type_groups$Comparison,
+                                p.value = dunn_stalk_corn_type_groups$P.adj,
+                                threshold = 0.05)[1:2]
+cld_stalk_corn_type$factor_corn <- cld_borer_corn_type$Group
+cld_stalk_corn_type <- as.data.frame.list(cld_borer_corn_type)
+
 summary_stalk_corntype_bp <-
   summary_stalk %>% 
   group_by(factor_corn) %>% 
   summarise(w=mean(percent_incidence_stalk), sd = mean_sd(percent_incidence_stalk)) %>% 
-  arrange(desc(w))
-
-summary_stalk_corntype_bp$treatment_cld <- 
-  as.data.frame.list(twoway_fert_corn_stalk_letters$factor_corn)$Letters
-
+  arrange(desc(w)) %>%
+  left_join(cld_stalk_corn_type, by=c("factor_corn"))
 
 summary_stalk %>%
   ggplot(aes(factor_corn, percent_incidence_stalk)) + 
-  geom_boxplot() +
-  geom_text(data = summary_stalk_corntype_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_stalk_corntype_bp, aes(label = round(w, 2), y = sd$y), vjust = 1.2, alpha = 0.75, color = "darkblue") +
+  geom_boxplot(aes(fill=factor_corn), show.legend=FALSE) +
+  geom_text(data = summary_stalk_corntype_bp, aes(label = Letter,
+                y = sd$ymax), vjust = -1, hjust = -0.5, color="red", size = 5) +
+  geom_text(data = summary_stalk_corntype_bp, aes(label = round(w, 2), y = sd$ymax-5), vjust = -1, hjust=-1, alpha = 0.75, color = "darkblue") +
   labs(x = "Corn Type (GM or Non-GM)", 
        y = "Percent Incidence Stalk Rot",
-       title = "Effect of Corn Type on Stalk Rot Incidence") +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Stalk Rot Percent Incidence vs Corn Type.png")
+       title = "Effect of Corn Type to Stalk Rot Incidence") +
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_corn_type", filename = "Stalk Rot Percent Incidence vs Corn Type.png", dpi=plot_dpi)
 
-
+# by fertilizer treatment rate
 summary_stalk_fert_bp <-
   summary_stalk %>% 
   group_by(order_treat) %>% 
@@ -3176,8 +3278,10 @@ summary_stalk %>%
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Stalk Rot",
        title = "Effect of Fertilizer Treatment Rate on Stalk Rot Incidence") + 
-  theme_classic()
-ggsave(path = "../diseases", filename = "Stalk Rot Percent Incidence vs Fertilizer Treatment.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_fertilizer_rate", filename = "Stalk Rot Percent Incidence vs Fertilizer Treatment.png")
 
 
 # by province
@@ -3441,6 +3545,7 @@ detach("package:correlation", unload = TRUE)
 
 ```Levene's tests on diseases```
 ```{r}
+# blsb
 levenes_p_val_fert_blsb <- levenes_fertilizer_blsb$`Pr(>F)`[1]
 levenes_f_val_fert_blsb <- levenes_fertilizer_blsb$`F value`[1]
 
@@ -3548,7 +3653,7 @@ levenes_f_val_crop_stage_brown <- levenes_crop_stage_brown$`F value`[1]
 
 levenes_disease_values <-
   data.frame(
-    Pest = c("BLSB", "Common Rust", "Leaf Spot","Southern Rust", "Downy mildew", "Blight", "Stalk rot", "Brown Spot"),
+    Diseases = c("BLSB", "Common Rust", "Leaf Spot","Southern Rust", "Downy mildew", "Leaf Blight", "Stalk rot", "Brown Spot"),
     `Fertilizer F-value` = c(levenes_f_val_fert_blsb, levenes_f_val_fert_rust, levenes_f_val_fert_leaf, levenes_f_val_fert_southrust, levenes_f_val_fert_mildew, levenes_f_val_fert_blight, levenes_f_val_fert_stalk, levenes_f_val_fert_brown),
     
     `Fertilizer p-value` = c(levenes_p_val_fert_blsb, levenes_p_val_fert_rust, levenes_p_val_fert_leaf, levenes_p_val_fert_southrust, levenes_p_val_fert_mildew, levenes_p_val_fert_blight, levenes_p_val_fert_stalk, levenes_p_val_fert_brown),
@@ -3675,8 +3780,8 @@ stat_val_brown_cropstage <- kruskal_crop_stage_brown$statistic[[1]]
 p_val_stalk_fertilizer <- summary(aov_fert_stalk)[[1]][["Pr(>F)"]][[1]]
 stat_val_stalk_fertilizer <- summary(aov_fert_stalk)[[1]][["F value"]][[1]] # test statistic
 
-p_val_stalk_corntype <- utest_corn_stalk$p.value[[1]]
-stat_val_stalk_corntype <- utest_corn_stalk$statistic[[1]]
+p_val_stalk_corntype <- ttest_corn_stalk$p.value
+stat_val_stalk_corntype <- ttest_corn_stalk$statistic
 
 p_val_stalk_province <- kruskal_province_stalk$p.value
 stat_val_stalk_province <- kruskal_province_stalk$statistic[[1]]
@@ -3684,11 +3789,11 @@ stat_val_stalk_province <- kruskal_province_stalk$statistic[[1]]
 p_val_stalk_cropstage <- kruskal_crop_stage_stalk$p.value
 stat_val_stalk_cropstage <- kruskal_crop_stage_stalk$statistic[[1]]
 
-
+# c("BLSB", "Common Rust", "Leaf Spot","Southern Rust", "Downy mildew", "Leaf Blight", "Stalk rot", "Brown Spot")
 # anova or kruskal-wallis values
 diseases_test_values <-
   tibble(
-    Diseases = c("BLSB", "Common Rust", "Leaf Spot", "Southern Rust", "Downy mildew", "Leaf Blight", "Brown Spot", "Stalk Rot"),
+    Diseases = c("BLSB", "Common Rust", "Leaf Spot", "Southern Rust", "Downy mildew", "Leaf Blight", "Brown Spot", "Stalk rot"),
     
     P_Fertilizer = c(p_val_blsb_fertilizer, p_val_rust_fertilizer, p_val_leaf_fertilizer, p_val_southrust_fertilizer, p_val_mildew_fertilizer, p_val_blight_fertilizer, p_val_brown_fertilizer, p_val_stalk_fertilizer),
     
@@ -3713,8 +3818,11 @@ diseases_test_values <-
 
 write_csv(diseases_test_values, "../Anova_KruskalWallis_Test_Values_on_Diseases.csv")
 
-```
+levenes_and_tests_diseases <- diseases_test_values %>% left_join(levenes_disease_values, by = c("Diseases"))
 
+
+write_csv(levenes_and_tests_diseases, "../Levenes_and_Tests_Diseases_values.csv")
+```
 
 
 ```{r}
