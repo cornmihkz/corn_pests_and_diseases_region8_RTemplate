@@ -249,8 +249,10 @@ blsb_joined_ev %>%
   annotate("label", x = 27.5, y = 12,  
            label = temp_blsb_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "BLSB vs Temp.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_temperature", filename = "BLSB vs Temp.png")
 
 
 blsb_joined_ev %>%
@@ -263,8 +265,10 @@ blsb_joined_ev %>%
   annotate("label", x = 7, y = 11,  
            label = wind_blsb_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "BLSB vs Wind.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_wind_speed", filename = "BLSB vs Wind.png")
 
 blsb_joined_ev %>%
   ggplot(aes(mean_humid, incidence_blsb)) +
@@ -276,8 +280,10 @@ blsb_joined_ev %>%
   annotate("label", x = 60, y = 11,  
            label = humid_blsb_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "BLSB vs Humid.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_humidity", filename = "BLSB vs Humid.png")
 
 blsb_joined_ev %>%
   ggplot(aes(mean_rain, incidence_blsb)) +
@@ -289,8 +295,10 @@ blsb_joined_ev %>%
   annotate("label", x = 0.4, y = 13,  
            label = rain_blsb_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "BLSB vs Rain.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_rainfall", filename = "BLSB vs Rain.png")
 
 # by corn type T-test
 ttest_corn_blsb
@@ -398,7 +406,7 @@ summary_blsb %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "BLSB Percent Incidence vs Province.png", dpi=plot_dpi)
+ggsave(path = "../diseases_province", filename = "BLSB Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -449,7 +457,7 @@ summary_blsb %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "BLSB Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
+ggsave(path = "../diseases_crop_stage", filename = "BLSB Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 
 detach("package:agricolae", unload = TRUE)
@@ -669,8 +677,10 @@ rust_joined_ev %>%
   annotate("label", x = 27.5, y = 12,  
            label = temp_rust_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Rust vs Temp.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_temperature", filename = "Rust vs Temp.png")
 
 
 rust_joined_ev %>%
@@ -683,8 +693,10 @@ rust_joined_ev %>%
   annotate("label", x = 7, y = 11,  
            label = wind_rust_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Rust vs Wind.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_wind_speed", filename = "Rust vs Wind.png")
 
 rust_joined_ev %>%
   ggplot(aes(mean_humid, incidence_rust)) +
@@ -696,8 +708,10 @@ rust_joined_ev %>%
   annotate("label", x = 60, y = 11,  
            label = humid_rust_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Rust vs Humid.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_humidity", filename = "Rust vs Humid.png")
 
 rust_joined_ev %>%
   ggplot(aes(mean_rain, incidence_rust)) +
@@ -709,8 +723,10 @@ rust_joined_ev %>%
   annotate("label", x = 0.4, y = 13,  
            label = rain_rust_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Rust vs Rain.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_rainfall", filename = "Rust vs Rain.png")
 
 # by corn type T-test
 ttest_corn_rust
@@ -816,7 +832,7 @@ summary_rust %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Common Rust Percent Incidence vs Province.png", dpi=plot_dpi)
+ggsave(path = "../diseases_province", filename = "Common Rust Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -1083,12 +1099,14 @@ southrust_joined_ev %>%
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
   labs(x = "Monthly Average Temperature (C)", 
        y = "Incidence Southern Rust",
-       title = "Temperature vs Soutern Rust") +
+       title = "Temperature vs Southern Rust") +
   annotate("label", x = 27.5, y = 12,  
            label = temp_southrust_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Southern Rust vs Temp.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_temperature", filename = "Southern Rust vs Temp.png")
 
 
 southrust_joined_ev %>%
@@ -1101,8 +1119,10 @@ southrust_joined_ev %>%
   annotate("label", x = 7, y = 11,  
            label = wind_southrust_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Southern Rust vs Wind.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_wind_speed", filename = "Southern Rust vs Wind.png")
 
 southrust_joined_ev %>%
   ggplot(aes(mean_humid, incidence_southrust)) +
@@ -1110,12 +1130,14 @@ southrust_joined_ev %>%
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.7) +
   labs(x = "Monthly Average Humidity (%)", 
        y = "Incidence Southern Rust",
-       title = "Humidity vs Soutern Rust") +
+       title = "Humidity vs Southern Rust") +
   annotate("label", x = 60, y = 11,  
            label = humid_southrust_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Southern Rust vs Humid.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_humidity", filename = "Southern Rust vs Humid.png")
 
 southrust_joined_ev %>%
   ggplot(aes(mean_rain, incidence_southrust)) +
@@ -1123,12 +1145,14 @@ southrust_joined_ev %>%
   geom_smooth(formula = "y~x", method="lm", se=FALSE, size = 1.5) +
   labs(x = "Monthly Average Rainfall (mm)", 
        y = "Incidence Southern Rust",
-       title = "Rainfall vs Soutern Rust") +
+       title = "Rainfall vs Southern Rust") +
   annotate("label", x = 0.4, y = 13,  
            label = rain_southrust_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Southern Rust vs Rain.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_rainfall", filename = "Southern Rust vs Rain.png")
 
 # by corn type T-test
 ttest_corn_southrust
@@ -1235,7 +1259,7 @@ summary_southrust %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Southern Rust Percent Incidence vs Province.png", dpi=plot_dpi)
+ggsave(path = "../diseases_province", filename = "Southern Rust Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -1286,7 +1310,7 @@ summary_southrust %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Southern Rust Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
+ggsave(path = "../diseases_crop_stage", filename = "Southern Rust Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
@@ -1506,8 +1530,10 @@ mildew_joined_ev %>%
   annotate("label", x = 27.5, y = 12,  
            label = temp_mildew_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Downy Mildew vs Temp.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_temperature", filename = "Downy Mildew vs Temp.png")
 
 
 mildew_joined_ev %>%
@@ -1520,8 +1546,10 @@ mildew_joined_ev %>%
   annotate("label", x = 7, y = 11,  
            label = wind_mildew_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Downy Mildew vs Wind.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_wind_speed", filename = "Downy Mildew vs Wind.png")
 
 mildew_joined_ev %>%
   ggplot(aes(mean_humid, incidence_mildew)) +
@@ -1533,8 +1561,10 @@ mildew_joined_ev %>%
   annotate("label", x = 60, y = 11,  
            label = humid_mildew_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Downy Mildew vs Humid.png")
+theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_humidity", filename = "Downy Mildew vs Humid.png")
 
 mildew_joined_ev %>%
   ggplot(aes(mean_rain, incidence_mildew)) +
@@ -1546,8 +1576,10 @@ mildew_joined_ev %>%
   annotate("label", x = 0.4, y = 13,  
            label = rain_mildew_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Downy Mildew vs Rain.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_rainfall", filename = "Downy Mildew vs Rain.png")
 
 # by corn type T-test
 ttest_corn_mildew
@@ -1654,7 +1686,7 @@ summary_mildew %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Downy Mildew Percent Incidence vs Province.png", dpi=plot_dpi)
+ggsave(path = "../diseases_province", filename = "Downy Mildew Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -1705,7 +1737,7 @@ summary_mildew %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Downy Mildew Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
+ggsave(path = "../diseases_crop_stage", filename = "Downy Mildew Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 
 detach("package:agricolae", unload = TRUE)
@@ -1925,8 +1957,10 @@ brown_joined_ev %>%
   annotate("label", x = 27.5, y = 12,  
            label = temp_brown_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Brown Spot vs Temp.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_temperature", filename = "Brown Spot vs Temp.png")
 
 
 brown_joined_ev %>%
@@ -1939,8 +1973,11 @@ brown_joined_ev %>%
   annotate("label", x = 8, y = 11,  
            label = wind_brown_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Brown Spot vs Wind.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_wind_speed", filename = "Brown Spot vs Wind.png")
+
 
 brown_joined_ev %>%
   ggplot(aes(mean_humid, incidence_brown)) +
@@ -1952,8 +1989,11 @@ brown_joined_ev %>%
   annotate("label", x = 60, y = 11,  
            label = humid_brown_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Brown Spot vs Humid.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_humidity", filename = "Brown Spot vs Humid.png")
+
 
 brown_joined_ev %>%
   ggplot(aes(mean_rain, incidence_brown)) +
@@ -1965,8 +2005,10 @@ brown_joined_ev %>%
   annotate("label", x = 0.4, y = 13,  
            label = rain_brown_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Brown Spot vs Rain.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_rainfall", filename = "Brown Spot vs Rain.png")
 
 # by corn type T-test
 ttest_corn_brown
@@ -2072,7 +2114,7 @@ summary_brown %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Brown Spot Percent Incidence vs Province.png", dpi=plot_dpi)
+ggsave(path = "../diseases_province", filename = "Brown Spot Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -2123,7 +2165,7 @@ summary_brown %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Brown Spot Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
+ggsave(path = "../diseases_crop_stage", filename = "Brown Spot Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
@@ -2344,8 +2386,10 @@ leaf_joined_ev %>%
   annotate("label", x = 27.5, y = 13,  
            label = temp_leaf_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Leaf Spot vs Temp.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_temperature", filename = "Leaf Spot vs Temp.png")
 
 
 leaf_joined_ev %>%
@@ -2358,8 +2402,10 @@ leaf_joined_ev %>%
   annotate("label", x = 7, y = 13,  
            label = wind_leaf_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Leaf Spot vs Wind.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_wind_speed", filename = "Leaf Spot vs Wind.png")
 
 leaf_joined_ev %>%
   ggplot(aes(mean_humid, incidence_leaf)) +
@@ -2371,8 +2417,10 @@ leaf_joined_ev %>%
   annotate("label", x = 60, y = 13,  
            label = humid_leaf_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Leaf Spot vs Humid.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_humidity", filename = "Leaf Spot vs Humid.png")
 
 leaf_joined_ev %>%
   ggplot(aes(mean_rain, incidence_leaf)) +
@@ -2384,8 +2432,10 @@ leaf_joined_ev %>%
   annotate("label", x = 0.4, y = 15,  
            label = rain_leaf_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Leaf Spot vs Rain.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_rainfall", filename = "Leaf Spot vs Rain.png")
 
 # by corn type T-test
 ttest_corn_leaf
@@ -2491,7 +2541,7 @@ summary_leaf %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Leaf Spot Percent Incidence vs Province.png", dpi=plot_dpi)
+ggsave(path = "../diseases_province", filename = "Leaf Spot Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -2542,7 +2592,7 @@ summary_leaf %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Leaf Spot Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
+ggsave(path = "../diseases_crop_stage", filename = "Leaf Spot Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
@@ -2762,8 +2812,10 @@ blight_joined_ev %>%
   annotate("label", x = 27.5, y = 18,  
            label = temp_blight_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Leaf Blight vs Temp.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_temperature", filename = "Leaf Blight vs Temp.png")
 
 
 blight_joined_ev %>%
@@ -2776,8 +2828,10 @@ blight_joined_ev %>%
   annotate("label", x = 8, y = 12,  
            label = wind_blight_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Leaf Blight vs Wind.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_wind_speed", filename = "Leaf Blight vs Wind.png")
 
 blight_joined_ev %>%
   ggplot(aes(mean_humid, incidence_blight)) +
@@ -2789,8 +2843,10 @@ blight_joined_ev %>%
   annotate("label", x = 60, y = 18,  
            label = humid_blight_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Leaf Blight vs Humid.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_humidity", filename = "Leaf Blight vs Humid.png")
 
 blight_joined_ev %>%
   ggplot(aes(mean_rain, incidence_blight)) +
@@ -2802,8 +2858,10 @@ blight_joined_ev %>%
   annotate("label", x = 0.4, y = 18,  
            label = rain_blight_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Leaf Blight vs Rain.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_rainfall", filename = "Leaf Blight vs Rain.png")
 
 # by corn type T-test
 ttest_corn_blight
@@ -2910,7 +2968,7 @@ summary_blight %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Leaf Blight Percent Incidence vs Province.png", dpi=plot_dpi)
+ggsave(path = "../diseases_province", filename = "Leaf Blight Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -2961,7 +3019,7 @@ summary_blight %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Leaf Blight Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
+ggsave(path = "../diseases_crop_stage", filename = "Leaf Blight Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 
 detach("package:agricolae", unload = TRUE)
@@ -3183,8 +3241,10 @@ stalk_joined_ev %>%
   annotate("label", x = 27.5, y = 13,  
            label = temp_stalk_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Stalk Rot vs Temp.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_temperature", filename = "Stalk Rot vs Temp.png")
 
 
 stalk_joined_ev %>%
@@ -3197,8 +3257,10 @@ stalk_joined_ev %>%
   annotate("label", x = 8.2, y = 13,  
            label = wind_stalk_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Stalk Rot vs Wind.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_wind_speed", filename = "Stalk Rot vs Wind.png")
 
 stalk_joined_ev %>%
   ggplot(aes(mean_humid, incidence_stalk)) +
@@ -3210,8 +3272,10 @@ stalk_joined_ev %>%
   annotate("label", x = 60, y = 13,  
            label = humid_stalk_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Stalk Rot vs Humid.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_humidity", filename = "Stalk Rot vs Humid.png")
 
 stalk_joined_ev %>%
   ggplot(aes(mean_rain, incidence_stalk)) +
@@ -3223,8 +3287,10 @@ stalk_joined_ev %>%
   annotate("label", x = 0.4, y = 15,  
            label = rain_stalk_eqn,
            parse = TRUE, color = "red", size = 5) +
-  theme_classic()
-ggsave(path = "../diseases", filename = "Stalk Rot vs Rain.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1")
+ggsave(path = "../diseases_rainfall", filename = "Stalk Rot vs Rain.png")
 
 # by corn type T-test
 ttest_corn_stalk
@@ -3331,7 +3397,7 @@ summary_stalk %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_brewer(palette = "Pastel1") 
-ggsave(path = "../province", filename = "Stalk Rot Percent Incidence vs Province.png", dpi=plot_dpi)
+ggsave(path = "../diseases_province", filename = "Stalk Rot Percent Incidence vs Province.png", dpi=plot_dpi)
 
 
 
@@ -3382,7 +3448,7 @@ summary_stalk %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Stalk Rot Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
+ggsave(path = "../diseases_crop_stage", filename = "Stalk Rot Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
