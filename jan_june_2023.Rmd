@@ -57,11 +57,12 @@ diseases_raw_parsed <-
 
 ```Insect Pests January - June 2023```
 ```{r}
+### 2023 Summaries ####
 # Corn borer
 borer_2023 <-
   insect_raw_parsed %>% 
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
-         `Corn Type`, Variety, Month, starts_with("Corn Borer - Damage Rating ")) %>%
+         `Corn Type`, Variety, mean_temp, Month, starts_with("Corn Borer - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
 
@@ -98,7 +99,7 @@ summary_borer_2023 <-
 semilooper_2023 <-
   insect_raw_parsed %>% 
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
-         `Corn Type`, Variety, Month, starts_with("Semi-looper - Damage Rating ")) %>%
+         `Corn Type`, Variety, mean_temp, Month, starts_with("Semi-looper - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
 
@@ -136,7 +137,7 @@ summary_semilooper_2023 <-
 earworm_2023 <-
   insect_raw_parsed %>% 
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
-         `Corn Type`, Variety, Month, starts_with("Corn Earworm - Damage Rating ")) %>%
+         `Corn Type`, Variety, mean_temp, Month, starts_with("Corn Earworm - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
 
@@ -174,7 +175,7 @@ summary_earworm_2023 <-
 cutworm_2023 <-
   insect_raw_parsed %>% 
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
-         `Corn Type`, Variety, Month, starts_with("Cutworm - Damage Rating ")) %>%
+         `Corn Type`, Variety, mean_temp, Month, starts_with("Cutworm - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
 
@@ -212,7 +213,7 @@ summary_cutworm_2023 <-
 armyworm_2023 <-
   insect_raw_parsed %>% 
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
-         `Corn Type`, Variety, Month, starts_with("Armyworm - Damage Rating ")) %>%
+         `Corn Type`, Variety, mean_temp, Month, starts_with("Armyworm - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
 
@@ -250,7 +251,7 @@ summary_armyworm_2023 <-
 hopper_2023 <-
   insect_raw_parsed %>% 
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
-         `Corn Type`, Variety, Month, starts_with("Corn Plant Hopper - Damage Rating ")) %>%
+         `Corn Type`, Variety, mean_temp, Month, starts_with("Corn Plant Hopper - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
 
@@ -288,7 +289,7 @@ summary_hopper_2023 <-
 aphids_2023 <-
   insect_raw_parsed %>% 
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
-         `Corn Type`, Variety, Month, starts_with("Aphids - Damage Rating ")) %>%
+         `Corn Type`, Variety, mean_temp, Month, starts_with("Aphids - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
 
@@ -325,7 +326,7 @@ summary_aphids_2023 <-
 faw_2023 <-
   insect_raw_parsed %>% 
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
-         `Corn Type`, Variety, Month, starts_with("Fall Armyworm - Damage Rating ")) %>%
+         `Corn Type`, Variety, mean_temp, Month, starts_with("Fall Armyworm - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
 
@@ -374,8 +375,10 @@ insects_summary_2023 <-
       left_join(summary_armyworm_2023) %>%
       left_join(summary_aphids_2023) %>%
       left_join(summary_faw_2023)
+### 2023 Summaries ###
 
-# by region
+
+#### by region #########
 summary_faw_region_2023 <-
   summary_faw_2023 %>%
   group_by(factor(Region)) %>% 
@@ -450,9 +453,9 @@ summary_pests_region_2023 <-
   summary_pests_region_2023 %>% 
   arrange(desc(Regional_Incidence))
 write.csv(summary_pests_region_2023, "../report_2023/Regional Top Pests Percent Incidence.csv")
+########
 
-
-# by corn type
+##### by corn type ############
 summary_faw_corntype_2023 <-
   summary_faw_2023 %>%
   group_by(factor(`Corn Type`)) %>% 
@@ -695,10 +698,9 @@ summary_pests_Samar_2023 <-
   select(Pests, Samar) %>%
   arrange(desc(Samar))
 write.csv(summary_pests_Samar_2023, "../report_2023/Top Pests Samar Percent Incidence.csv")
+################
 
-
-
-# by fertilizer
+##### by fertilizer #####
 summary_faw_fertilizer_2023 <-
   summary_faw_2023 %>%
   group_by(factor(Treatment)) %>% 
@@ -832,8 +834,9 @@ summary_pests_arfr_fertilizer_2023 <-
   select(Pests, ARFR) %>%
   arrange(desc(ARFR))
 write.csv(summary_pests_arfr_fertilizer_2023, "../report_2023/Top Pests by ARFR Fertilizer Treatment Percent Incidence.csv")
+#########################################
 
-# by Crop stage
+############# by Crop stage ###########
 summary_faw_crop_stage_2023 <-
   summary_faw_2023 %>%
   group_by(factor(`Crop Stage`)) %>% 
@@ -1034,6 +1037,9 @@ summary_pests_crop_stage_2023 <-
              )
     ) 
 
+
+write.csv(summary_pests_crop_stage_2023, "../report_2023/Summary of Corn Crop Stage Pest Incidences 2023.csv")
+
 summary_pests_single_leaf_2023 <-
   summary_pests_crop_stage_2023 %>% 
   select(Pests, Single_leaf) %>%
@@ -1093,6 +1099,122 @@ summary_pests_maturity_2023 <-
   select(Pests, Maturity) %>%
   arrange(desc(Maturity))
 write.csv(summary_pests_maturity_2023, "../report_2023/Top Pests during Maturity `Crop Stage` Percent Incidence.csv")
+##########################################
+
+## by Month ####
+faw_monthly_2023 <-
+  faw_2023 %>%
+  select(Month, incidence_faw, mean_temp.x) %>%
+  group_by(Month, mean_temp.x) %>%
+  summarise(monthly_incidence = mean(incidence_faw))
+
+aphids_monthly_2023 <-
+  aphids_2023 %>%
+  select(Month, incidence_aphids, mean_temp.x) %>%
+  group_by(Month, mean_temp.x) %>%
+  summarise(monthly_incidence = mean(incidence_aphids))
+
+hopper_monthly_2023 <-
+  hopper_2023 %>%
+  select(Month, incidence_hopper, mean_temp.x) %>%
+  group_by(Month, mean_temp.x) %>%
+  summarise(monthly_incidence = mean(incidence_hopper))
+
+armyworm_monthly_2023 <-
+  armyworm_2023 %>%
+  select(Month, incidence_armyworm, mean_temp.x) %>%
+  group_by(Month, mean_temp.x) %>%
+  summarise(monthly_incidence = mean(incidence_armyworm))
+
+earworm_monthly_2023 <-
+  earworm_2023 %>%
+  select(Month, incidence_earworm, mean_temp.x) %>%
+  group_by(Month, mean_temp.x) %>%
+  summarise(monthly_incidence = mean(incidence_earworm))
+
+cutworm_monthly_2023 <-
+  cutworm_2023 %>%
+  select(Month, incidence_cutworm, mean_temp.x) %>%
+  group_by(Month, mean_temp.x) %>%
+  summarise(monthly_incidence = mean(incidence_cutworm))
+
+borer_monthly_2023 <-
+  borer_2023 %>%
+  select(Month, incidence_borer, mean_temp.x) %>%
+  group_by(Month, mean_temp.x) %>%
+  summarise(monthly_incidence = mean(incidence_borer))
+
+semilooper_monthly_2023 <-
+  semilooper_2023 %>%
+  select(Month, incidence_semilooper, mean_temp.x) %>%
+  group_by(Month, mean_temp.x) %>%
+  summarise(monthly_incidence = mean(incidence_semilooper))
+
+
+summary_pests_monthly_2023 <-
+  data.frame(
+    Pests = c("Temperature", "Borer", "Semilooper", 
+              "Cutworm", "Earworm", 
+              "Armyworm", "Corn Plant Hopper", 
+              "Aphids", "FAW"),
+    January = c(c(borer_monthly_2023 %>% filter(Month == 1)) %$% mean_temp.x,
+                c(borer_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(semilooper_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(cutworm_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(earworm_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(armyworm_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(hopper_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(aphids_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(faw_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence),
+    February = c(c(borer_monthly_2023 %>% filter(Month == 2)) %$% mean_temp.x,
+                c(borer_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(semilooper_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(cutworm_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(earworm_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(armyworm_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(hopper_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(aphids_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(faw_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence),
+    March = c(c(borer_monthly_2023 %>% filter(Month == 3)) %$% mean_temp.x,
+                c(borer_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(semilooper_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(cutworm_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(earworm_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(armyworm_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(hopper_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(aphids_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(faw_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence),
+    April = c(c(borer_monthly_2023 %>% filter(Month == 4)) %$% mean_temp.x,
+                c(borer_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(semilooper_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(cutworm_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(earworm_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(armyworm_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(hopper_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(aphids_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(faw_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence),
+    May = c(c(borer_monthly_2023 %>% filter(Month == 5)) %$% mean_temp.x,
+                c(borer_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(semilooper_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(cutworm_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(earworm_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(armyworm_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(hopper_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(aphids_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(faw_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence),
+    June = c(c(borer_monthly_2023 %>% filter(Month == 6)) %$% mean_temp.x,
+                c(borer_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence,
+                c(semilooper_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(cutworm_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence,
+                c(earworm_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence,
+                c(armyworm_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence,
+                c(hopper_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence,
+                c(aphids_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence,
+                c(faw_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence)
+    )
+
+write.csv(summary_pests_monthly_2023, "../report_2023/Monthly Pest Incidence Jan-Jun 2023.csv")
+#####
 
 ######## Pest Plots ##########
 # by region plots pests
@@ -1200,7 +1322,9 @@ summary_pests_province_2023 %>%
 ggsave("../report_2023/Pests Plot/Top 3 Pests by Province in Region 8.png")
 
                                   
-####################################################################
+################################################
+
+################## Correlations #########################################
 # faw, hopper, cutworm, armyworm, aphids, borer, earworm, semilooper
 library("correlation")
 
@@ -1343,6 +1467,73 @@ weather2023_pest_corr <-
 
 write.csv(weather2023_pest_corr, "../report_2023/Weather_2023_Pest_Correlation.csv")
 
+
+
+hopper_2023 %>% select(mean_temp.x, `Crop Stage`) %>% group_by(`Crop Stage`) %>% summarise(mean_temperatures = mean(mean_temp.x))
+##############################################
+
+######################### mean percent incidences#################
+# semilooper_mpi_2023 <-
+#   summary_semilooper_2023 %>% 
+#   select(`Crop Stage`, percent_incidence_semilooper) %>% 
+#   group_by(`Crop Stage`) %>%
+#   summarise(mean_incidence = mean(percent_incidence_semilooper))
+# 
+# earworm_mpi_2023 <-
+#   summary_earworm_2023 %>% 
+#   select(`Crop Stage`, percent_incidence_earworm) %>% 
+#   group_by(`Crop Stage`) %>%
+#   summarise(mean_incidence = mean(percent_incidence_earworm))
+# 
+# borer_mpi_2023 <-
+#   summary_borer_2023 %>% 
+#   select(`Crop Stage`, percent_incidence_borer) %>% 
+#   group_by(`Crop Stage`) %>%
+#   summarise(mean_incidence = mean(percent_incidence_borer))
+# 
+# aphids_mpi_2023 <-
+#   summary_aphids_2023 %>% 
+#   select(`Crop Stage`, percent_incidence_aphids) %>% 
+#   group_by(`Crop Stage`) %>%
+#   summarise(mean_incidence = mean(percent_incidence_aphids))
+# 
+# armyworm_mpi_2023 <-
+#   summary_armyworm_2023 %>% 
+#   select(`Crop Stage`, percent_incidence_armyworm) %>% 
+#   group_by(`Crop Stage`) %>%
+#   summarise(mean_incidence = mean(percent_incidence_armyworm))
+# 
+# hopper_mpi_2023 <-
+#   summary_hopper_2023 %>% 
+#   select(`Crop Stage`, percent_incidence_hopper) %>% 
+#   group_by(`Crop Stage`) %>%
+#   summarise(mean_incidence = mean(percent_incidence_hopper))
+# 
+# faw_mpi_2023 <-
+#   summary_faw_2023 %>% 
+#   select(`Crop Stage`, percent_incidence_faw) %>% 
+#   group_by(`Crop Stage`) %>%
+#   summarise(mean_incidence = mean(percent_incidence_faw))
+# 
+# cutworm_mpi_2023 <-
+#   summary_cutworm_2023 %>% 
+#   select(`Crop Stage`, percent_incidence_cutworm) %>% 
+#   group_by(`Crop Stage`) %>%
+#   summarise(mean_incidence = mean(percent_incidence_cutworm))
+# 
+# 
+#  pest_incidences_by_crop_stage <-
+#    data.frame(
+#     Pests = c("Borer", "Semilooper", 
+#               "Cutworm", "Earworm", 
+#               "Armyworm", "Corn Plant Hopper", 
+#               "Aphids", "FAW"),
+#     
+#     semilooper_mpi_2023 %>% filter(`Crop Stage` == "Early Whorl") %$% mean_incidence
+#     
+#    )
+
+################################################################
 ```
 
 ```{r setup, include=FALSE}
@@ -1359,67 +1550,10 @@ write.csv(sites_count, "../report_2023/Number of sites.csv")
 write.csv(insect_raw_parsed, "../report_2023/Insects Raw 2023.csv")
 ```
 
-```Pest incidences per CROP GROWTH STAGE from January to June 2023```
-```{r}
-linewidth <- 1.6
-formula_geom_smooth <- NULL
-plot_height <- 5
-
-insects_2023_cgs <- 
-    insects_summary_2023 %>%
-    group_by(`Crop Stage`) %>%
-    mutate(., across(contains("percent_incidence_"), ~ mean(.x))) %>%
-    filter(`Crop Stage` != "Emergence") %>%
-    left_join(temp_2023_insects, by=c("Crop Stage"))
-
-insects_2023_cgs %>%
-  ggplot(aes(x = `Crop Stage`, y = mean_stage_temp, group = 1)) +
-  geom_line()+
-  scale_x_discrete(stage_lvls, labels = stage_lvls)
-
-mean_stage_temp <- insects_2023_cgs$mean_stage_temp
-
-insects_2023_cgs %>%
-  ggplot(aes(x = `Crop Stage`, group = 1)) +
-  geom_line(aes(y = mean_stage_temp)) +
-  geom_smooth(aes(y = percent_incidence_borer, color = "Borer"), linewidth = linewidth,
-              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
-  geom_smooth(aes(y = percent_incidence_semilooper, color = "Semi-looper"),  linewidth = linewidth,
-              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
-  geom_smooth(aes(y = percent_incidence_cutworm, color = "Cutworm"),  linewidth = linewidth,
-              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
-  geom_smooth(aes(y = percent_incidence_earworm, color = "Earworm"),  linewidth = linewidth,
-              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
-  geom_smooth(aes(y = percent_incidence_hopper, color = "Hopper"), linewidth = linewidth,
-              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
-  geom_smooth(aes(y = percent_incidence_aphids, color = "Aphids"), linewidth = linewidth,
-              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
-  geom_smooth(aes(y = percent_incidence_armyworm, color = "Armyworm"),  linewidth = linewidth,
-              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
-  geom_smooth(aes(y = percent_incidence_faw, color = "FAW"),  linewidth = linewidth,
-              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
-  scale_y_continuous(name = "Percent Incidence",
-                     sec.axis = sec_axis(~., name="Mean Temperature")) +
-  labs(y = "Percent Incidences", 
-       x = "Corn Crop Growth Stages",
-       color = "Pests",
-       title = "Summary of Pest Incidences per Growth Stage from January to June 2023") +
-  scale_x_discrete(stage_lvls, labels = stage_lvls) + 
-  scale_color_brewer(palette = "Accent") +
-  # scale_y_continuous(limits = c(0, 100)) +
-  theme_classic(base_size = 8) +
-  theme(plot.title = element_text(size = 13),
-        axis.text.x = element_text(angle = 35, 
-                                   vjust = 1, 
-                                   hjust = 1, 
-                                   size = 12),
-        axis.title.y.right=element_text(color="red"),
-        axis.text.y.right=element_text(color="red"))
-ggsave(path = "../report_2023", filename = "Summary of Pest Incidences per Growth Stage from January to June 2023.png", height = plot_height, dpi=plot_dpi)
-```
 
 ```Diseases incidences January - June 2023```
 ```{r}
+### 2023 summaries ####
 # BLSB
 blsb_2023 <- 
   diseases_raw_parsed %>%
@@ -1738,9 +1872,10 @@ diseases_summary_2023 <-
       left_join(summary_rust_2023) %>%
       left_join(summary_southrust_2023) %>%
       left_join(summary_stalk_2023)
+######
 
 
-# by region
+### by region ####
 summary_blsb_region_2023 <-
   summary_blsb_2023 %>%
   group_by(factor(Region)) %>% 
@@ -1815,9 +1950,9 @@ summary_diseases_region_2023 <-
   summary_diseases_region_2023 %>% 
   arrange(desc(Regional_Incidence))
 write.csv(summary_diseases_region_2023, "../report_2023/Regional Top Diseases Percent Incidence.csv")
+#####
 
-
-# by corn type
+##### by corn type ######
 summary_blsb_corntype_2023 <-
   summary_blsb_2023 %>%
   group_by(factor(`Corn Type`)) %>% 
@@ -1925,9 +2060,9 @@ summary_diseases_corntype_GM_2023 <-
   select(Diseases, GM.Percent.Incidence) %>%
   arrange(desc(GM.Percent.Incidence))
 write.csv(summary_diseases_corntype_GM_2023, "../report_2023/Top Diseases GM Corn Type Percent Incidence.csv")
+#####
 
-
-# by Province
+###  by Province  #####
 summary_blsb_province_2023 <-
   summary_blsb_2023 %>%
   group_by(factor(Province)) %>% 
@@ -2060,10 +2195,9 @@ summary_diseases_Samar_2023 <-
   select(Diseases, Samar) %>%
   arrange(desc(Samar))
 write.csv(summary_diseases_Samar_2023, "../report_2023/Top Diseases Samar Percent Incidence.csv")
+#######
 
-
-
-# by fertilizer
+####  by fertilizer  ######
 summary_blsb_fertilizer_2023 <-
   summary_blsb_2023 %>%
   group_by(factor(Treatment)) %>% 
@@ -2197,8 +2331,9 @@ summary_diseases_arfr_fertilizer_2023 <-
   select(Diseases, ARFR) %>%
   arrange(desc(ARFR))
 write.csv(summary_diseases_arfr_fertilizer_2023, "../report_2023/Top Diseases by ARFR Fertilizer Treatment Percent Incidence.csv")
+#######
 
-# by Crop stage
+### by Crop stage ####
 summary_blsb_crop_stage_2023 <-
   summary_blsb_2023 %>%
   group_by(factor(`Crop Stage`)) %>% 
@@ -2219,10 +2354,10 @@ summary_southrust_crop_stage_2023 <-
   arrange(desc(w))
 
 
-summary_leaf_crop_stage_2023 <-
-  summary_leaf_2023 %>%
+summary_blight_crop_stage_2023 <-
+  summary_blight_2023 %>%
   group_by(factor(`Crop Stage`)) %>% 
-  summarise(w=mean(percent_incidence_leaf), sd = mean_sd(percent_incidence_leaf)) %>% 
+  summarise(w=mean(percent_incidence_blight), sd = mean_sd(percent_incidence_blight)) %>% 
   arrange(desc(w))
 
 summary_brown_crop_stage_2023 <-
@@ -2264,7 +2399,7 @@ summary_diseases_crop_stage_2023 <-
                        filter(`factor(\`Crop Stage\`)` == "Early Whorl") %$% w,
                  summary_brown_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Early Whorl") %$% w,
-                 summary_leaf_crop_stage_2023 %>% 
+                 summary_blight_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Early Whorl") %$% w,
                  summary_southrust_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Early Whorl") %$% w,
@@ -2282,7 +2417,7 @@ summary_diseases_crop_stage_2023 <-
                        filter(`factor(\`Crop Stage\`)` == "Single Leaf") %$% w,
                  summary_brown_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Single Leaf") %$% w,
-                 summary_leaf_crop_stage_2023 %>% 
+                 summary_blight_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Single Leaf") %$% w,
                  summary_southrust_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Single Leaf") %$% w,
@@ -2300,7 +2435,7 @@ summary_diseases_crop_stage_2023 <-
                        filter(`factor(\`Crop Stage\`)` == "Seedling (3 - 4 Leaves)") %$% w,
                  summary_brown_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Seedling (3 - 4 Leaves)") %$% w,
-                 summary_leaf_crop_stage_2023 %>% 
+                 summary_blight_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Seedling (3 - 4 Leaves)") %$% w,
                  summary_southrust_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Seedling (3 - 4 Leaves)") %$% w,
@@ -2318,7 +2453,7 @@ summary_diseases_crop_stage_2023 <-
                        filter(`factor(\`Crop Stage\`)` == "Mid Whorl") %$% w,
                  summary_brown_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Mid Whorl") %$% w,
-                 summary_leaf_crop_stage_2023 %>% 
+                 summary_blight_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Mid Whorl") %$% w,
                  summary_southrust_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Mid Whorl") %$% w,
@@ -2335,7 +2470,7 @@ summary_diseases_crop_stage_2023 <-
                        filter(`factor(\`Crop Stage\`)` == "Late Whorl") %$% w,
                  summary_brown_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Late Whorl") %$% w,
-                 summary_leaf_crop_stage_2023 %>% 
+                 summary_blight_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Late Whorl") %$% w,
                  summary_southrust_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Late Whorl") %$% w,
@@ -2352,7 +2487,7 @@ summary_diseases_crop_stage_2023 <-
                        filter(`factor(\`Crop Stage\`)` == "Tasseling") %$% w,
                  summary_brown_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Tasseling") %$% w,
-                 summary_leaf_crop_stage_2023 %>% 
+                 summary_blight_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Tasseling") %$% w,
                  summary_southrust_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Tasseling") %$% w,
@@ -2369,7 +2504,7 @@ summary_diseases_crop_stage_2023 <-
                        filter(`factor(\`Crop Stage\`)` == "Silking") %$% w,
                  summary_brown_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Silking") %$% w,
-                 summary_leaf_crop_stage_2023 %>% 
+                 summary_blight_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Silking") %$% w,
                  summary_southrust_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Silking") %$% w,
@@ -2386,7 +2521,7 @@ summary_diseases_crop_stage_2023 <-
                        filter(`factor(\`Crop Stage\`)` == "Maturity") %$% w,
                  summary_brown_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Maturity") %$% w,
-                 summary_leaf_crop_stage_2023 %>% 
+                 summary_blight_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Maturity") %$% w,
                  summary_southrust_crop_stage_2023 %>% 
                        filter(`factor(\`Crop Stage\`)` == "Maturity") %$% w,
@@ -2398,6 +2533,8 @@ summary_diseases_crop_stage_2023 <-
                        filter(`factor(\`Crop Stage\`)` == "Maturity") %$% w
              )
     ) 
+
+write.csv(summary_diseases_crop_stage_2023, "../report_2023/Summary of Corn Crop Stage Disease Incidences 2023.csv")
 
 summary_diseases_single_leaf_2023 <-
   summary_diseases_crop_stage_2023 %>% 
@@ -2458,12 +2595,126 @@ summary_diseases_maturity_2023 <-
   select(Diseases, Maturity) %>%
   arrange(desc(Maturity))
 write.csv(summary_diseases_maturity_2023, "../report_2023/Top Diseases during Maturity `Crop Stage` Percent Incidence.csv")
+#####
+
+## by Month ####
+stalk_monthly_2023 <-
+  stalk_2023 %>%
+  select(Month, incidence_stalk, mean_temp) %>%
+  group_by(Month, mean_temp) %>%
+  summarise(monthly_incidence = mean(incidence_stalk))
+
+rust_monthly_2023 <-
+  rust_2023 %>%
+  select(Month, incidence_rust, mean_temp) %>%
+  group_by(Month, mean_temp) %>%
+  summarise(monthly_incidence = mean(incidence_rust))
+
+leaf_monthly_2023 <-
+  leaf_2023 %>%
+  select(Month, incidence_leaf, mean_temp) %>%
+  group_by(Month, mean_temp) %>%
+  summarise(monthly_incidence = mean(incidence_leaf))
+
+southrust_monthly_2023 <-
+  southrust_2023 %>%
+  select(Month, incidence_southrust, mean_temp) %>%
+  group_by(Month, mean_temp) %>%
+  summarise(monthly_incidence = mean(incidence_southrust))
+
+blight_monthly_2023 <-
+  blight_2023 %>%
+  select(Month, incidence_blight, mean_temp) %>%
+  group_by(Month, mean_temp) %>%
+  summarise(monthly_incidence = mean(incidence_blight))
+
+brown_monthly_2023 <-
+  brown_2023 %>%
+  select(Month, incidence_brown, mean_temp) %>%
+  group_by(Month, mean_temp) %>%
+  summarise(monthly_incidence = mean(incidence_brown))
+
+mildew_monthly_2023 <-
+  mildew_2023 %>%
+  select(Month, incidence_mildew, mean_temp) %>%
+  group_by(Month, mean_temp) %>%
+  summarise(monthly_incidence = mean(incidence_mildew))
+
+stalk_monthly_2023 <-
+  stalk_2023 %>%
+  select(Month, incidence_stalk, mean_temp) %>%
+  group_by(Month, mean_temp) %>%
+  summarise(monthly_incidence = mean(incidence_stalk))
 
 
+summary_diseases_monthly_2023 <-
+  data.frame(
+    Diseases = c("Temperature", "Downy mildew", "Stalk Rot", 
+              "Brown spot", "Leaf Blight", 
+              "Southern rust", "Leaf spot", 
+              "Common rust", "BLSB"),
+    January = c(c(mildew_monthly_2023 %>% filter(Month == 1)) %$% mean_temp,
+                c(mildew_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(stalk_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(brown_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(blight_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(southrust_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(leaf_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(rust_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence,
+                c(stalk_monthly_2023 %>% filter(Month == 1)) %$% monthly_incidence),
+    February = c(c(mildew_monthly_2023 %>% filter(Month == 2)) %$% mean_temp,
+                c(mildew_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(stalk_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(brown_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(blight_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(southrust_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(leaf_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(rust_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence,
+                c(stalk_monthly_2023 %>% filter(Month == 2)) %$% monthly_incidence),
+    March = c(c(mildew_monthly_2023 %>% filter(Month == 3)) %$% mean_temp,
+                c(mildew_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(stalk_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(brown_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(blight_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(southrust_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(leaf_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(rust_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(stalk_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence),
+    April = c(c(mildew_monthly_2023 %>% filter(Month == 4)) %$% mean_temp,
+                c(mildew_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(stalk_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(brown_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(blight_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(southrust_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(leaf_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(rust_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence,
+                c(stalk_monthly_2023 %>% filter(Month == 4)) %$% monthly_incidence),
+    May = c(c(mildew_monthly_2023 %>% filter(Month == 5)) %$% mean_temp,
+                c(mildew_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(stalk_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(brown_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(blight_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(southrust_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(leaf_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(rust_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence,
+                c(stalk_monthly_2023 %>% filter(Month == 5)) %$% monthly_incidence),
+    June = c(c(mildew_monthly_2023 %>% filter(Month == 6)) %$% mean_temp,
+                c(mildew_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence,
+                c(stalk_monthly_2023 %>% filter(Month == 3)) %$% monthly_incidence,
+                c(brown_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence,
+                c(blight_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence,
+                c(southrust_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence,
+                c(leaf_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence,
+                c(rust_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence,
+                c(stalk_monthly_2023 %>% filter(Month == 6)) %$% monthly_incidence)
+    )
+
+write.csv(summary_diseases_monthly_2023, "../report_2023/Monthly Disease Incidence Jan-June 2023.csv")
+#####
 
 
 ######## Diseases Plots ##########
-# by region plots Diseases
+#### by region plots Diseases ####
 summary_diseases_region_2023 %>%
   arrange(desc(Regional_Incidence)) %>%
   slice(1:3) %>%
@@ -2489,8 +2740,9 @@ top_diseases_2023 <-
   c((summary_diseases_region_2023 %>%
     arrange(desc(Regional_Incidence)) %>%
     slice(1:3))["Diseases"])$Diseases
+#######
 
-# by corn type plots diseases
+#### by corn type plots diseases ####
 summary_diseases_corntype_2023 %>%
   subset(., Diseases %in% top_diseases_2023) %>%
   pivot_longer(-Diseases, names_to = "Corn_Type", values_to = "Percent_Incidence")  %>%
@@ -2514,9 +2766,9 @@ summary_diseases_corntype_2023 %>%
                                   vjust = -115),
         plot.margin = margin(t = 10, l = 10, b = 20))
 ggsave("../report_2023/Diseases Plots/Top 3 Diseases by Corn Type in Region 8.png", dpi = plot_dpi)
+#####
 
-
-# by fertilizer treatment rates plots diseases
+#### by fertilizer treatment rates plots diseases ####
 summary_diseases_fertilizer_2023  %>%
   subset(., Diseases %in% top_diseases_2023) %>%
   pivot_longer(-Diseases, names_to = "Fertilizer", values_to = "Percent_Incidence")  %>%
@@ -2540,9 +2792,9 @@ summary_diseases_fertilizer_2023  %>%
                                   vjust = -115),
         plot.margin = margin(t = 10, l = 10, b = 20))
 ggsave("../report_2023/Diseases Plots/Top 3 Diseases by Fertilizer Treatment Rate in Region 8.png", dpi = plot_dpi)
+#####
 
-
-# by Province treatment rates plots diseases
+#### by Province treatment rates plots diseases ######
 summary_diseases_province_2023 %>%
   subset(., Diseases %in% top_diseases_2023) %>%
   pivot_longer(-Diseases, names_to = "Provinces", values_to = "Percent_Incidence")  %>%
@@ -2569,7 +2821,7 @@ ggsave("../report_2023/Diseases Plots/Top 3 Diseases by Province in Region 8.png
 
 ####################################################################
 
-
+### correlations ####
 library("correlation")
 
 # stalk
@@ -2711,6 +2963,214 @@ weather_2023_disease_corr
 
 write.csv(weather_2023_disease_corr, "../report_2023/Weather_2023_Diseases_Correlation.csv")
 
+########
+```
+
+
+``` Corn Crop Stage and Percent incidence Jan-Jun 2023```
+```{r}
+
+# crop stage plot ####
+summary_pests_crop_stage_2023$Emergence <- 0
+stage_levels <- c("Emergence", "Single_leaf", 
+                  "Seedling","Early_whorl",
+                  "Mid_whorl" ,"Late_whorl",
+                  "Tasseling","Silking", "Maturity")
+
+summary_pests_crop_stage_2023_plot <-
+  summary_pests_crop_stage_2023 %>%
+  pivot_longer(-Pests, 
+               names_to = "crop_stage", 
+               values_to = "incidence") 
+
+summary_pests_crop_stage_2023_plot %>%
+  ggplot(aes(x = crop_stage, 
+             y = incidence, 
+             color = Pests,
+             group = Pests)) +
+  geom_line(linewidth = linewidth - 0.2,
+            position = position_dodge(1)) +
+  scale_x_discrete(limits = stage_levels,
+                   labels = stage_levels) +
+  scale_y_continuous(limits = c(0, 115), 
+                     breaks = c(seq(0, 115, by = 5))) +
+  labs(y = "Percent Incidences",
+       x = "Corn Crop Growth Stages",
+       title = "Summary of Pest Incidences Per Growth Stage from January - June 2023") +
+  theme(axis.text.x = element_text(angle = 35, 
+                                   vjust = 1, 
+                                   hjust = 1, 
+                                   size = 8),
+        axis.title = element_text(size = 11, face="bold")) +
+  scale_color_brewer(palette = "Accent") +
+  theme(plot.title.position = "panel",
+        plot.title = element_text(margin = margin(t=5, b=15),
+                                  hjust = 0.5,
+                                  vjust = -133),
+        plot.margin = margin(t = -10, l = 10, b = 20))
+ggsave("../report_2023/Summary of Pest Incidences Per Growth Stage from January - June 2023.png", dpi = plot_dpi, height = plot_height)
+
+
+
+
+
+
+
+### Monthly plot pests ####
+# Monthly Plot Pests
+months <- c("January", "February", "March", "April", "May", "June")
+insect_pests = c("Borer", "Semilooper", 
+              "Cutworm", "Earworm", 
+              "Armyworm", "Corn Plant Hopper", 
+              "Aphids", "FAW")
+summary_pests_monthly_2023_plot <-
+  summary_pests_monthly_2023 %>%
+  filter(Pests != "Temperature") %>%
+  pivot_longer(-Pests, 
+               names_to = "month", 
+               values_to = "incidence") 
+
+
+summary_temp_monthly_2023_plot <-
+  summary_pests_monthly_2023 %>%
+  filter(Pests == "Temperature") %>%
+  pivot_longer(-Pests, names_to = "months", values_to = "temp")
+
+summary_pests_monthly_2023_plot %>%
+  ggplot(aes(x = month, 
+             y = incidence, 
+             color = Pests,
+             group = Pests)) +
+  geom_area(data = summary_temp_monthly_2023_plot,
+            aes(months, temp, fill = Pests), 
+            stat = "identity", 
+            alpha = 0.2,
+            show.legend = FALSE) +
+  geom_line(linewidth = linewidth - 0.2,
+            position = position_dodge(1)) +
+  scale_x_discrete(limits = months,
+                   labels = months) +
+  scale_y_continuous(limits = c(0, 35), 
+                     breaks = c(seq(0, 40, by = 5)),
+                     sec.axis = sec_axis(~., 
+                                         name = "Monthly Temperature")) +
+  labs(y = "Percent Incidence",
+       x = "Cropping Months",
+       title = "Summary of Monthly Pest Incidences from January - June 2023") +
+  theme(axis.text.x = element_text(angle = 35, 
+                                   vjust = 1, 
+                                   hjust = 1, 
+                                   size = 8),
+        axis.title = element_text(size = 11, face="bold")) +
+  scale_color_brewer(palette = "Paired") +
+  theme(plot.title.position = "panel",
+        plot.title = element_text(margin = margin(t=5, b=15),
+                                  hjust = 0.5,
+                                  vjust = -133),
+        plot.margin = margin(t = -10, l = 10, b = 20))
+ggsave("../report_2023/Summary of Monthly Pest Incidences from January - June 2023.png", dpi = plot_dpi, height = plot_height)
+####
+```
+
+
+```Disease incidences per CGS from Jan-Jun 2023```
+```{r}
+# crop stage plot ####
+summary_diseases_crop_stage_2023$Emergence <- 0
+stage_levels <- c("Emergence", "Single_leaf", 
+                  "Seedling","Early_whorl",
+                  "Mid_whorl" ,"Late_whorl",
+                  "Tasseling","Silking", "Maturity")
+
+summary_diseases_crop_stage_2023_plot <-
+  summary_diseases_crop_stage_2023 %>%
+  pivot_longer(-Diseases, 
+               names_to = "crop_stage", 
+               values_to = "incidence") 
+
+summary_diseases_crop_stage_2023_plot %>%
+  ggplot(aes(x = crop_stage, 
+             y = incidence, 
+             color = Diseases,
+             group = Diseases)) +
+  geom_line(linewidth = linewidth - 0.2,
+            position = position_dodge(1)) +
+  scale_x_discrete(limits = stage_levels,
+                   labels = stage_levels) +
+  scale_y_continuous(limits = c(0, 150), 
+                     breaks = c(seq(0, 150, by = 10))) +
+  labs(y = "Percent Incidences",
+       x = "Corn Crop Growth Stages",
+       title = "Summary of Disease Incidences Per Growth Stage from January - June 2023") +
+  theme(axis.text.x = element_text(angle = 35, 
+                                   vjust = 1, 
+                                   hjust = 1, 
+                                   size = 8),
+        axis.title = element_text(size = 11, face="bold")) +
+  scale_color_brewer(palette = "Accent") +
+  theme(plot.title.position = "panel",
+        plot.title = element_text(margin = margin(t=5, b=15),
+                                  hjust = 0.5,
+                                  vjust = -133),
+        plot.margin = margin(t = -10, l = 10, b = 20))
+ggsave("../report_2023/Summary of Disease Incidences Per Growth Stage from January - June 2023.png", dpi = plot_dpi, height = plot_height)
+
+
+
+
+### Monthly plot diseases ####
+# Monthly Plot Diseases
+months <- c("January", "February", "March", "April", "May", "June")
+disease_diseases = c("Downy mildew", "Stalk Rot", 
+             "Brown spot", "Leaf Blight", 
+             "Southern rust", "Leaf spot", 
+             "Common rust", "BLSB")
+summary_diseases_monthly_2023_plot <-
+  summary_diseases_monthly_2023 %>%
+  filter(Diseases != "Temperature") %>%
+  pivot_longer(-Diseases, 
+               names_to = "month", 
+               values_to = "incidence") 
+
+
+summary_temp_monthly_2023_plot <-
+  summary_diseases_monthly_2023 %>%
+  filter(Diseases == "Temperature") %>%
+  pivot_longer(-Diseases, names_to = "months", values_to = "temp")
+
+summary_diseases_monthly_2023_plot %>%
+  ggplot(aes(x = month, 
+             y = incidence, 
+             color = Diseases,
+             group = Diseases)) +
+  geom_area(data = summary_temp_monthly_2023_plot,
+            aes(months, temp, fill = Diseases), 
+            stat = "identity", 
+            alpha = 0.2,
+            show.legend = FALSE) +
+  geom_line(linewidth = linewidth - 0.2,
+            position = position_dodge(1)) +
+  scale_x_discrete(limits = months,
+                   labels = months) +
+  scale_y_continuous(limits = c(0, 35), 
+                     breaks = c(seq(0, 40, by = 5)),
+                     sec.axis = sec_axis(~., 
+                                         name = "Monthly Temperature")) +
+  labs(y = "Percent Incidence",
+       x = "Cropping Months",
+       title = "Summary of Monthly Disease Incidences from January - June 2023") +
+  theme(axis.text.x = element_text(angle = 35, 
+                                   vjust = 1, 
+                                   hjust = 1, 
+                                   size = 8),
+        axis.title = element_text(size = 11, face="bold")) +
+  scale_color_brewer(palette = "Paired") +
+  theme(plot.title.position = "panel",
+        plot.title = element_text(margin = margin(t=5, b=15),
+                                  hjust = 0.5,
+                                  vjust = -133),
+        plot.margin = margin(t = -10, l = 10, b = 20))
+ggsave("../report_2023/Summary of Monthly Disase Incidences from January - June 2023.png", dpi = plot_dpi, height = plot_height)
 ```
 
 
@@ -2751,6 +3211,76 @@ blight_2023_province %>%
         axis.title.y = element_text(size = 12))
 ggsave(path = "../report_2023", filename = "Summary of Leaf blight incidences per Growth Stage in three Provinces from January to June 2023.png", height = plot_height, dpi=plot_dpi)
 ```
+
+
+
+
+
+
+
+
+
+
+```Pest incidences per CROP GROWTH STAGE from January to June 2023```
+```{r}
+linewidth <- 1.6
+formula_geom_smooth <- NULL
+plot_height <- 5
+
+insects_2023_cgs <- 
+    insects_summary_2023 %>%
+    group_by(`Crop Stage`) %>%
+    mutate(., across(contains("percent_incidence_"), ~ mean(.x))) %>%
+    filter(`Crop Stage` != "Emergence") %>%
+    left_join(temp_2023_insects, by=c("Crop Stage"))
+
+insects_2023_cgs %>%
+  ggplot(aes(x = `Crop Stage`, y = mean_stage_temp, group = 1)) +
+  geom_line()+
+  scale_x_discrete(stage_lvls, labels = stage_lvls)
+
+mean_stage_temp <- insects_2023_cgs$mean_stage_temp
+
+insects_2023_cgs %>%
+  ggplot(aes(x = `Crop Stage`, group = 1)) +
+  geom_line(aes(y = mean_stage_temp)) +
+  geom_smooth(aes(y = percent_incidence_borer, color = "Borer"), linewidth = linewidth,
+              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
+  geom_smooth(aes(y = percent_incidence_semilooper, color = "Semi-looper"),  linewidth = linewidth,
+              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
+  geom_smooth(aes(y = percent_incidence_cutworm, color = "Cutworm"),  linewidth = linewidth,
+              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
+  geom_smooth(aes(y = percent_incidence_earworm, color = "Earworm"),  linewidth = linewidth,
+              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
+  geom_smooth(aes(y = percent_incidence_hopper, color = "Hopper"), linewidth = linewidth,
+              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
+  geom_smooth(aes(y = percent_incidence_aphids, color = "Aphids"), linewidth = linewidth,
+              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
+  geom_smooth(aes(y = percent_incidence_armyworm, color = "Armyworm"),  linewidth = linewidth,
+              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
+  geom_smooth(aes(y = percent_incidence_faw, color = "FAW"),  linewidth = linewidth,
+              se = FALSE, method = "loess", formula = formula_geom_smooth) + 
+  scale_y_continuous(name = "Percent Incidence",
+                     sec.axis = sec_axis(~., name="Mean Temperature")) +
+  labs(y = "Percent Incidences", 
+       x = "Corn Crop Growth Stages",
+       color = "Pests",
+       title = "Summary of Pest Incidences per Growth Stage from January to June 2023") +
+  scale_x_discrete(stage_lvls, labels = stage_lvls) + 
+  scale_color_brewer(palette = "Accent") +
+  # scale_y_continuous(limits = c(0, 100)) +
+  theme_classic(base_size = 8) +
+  theme(plot.title = element_text(size = 13),
+        axis.text.x = element_text(angle = 35, 
+                                   vjust = 1, 
+                                   hjust = 1, 
+                                   size = 12),
+        axis.title.y.right=element_text(color="red"),
+        axis.text.y.right=element_text(color="red"))
+ggsave(path = "../report_2023", filename = "Summary of Pest Incidences per Growth Stage from January to June 2023.png", height = plot_height, dpi=plot_dpi)
+```
+
+
 
 
 

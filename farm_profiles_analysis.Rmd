@@ -19,6 +19,56 @@ library(ggrepel)
 farm_profiles <- read_csv("farm_profiles.csv")
 ```
 
+
+```{r}
+farm_profile_for_map <- read_csv("../farm_profile_for_map.csv") %>% na.omit()
+write.csv(farm_profile_for_map, "../farm_profile_googlemap.csv")
+
+
+farm_profile_for_map %>%
+  select(Province, Municipality, Barangay) %>%
+  group_by(Province, Municipality) %>%
+  count()
+```
+
+
+```Farm profile 2023 summary```
+```{r}
+farm_profile_2023 <-
+  farm_profiles %>%
+  mutate(collection_date = mdy(`Collection Date`)) %>%
+  filter(collection_date > "2023-01-01" & collection_date < "2023-07-01")
+
+leyte_farm_2023 <- 
+  farm_profile_2023 %>%
+  filter(Province == "Leyte") %>%
+  mutate(Farmer = paste(`Farmer First name`, `Farmer Last name`)) %>%
+  select(Province, Municipality, Barangay, Farmer, `GPS Long`, `GPS Lat`)
+
+so_leyte_farm_2023 <- 
+  farm_profile_2023 %>%
+  filter(Province == "Southern Leyte") %>%
+  mutate(Farmer = paste(`Farmer First name`, `Farmer Last name`)) %>%
+  select(Province, Municipality, Barangay, Farmer, `GPS Long`, `GPS Lat`)
+
+samar_farm_2023 <- 
+  farm_profile_2023 %>%
+  filter(Province == "Samar") %>%
+  mutate(Farmer = paste(`Farmer First name`, `Farmer Last name`)) %>%
+  select(Province, Municipality, Barangay, Farmer, `GPS Long`, `GPS Lat`)
+
+
+farmers_2023 <-
+  leyte_farm_2023 %>% 
+  full_join(so_leyte_farm_2023)
+  
+write.csv(farmers_2023, "../report_2023/Farmer's 2023 Profiles.csv")
+
+  
+```
+
+
+
 ```{r}
 # Land Tenure
 land_tenure_count <-
@@ -91,19 +141,14 @@ soil_texture_count %>%
   mutate(ypos = cumsum(prop) - 1.05 * prop) %>%
   ggplot(aes(x = "", y = n, fill = reorder(`Soil Texture`, n))) + 
   geom_bar(stat="identity", width = 0.5) +
-  coord_polar(theta = "y") + 
+  coord_polar("y") + 
   theme_void() +
-  # theme(legend.position="none") +
-  # geom_label_repel(aes(y = n * 0.75 + c(0, cumsum(n)[-length(n)]), 
-  #               label = n), color = "black", size = 5, nudge_x = 0.3) +
   geom_label_repel(aes(y = n * 0.65 + c(0, cumsum(n)[-length(n)]), 
                 label = sprintf("%s (%s)", n, percent(n/sum(soil_texture_count$n)))), 
-                color = "black", size = 5, nudge_x = 0.35, show.legend = NA) +
+                color = "black", size = 5, nudge_x = 0.35, show.legend = FALSE) +
   labs(title = "Soil Texture",
        fill = "Types of Soil Texture") + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
-
-
 ggsave(path = "../farm_profiles", filename = "Types of Soil Texture.png")
 ```
 
@@ -119,24 +164,56 @@ ggsave(path = "../farm_profiles", filename = "Types of Soil Texture.png")
 # Cropping Pattern
 ```
 
-
 ```{r}
 # Source of Planting Materials
-```
+material_sources_count <-
+  farm_profiles %>%
+  mutate(material_sources = `Source of Planting Materials`) %>%
+  count(material_sources)
 
+material_sources_count %>% 
+  mutate(supplier = case_when(str_detect(material_sources, "([Aa]grivet)") ~ "Agrivet",
+                              str_detect(material_sources, "(Agroman)") ~ "Agroman",
+                              str_detect(material_sources, "(BCCI)") ~ "BCCI",
+                              str_detect(material_sources, "LGU([-, ])*[A-Za-z]* | PAGSO | \\bLGU\\b") ~ "LGU",
+                              str_detect(material_sources, "(DA)") ~ "DA",
+                              str_detect(material_sources, "[Nn]eighbo[u]r") ~ "Neighbor",
+                              str_detect(material_sources, "Owne[rd]") ~ "Owned",
+         TRUE ~ material_sources))
+```
 
 ```{r}
 # Crop Stage
 ```
 
-
 ```{r}
 # Planting Distance
 ```
 
-
 ```{r}
 # Fertilizer Application Level
+fertilizer_level_count <-
+  farm_profiles %>%
+  group_by(`Fertilizer Application Level`) %>%
+  mutate(fertilizer_level = `Fertilizer Application Level`) %>%
+  count(fertilizer_level)
+
+
+fertilizer_level_count %>%
+  arrange(desc(n)) %>%
+  mutate(prop = n / (sum(fertilizer_level_count$n) * 50)) %>%
+  mutate(ypos = cumsum(prop) - 1.05 * prop) %>%
+  ggplot(aes(x = "", y = n, fill = reorder(`Fertilizer Application Level`, n))) + 
+  geom_bar(stat="identity", width = 0.5) +
+  coord_polar(theta = "y") + 
+  theme_void() +
+  geom_text(aes(y = n * 0.5 + c(0, cumsum(n)[-length(n)]), 
+                label = sprintf("%s (%s)", n, percent(n/sum(fertilizer_level_count$n)))), 
+            color = "black", size = 5) +
+  labs(title = "Fertilizer Application Level",
+       fill = "Types of Fertilizer Application Level") + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+ggsave(path = "../farm_profiles", filename = "Types of Fertilizer Application Level.png")
 ```
 
 
