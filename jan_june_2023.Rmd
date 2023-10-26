@@ -55,7 +55,6 @@ diseases_raw_parsed <-
   left_join(monthly_avg2023, by = c("Year", "Month"))
 ```
 
-
 ```Insect Pests January - June 2023```
 ```{r}
 # Corn borer
@@ -433,7 +432,7 @@ summary_pests_region_2023 <-
   data.frame(
     Pests = c("Borer", "Semilooper", 
               "Cutworm", "Earworm", 
-              "Armyworm", "Hopper", 
+              "Armyworm", "Corn Plant Hopper", 
               "Aphids", "FAW"),
     Regional_Incidence 
                  = c(summary_borer_region_2023$w[1],
@@ -510,7 +509,7 @@ summary_pests_corntype_2023 <-
   data.frame(
     Pests = c("Borer", "Semilooper", 
               "Cutworm", "Earworm", 
-              "Armyworm", "Hopper", 
+              "Armyworm", "Corn Plant Hopper", 
               "Aphids", "FAW"),
     `NGM Percent Incidence` 
                  = c(summary_borer_corntype_2023 %>% 
@@ -620,7 +619,7 @@ summary_pests_province_2023 <-
   data.frame(
     Pests = c("Borer", "Semilooper", 
               "Cutworm", "Earworm", 
-              "Armyworm", "Hopper", 
+              "Armyworm", "Corn Plant Hopper", 
               "Aphids", "FAW"),
     `Southern Leyte` 
                  = c(summary_borer_province_2023 %>% 
@@ -756,7 +755,7 @@ summary_pests_fertilizer_2023 <-
   data.frame(
     Pests = c("Borer", "Semilooper", 
               "Cutworm", "Earworm", 
-              "Armyworm", "Hopper", 
+              "Armyworm", "Corn Plant Hopper", 
               "Aphids", "FAW"),
     RFR 
                  = c(summary_borer_fertilizer_2023 %>% 
@@ -891,7 +890,7 @@ summary_pests_crop_stage_2023 <-
   data.frame(
     Pests = c("Borer", "Semilooper", 
               "Cutworm", "Earworm", 
-              "Armyworm", "Hopper", 
+              "Armyworm", "Corn Plant Hopper", 
               "Aphids", "FAW"),
     Early_whorl 
                  = c(summary_borer_crop_stage_2023 %>% 
@@ -1095,9 +1094,113 @@ summary_pests_maturity_2023 <-
   arrange(desc(Maturity))
 write.csv(summary_pests_maturity_2023, "../report_2023/Top Pests during Maturity `Crop Stage` Percent Incidence.csv")
 
+######## Pest Plots ##########
+# by region plots pests
+summary_pests_region_2023 %>%
+  arrange(desc(Regional_Incidence)) %>%
+  slice(1:3) %>%
+  ggplot(aes(x=reorder(Pests, -Regional_Incidence), fill = Pests, y=Regional_Incidence)) +
+  geom_bar(stat = "identity", width = 0.5, show.legend = FALSE) + 
+  scale_fill_brewer(palette = "Set3") +
+  geom_text(aes(label=sprintf("%1.1f%%", Regional_Incidence),
+                y=Regional_Incidence), nudge_y = -5,
+                colour = "black", fontface = "bold", size=5) +
+  labs(x="Pests",
+       y = "Regional Percent Incidence",
+       title = "Top 3 Pests in Region 8")+
+  theme(plot.title.position = "panel",
+        plot.title = element_text(margin = margin(t=5, b=15),
+                                  hjust = 0.5,
+                                  vjust = -120),
+        plot.margin = margin(t = -10, l = 10, b = 20))
+ggsave("../report_2023/Pests Plot/Top 3 Pests in Region 8.png", dpi = plot_dpi)
+  
+
+top_pests_2023 <-
+  c((summary_pests_region_2023 %>%
+    arrange(desc(Regional_Incidence)) %>%
+    slice(1:3))["Pests"])$Pests
+
+# by corn type plots pests
+summary_pests_corntype_2023 %>%
+  subset(., Pests %in% top_pests_2023) %>%
+  pivot_longer(-Pests, names_to = "Corn_Type", values_to = "Percent_Incidence")  %>%
+  ggplot(aes(x=reorder(Pests, -Percent_Incidence), 
+             fill = Corn_Type, y=Percent_Incidence)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(labels = c("GM", "NGM"), 
+                    values = c("palegreen1", "cadetblue1")) +
+  geom_text(aes(label=sprintf("%1.1f%%", 
+                              Percent_Incidence),
+                y = Percent_Incidence),
+                position = position_dodge(1), vjust = 2,
+                colour = "black", fontface = "bold", size = 4) +
+  labs(x="Pests",
+       y = "Percent Incidence on Corn Type",
+       fill = "Corn Types",
+       title = "Top 3 Pests by Corn Type in Region 8")+
+  theme(plot.title.position = "panel",
+        plot.title = element_text(margin = margin(t=5, b=15),
+                                  hjust = 0.5,
+                                  vjust = -120),
+        plot.margin = margin(t = -10, l = 10, b = 20))
+ggsave("../report_2023/Pests Plot/Top 3 Pests by Corn Type in Region 8.png", dpi = plot_dpi)
 
 
+# by fertilizer treatment rates plots pests
+summary_pests_fertilizer_2023  %>%
+  subset(., Pests %in% top_pests_2023) %>%
+  pivot_longer(-Pests, names_to = "Fertilizer", values_to = "Percent_Incidence")  %>%
+  ggplot(aes(x=reorder(Pests, -Percent_Incidence), 
+             fill = Fertilizer, y=Percent_Incidence)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(labels = c("BRFR", "RFR", "ARFR"), 
+                    values = c("bisque2", "mediumspringgreen", "cyan3")) +
+  geom_text(aes(label=sprintf("%1.1f%%", 
+                              Percent_Incidence),
+                y = Percent_Incidence),
+                position = position_dodge(1), vjust = 2,
+                colour = "black", fontface = "bold", size = 4) +
+  labs(x="Pests",
+       y = "Percent Incidence on Fertilizer Treatment Rate",
+       fill = "Fertilizer Rates",
+       title = "Top 3 Pests by Fertilizer Treatment Rate in Region 8")+
+  theme(plot.title.position = "panel",
+        plot.title = element_text(margin = margin(t=5, b=15),
+                                  hjust = 0.5,
+                                  vjust = -120),
+        plot.margin = margin(t = -10, l = 10, b = 20))
+ggsave("../report_2023/Pests Plot/Top 3 Pests by Fertilizer Treatment Rate in Region 8.png", dpi = plot_dpi)
 
+
+# by Province treatment rates plots pests
+
+summary_pests_province_2023 %>%
+  subset(., Pests %in% top_pests_2023) %>%
+  pivot_longer(-Pests, names_to = "Provinces", values_to = "Percent_Incidence")  %>%
+  ggplot(aes(x=reorder(Pests, -Percent_Incidence), 
+             fill = Provinces, y=Percent_Incidence)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(labels = c("Leyte", "Southern Leyte", "Samar"), 
+                    values = c("rosybrown1", "mediumspringgreen", "lightskyblue")) +
+  geom_text(aes(label=sprintf("%1.1f%%", 
+                              Percent_Incidence),
+                y = Percent_Incidence),
+                position = position_dodge(1), vjust = 1,
+                colour = "black", fontface = "bold", size = 4) +
+  labs(x="Pests",
+       y = "Percent Incidence by Province",
+       title = "Top 3 Pests by Province in Region 8",
+       fill = "Provinces") +
+  theme(plot.title.position = "panel",
+        plot.title = element_text(margin = margin(t=5, b=15),
+                                  hjust = 0.5,
+                                  vjust = -120),
+        plot.margin = margin(t = -10, l = 10, b = 20))
+ggsave("../report_2023/Pests Plot/Top 3 Pests by Province in Region 8.png")
+
+                                  
+####################################################################
 # faw, hopper, cutworm, armyworm, aphids, borer, earworm, semilooper
 library("correlation")
 
@@ -1242,8 +1345,6 @@ write.csv(weather2023_pest_corr, "../report_2023/Weather_2023_Pest_Correlation.c
 
 ```
 
-
-
 ```{r setup, include=FALSE}
 sites_count <- 
   insect_raw_parsed %>% 
@@ -1273,7 +1374,10 @@ insects_2023_cgs <-
 
 insects_2023_cgs %>%
   ggplot(aes(x = `Crop Stage`, y = mean_stage_temp, group = 1)) +
-  geom_line()
+  geom_line()+
+  scale_x_discrete(stage_lvls, labels = stage_lvls)
+
+mean_stage_temp <- insects_2023_cgs$mean_stage_temp
 
 insects_2023_cgs %>%
   ggplot(aes(x = `Crop Stage`, group = 1)) +
@@ -1294,8 +1398,8 @@ insects_2023_cgs %>%
               se = FALSE, method = "loess", formula = formula_geom_smooth) + 
   geom_smooth(aes(y = percent_incidence_faw, color = "FAW"),  linewidth = linewidth,
               se = FALSE, method = "loess", formula = formula_geom_smooth) + 
-  # scale_y_continuous(name = "Percent Incidence", 
-  #                    sec.axis = sec_axis(~., name="Mean Temperature")) +
+  scale_y_continuous(name = "Percent Incidence",
+                     sec.axis = sec_axis(~., name="Mean Temperature")) +
   labs(y = "Percent Incidences", 
        x = "Corn Crop Growth Stages",
        color = "Pests",
@@ -2354,6 +2458,116 @@ summary_diseases_maturity_2023 <-
   select(Diseases, Maturity) %>%
   arrange(desc(Maturity))
 write.csv(summary_diseases_maturity_2023, "../report_2023/Top Diseases during Maturity `Crop Stage` Percent Incidence.csv")
+
+
+
+
+######## Diseases Plots ##########
+# by region plots Diseases
+summary_diseases_region_2023 %>%
+  arrange(desc(Regional_Incidence)) %>%
+  slice(1:3) %>%
+  ggplot(aes(x=reorder(Diseases, -Regional_Incidence), fill = Diseases , y=Regional_Incidence)) +
+  geom_bar(stat = "identity", width = 0.5, show.legend = FALSE) + 
+  scale_fill_brewer(palette = "Set3") +
+  geom_text(aes(label=sprintf("%1.1f%%", Regional_Incidence),
+                y=Regional_Incidence), nudge_y = -5,
+                colour = "black", fontface = "bold", size=5) +
+  labs(x="Diseases",
+       y = "Regional Disease Incidence",
+       title = "Top 3 Diseases  in Region 8",
+       fill = NULL) +
+  theme(plot.title.position = "panel",
+        plot.title = element_text(margin = margin(t = -5, b=20),
+                                  hjust = 0.5,
+                                  vjust = -115),
+        plot.margin = margin(t = 10, l = 10, b = 20))
+ggsave("../report_2023/Diseases Plots/Top 3 Diseases in Region 8.png", dpi = plot_dpi)
+  
+
+top_diseases_2023 <-
+  c((summary_diseases_region_2023 %>%
+    arrange(desc(Regional_Incidence)) %>%
+    slice(1:3))["Diseases"])$Diseases
+
+# by corn type plots diseases
+summary_diseases_corntype_2023 %>%
+  subset(., Diseases %in% top_diseases_2023) %>%
+  pivot_longer(-Diseases, names_to = "Corn_Type", values_to = "Percent_Incidence")  %>%
+  ggplot(aes(x=reorder(Diseases, -Percent_Incidence), 
+             fill = Corn_Type, y=Percent_Incidence)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(labels = c("GM", "NGM"), 
+                    values = c("palegreen1", "cadetblue1")) +
+  geom_text(aes(label=sprintf("%1.1f%%", 
+                              Percent_Incidence),
+                y = Percent_Incidence),
+                position = position_dodge(1), vjust = 1.5,
+                colour = "black", fontface = "bold", size = 4) +
+  labs(x="Diseases",
+       y = "Percent Incidence on Corn Type",
+       fill = "Corn Types",
+       title = "Top 3 Diseases by Corn Type in Region 8") +
+  theme(plot.title.position = "panel",
+        plot.title = element_text(margin = margin(t = -5, b=20),
+                                  hjust = 0.5,
+                                  vjust = -115),
+        plot.margin = margin(t = 10, l = 10, b = 20))
+ggsave("../report_2023/Diseases Plots/Top 3 Diseases by Corn Type in Region 8.png", dpi = plot_dpi)
+
+
+# by fertilizer treatment rates plots diseases
+summary_diseases_fertilizer_2023  %>%
+  subset(., Diseases %in% top_diseases_2023) %>%
+  pivot_longer(-Diseases, names_to = "Fertilizer", values_to = "Percent_Incidence")  %>%
+  ggplot(aes(x=reorder(Diseases, -Percent_Incidence), 
+             fill = Fertilizer, y=Percent_Incidence)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(labels = c("BRFR", "RFR", "ARFR"), 
+                    values = c("cyan3", "cornsilk3", "aquamarine3")) +
+  geom_text(aes(label=sprintf("%1.1f%%", 
+                              Percent_Incidence),
+                y = Percent_Incidence),
+                position = position_dodge(1), vjust = 1.5,
+                colour = "black", fontface = "bold", size = 4) +
+  labs(x="Diseases",
+       y = "Percent Incidence on Fertilizer Treatment Rate",
+       fill = "Fertilizer Rates",
+       title = "Top 3 Diseases by Fertilizer Treatment Rate in Region 8") +
+  theme(plot.title.position = "panel",
+        plot.title = element_text(margin = margin(t = -5, b=20),
+                                  hjust = 0.5,
+                                  vjust = -115),
+        plot.margin = margin(t = 10, l = 10, b = 20))
+ggsave("../report_2023/Diseases Plots/Top 3 Diseases by Fertilizer Treatment Rate in Region 8.png", dpi = plot_dpi)
+
+
+# by Province treatment rates plots diseases
+summary_diseases_province_2023 %>%
+  subset(., Diseases %in% top_diseases_2023) %>%
+  pivot_longer(-Diseases, names_to = "Provinces", values_to = "Percent_Incidence")  %>%
+  ggplot(aes(x=reorder(Diseases, -Percent_Incidence), 
+             fill = Provinces, y=Percent_Incidence)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(labels = c("Leyte", "Southern Leyte", "Samar"), 
+                    values = c("rosybrown1", "mediumspringgreen", "lightskyblue")) +
+  geom_text(aes(label=sprintf("%1.1f%%", 
+                              Percent_Incidence),
+                y = Percent_Incidence),
+                position = position_dodge(1), vjust = 0.6,
+                colour = "black", fontface = "bold", size = 4) +
+  labs(x="Diseases",
+       y = "Percent Incidence by Province",
+       title = "Top 3 Diseases by Province in Region 8",
+       fill = "Provinces") +
+  theme(plot.title.position = "panel",
+        plot.title = element_text(margin = margin(t = -5, b=20),
+                                  hjust = 0.5,
+                                  vjust = -115),
+        plot.margin = margin(t = 10, l = 10, b = 20))
+ggsave("../report_2023/Diseases Plots/Top 3 Diseases by Province in Region 8.png", dpi = plot_dpi)
+
+####################################################################
 
 
 library("correlation")
