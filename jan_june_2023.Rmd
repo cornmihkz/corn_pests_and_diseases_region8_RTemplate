@@ -61,7 +61,7 @@ diseases_raw_parsed <-
 # Corn borer
 borer_2023 <-
   insect_raw_parsed %>% 
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, 
          `Corn Type`, Variety, mean_temp, Month, starts_with("Corn Borer - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
@@ -86,7 +86,7 @@ borer_2023 <-
 
 summary_borer_2023 <-
   borer_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_borer = n() * number_sampled_plants,
             sum_avg_dmg_borer = sum(average_damage_borer),
@@ -98,7 +98,7 @@ summary_borer_2023 <-
 # Semi-looper
 semilooper_2023 <-
   insect_raw_parsed %>% 
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, 
          `Corn Type`, Variety, mean_temp, Month, starts_with("Semi-looper - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
@@ -124,7 +124,7 @@ semilooper_2023 <-
 
 summary_semilooper_2023 <-
   semilooper_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_semilooper = n() * number_sampled_plants,
             sum_avg_dmg_semilooper = sum(average_damage_semilooper),
@@ -136,7 +136,7 @@ summary_semilooper_2023 <-
 # Corn earworm
 earworm_2023 <-
   insect_raw_parsed %>% 
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, 
          `Corn Type`, Variety, mean_temp, Month, starts_with("Corn Earworm - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
@@ -162,7 +162,7 @@ earworm_2023 <-
 
 summary_earworm_2023 <-
   earworm_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_earworm = n() * number_sampled_plants,
             sum_avg_dmg_earworm = sum(average_damage_earworm),
@@ -174,7 +174,7 @@ summary_earworm_2023 <-
 # cutworm
 cutworm_2023 <-
   insect_raw_parsed %>% 
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, 
          `Corn Type`, Variety, mean_temp, Month, starts_with("Cutworm - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
@@ -200,7 +200,7 @@ cutworm_2023 <-
 
 summary_cutworm_2023 <-
   cutworm_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_cutworm = n() * number_sampled_plants,
             sum_avg_dmg_cutworm = sum(average_damage_cutworm),
@@ -212,7 +212,7 @@ summary_cutworm_2023 <-
 # Armyworm
 armyworm_2023 <-
   insect_raw_parsed %>% 
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, 
          `Corn Type`, Variety, mean_temp, Month, starts_with("Armyworm - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
@@ -238,7 +238,7 @@ armyworm_2023 <-
 
 summary_armyworm_2023 <-
   armyworm_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_armyworm = n() * number_sampled_plants,
             sum_avg_dmg_armyworm = sum(average_damage_armyworm),
@@ -250,7 +250,7 @@ summary_armyworm_2023 <-
 # Corn Plant Hopper
 hopper_2023 <-
   insect_raw_parsed %>% 
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, 
          `Corn Type`, Variety, mean_temp, Month, starts_with("Corn Plant Hopper - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
@@ -276,7 +276,7 @@ hopper_2023 <-
 
 summary_hopper_2023 <-
   hopper_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_hopper = n() * number_sampled_plants,
             sum_avg_dmg_hopper = sum(average_damage_hopper),
@@ -288,7 +288,7 @@ summary_hopper_2023 <-
 # aphids
 aphids_2023 <-
   insect_raw_parsed %>% 
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, 
          `Corn Type`, Variety, mean_temp, Month, starts_with("Aphids - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
@@ -313,7 +313,7 @@ aphids_2023 <-
 
 summary_aphids_2023 <-
   aphids_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_aphids = n() * number_sampled_plants,
             sum_avg_dmg_aphids = sum(average_damage_aphids),
@@ -325,7 +325,7 @@ summary_aphids_2023 <-
 # FAW
 faw_2023 <-
   insect_raw_parsed %>% 
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, 
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, 
          `Corn Type`, Variety, mean_temp, Month, starts_with("Fall Armyworm - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & 
            Municipality != "Tomas Oppus") 
@@ -355,7 +355,7 @@ faw_2023 <-
 
 summary_faw_2023 <-  
   faw_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_faw = n() * number_sampled_plants,
             sum_avg_dmg_faw = sum(average_damage_faw),
@@ -363,9 +363,9 @@ summary_faw_2023 <-
             sum_incidence_faw = sum(incidence_faw),
             percent_incidence_faw = (sum_incidence_faw / total_count_samples_faw) * percent_100)
 
+#####
 
-
-# Join summaries
+# Join summaries insects ####
 insects_summary_2023 <-
     summary_borer_2023 %>%
       left_join(summary_semilooper_2023) %>% 
@@ -375,6 +375,7 @@ insects_summary_2023 <-
       left_join(summary_armyworm_2023) %>%
       left_join(summary_aphids_2023) %>%
       left_join(summary_faw_2023)
+#####
 ### 2023 Summaries ###
 
 
@@ -1557,7 +1558,7 @@ write.csv(insect_raw_parsed, "../report_2023/Insects Raw 2023.csv")
 # BLSB
 blsb_2023 <- 
   diseases_raw_parsed %>%
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, Region, contains("BandedLeaf and Sheath Blight")) %>%
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("BandedLeaf and Sheath Blight")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 blsb_2023$collect_date <- 
@@ -1585,7 +1586,7 @@ blsb_2023 <-
 
 summary_blsb_2023 <-
   blsb_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_blsb = n() * number_sampled_plants,
             sum_avg_dmg_blsb = sum(average_damage_blsb),
@@ -1596,7 +1597,7 @@ summary_blsb_2023 <-
 # Common Rust
 rust_2023 <- 
   diseases_raw_parsed %>%
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, Region, contains("Common Rust")) %>%
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Common Rust")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 rust_2023$collect_date <- 
@@ -1623,7 +1624,7 @@ rust_2023 <-
 
 summary_rust_2023 <-
   rust_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_rust = n() * number_sampled_plants,
             sum_avg_dmg_rust = sum(average_damage_rust),
@@ -1634,7 +1635,7 @@ summary_rust_2023 <-
 # Southern Rust
 southrust_2023 <- 
   diseases_raw_parsed %>%
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, Region, contains("Southern Rust")) %>%
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Southern Rust")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 southrust_2023$collect_date <- 
@@ -1661,7 +1662,7 @@ southrust_2023 <-
 
 summary_southrust_2023 <-
   southrust_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_southrust = n() * number_sampled_plants,
             sum_avg_dmg_southrust = sum(average_damage_southrust),
@@ -1673,7 +1674,7 @@ summary_southrust_2023 <-
 # Downy Mildew
 mildew_2023 <- 
   diseases_raw_parsed %>%
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, Region, contains("Downy Mildew")) %>%
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Downy Mildew")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 mildew_2023$collect_date <- 
@@ -1700,7 +1701,7 @@ mildew_2023 <-
 
 summary_mildew_2023 <-
   mildew_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_mildew = n() * number_sampled_plants,
             sum_avg_dmg_mildew = sum(average_damage_mildew),
@@ -1711,7 +1712,7 @@ summary_mildew_2023 <-
 # Brown Spot
 brown_2023 <- 
   diseases_raw_parsed %>%
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, Region, contains("Brown Spot")) %>%
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Brown Spot")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 brown_2023$collect_date <- 
@@ -1738,7 +1739,7 @@ brown_2023 <-
 
 summary_brown_2023 <-
   brown_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_brown = n() * number_sampled_plants,
             sum_avg_dmg_brown = sum(average_damage_brown),
@@ -1749,7 +1750,7 @@ summary_brown_2023 <-
 # Leaf Spot
 leaf_2023 <- 
   diseases_raw_parsed %>%
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, Region, contains("Leaf Spot")) %>%
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Leaf Spot")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 leaf_2023$collect_date <- 
@@ -1776,7 +1777,7 @@ leaf_2023 <-
 
 summary_leaf_2023 <-
   leaf_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_leaf = n() * number_sampled_plants,
             sum_avg_dmg_leaf = sum(average_damage_leaf),
@@ -1787,7 +1788,7 @@ summary_leaf_2023 <-
 # Leaf Blight
 blight_2023 <- 
   diseases_raw_parsed %>%
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, Region, contains("Leaf Blight")) %>%
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Leaf Blight")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 blight_2023$collect_date <- 
@@ -1814,7 +1815,7 @@ blight_2023 <-
 
 summary_blight_2023 <-
   blight_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_blight = n() * number_sampled_plants,
             sum_avg_dmg_blight = sum(average_damage_blight),
@@ -1825,7 +1826,7 @@ summary_blight_2023 <-
 # Stalk Rot
 stalk_2023 <- 
   diseases_raw_parsed %>%
-  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, Region, contains("Stalk Rot")) %>%
+  select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Stalk Rot")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 stalk_2023$collect_date <- 
@@ -1853,7 +1854,7 @@ stalk_2023 <-
 
 summary_stalk_2023 <-
   stalk_2023 %>%
-  group_by(Region, Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Region, Province, Municipality, `Corn Type`, Treatment, Barangay, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_stalk = n() * number_sampled_plants,
             sum_avg_dmg_stalk = sum(average_damage_stalk),
