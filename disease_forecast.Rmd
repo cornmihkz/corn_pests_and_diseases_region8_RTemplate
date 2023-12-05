@@ -1,0 +1,216 @@
+---
+title: "disease_forecast"
+author: "Mihkail Cornell"
+date: "2023-12-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(fpp2)
+library(ggplot2)
+library(stats)
+library(tseries)
+library(lubridate)
+library(tidymodels)
+library(scales)
+library(forecast)
+```
+
+```{r}
+blsb_joined_ev %>%
+  select(collect_date, incidence_blsb) %>%
+  ggplot(aes(collect_date, incidence_blsb)) +
+  geom_smooth()
+
+
+blsb_ts_df <- blsb_joined_ev %>%
+  select(collect_date, incidence_blsb) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_blsb, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(blsb_monthly_average_incidence = mean(incidence_blsb)) 
+
+blsb_ts_df <-
+  blsb_ts_df %>% 
+  replace(is.na(blsb_ts_df), mean(blsb_ts_df$blsb_monthly_average_incidence, na.rm = TRUE))
+
+
+rust_joined_ev %>%
+  select(collect_date, incidence_rust) %>%
+  ggplot(aes(collect_date, incidence_rust)) +
+  geom_smooth()
+
+
+rust_ts_df <- rust_joined_ev %>%
+  select(collect_date, incidence_rust) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_rust, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(rust_monthly_average_incidence = mean(incidence_rust)) 
+
+rust_ts_df <-
+  rust_ts_df %>% 
+  replace(is.na(rust_ts_df), 
+          mean(rust_ts_df$rust_monthly_average_incidence, na.rm = TRUE))
+
+southrust_joined_ev %>%
+  select(collect_date, incidence_southrust) %>%
+  ggplot(aes(collect_date, incidence_southrust)) +
+  geom_smooth()
+
+
+southrust_ts_df <- southrust_joined_ev %>%
+  select(collect_date, incidence_southrust) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_southrust, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(southrust_monthly_average_incidence = mean(incidence_southrust)) 
+
+southrust_ts_df <-
+  southrust_ts_df %>% 
+  replace(is.na(southrust_ts_df), mean(southrust_ts_df$southrust_monthly_average_incidence, na.rm = TRUE))
+
+mildew_joined_ev %>%
+  select(collect_date, incidence_mildew) %>%
+  ggplot(aes(collect_date, incidence_mildew)) +
+  geom_smooth()
+
+
+mildew_ts_df <- mildew_joined_ev %>%
+  select(collect_date, incidence_mildew) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_mildew, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(mildew_monthly_average_incidence = mean(incidence_mildew)) 
+
+mildew_ts_df <-
+  mildew_ts_df %>% 
+  replace(is.na(mildew_ts_df), mean(mildew_ts_df$mildew_monthly_average_incidence, na.rm = TRUE))
+
+brown_joined_ev %>%
+  select(collect_date, incidence_brown) %>%
+  ggplot(aes(collect_date, incidence_brown)) +
+  geom_smooth()
+
+
+brown_ts_df <- brown_joined_ev %>%
+  select(collect_date, incidence_brown) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_brown, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(brown_monthly_average_incidence = mean(incidence_brown)) 
+
+brown_ts_df <-
+  brown_ts_df %>% 
+  replace(is.na(brown_ts_df), mean(brown_ts_df$brown_monthly_average_incidence, na.rm = TRUE))
+
+
+leaf_joined_ev %>%
+  select(collect_date, incidence_leaf) %>%
+  ggplot(aes(collect_date, incidence_leaf)) +
+  geom_smooth()
+
+
+leaf_ts_df <- leaf_joined_ev %>%
+  select(collect_date, incidence_leaf) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_leaf, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(leaf_monthly_average_incidence = mean(incidence_leaf)) 
+
+leaf_ts_df <-
+  leaf_ts_df %>% 
+  replace(is.na(leaf_ts_df), mean(leaf_ts_df$leaf_monthly_average_incidence, na.rm = TRUE))
+
+blight_joined_ev %>%
+  select(collect_date, incidence_blight) %>%
+  ggplot(aes(collect_date, incidence_blight)) +
+  geom_smooth()
+
+
+blight_ts_df <- blight_joined_ev %>%
+  select(collect_date, incidence_blight) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_blight, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(blight_monthly_average_incidence = mean(incidence_blight)) 
+
+blight_ts_df <-
+  blight_ts_df %>% 
+  replace(is.na(blight_ts_df), mean(blight_ts_df$blight_monthly_average_incidence, na.rm = TRUE))
+
+stalk_joined_ev %>%
+  select(collect_date, incidence_stalk) %>%
+  ggplot(aes(collect_date, incidence_stalk)) +
+  geom_smooth()
+
+
+stalk_ts_df <- stalk_joined_ev %>%
+  select(collect_date, incidence_stalk) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_stalk, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(stalk_monthly_average_incidence = mean(incidence_stalk)) 
+
+stalk_ts_df <-
+  stalk_ts_df %>% 
+  replace(is.na(stalk_ts_df), mean(stalk_ts_df$stalk_monthly_average_incidence, na.rm = TRUE))
+
+
+diseases_ts_df <-
+  blsb_ts_df %>%
+  full_join(rust_ts_df) %>%
+  full_join(southrust_ts_df) %>%
+  full_join(mildew_ts_df) %>%
+  full_join(brown_ts_df) %>%
+  full_join(leaf_ts_df) %>%
+  full_join(blight_ts_df) %>%
+  full_join(stalk_ts_df)
+```
+
+
+
+```{r setup, fig.width = 12, fig.height = 7}
+line_size <- 2
+
+diseases <- c("BLSB", "Common Rust", "Southern Rust", "Downy Mildew", 
+              "Brown Spot", "Leaf Spot", "Leaf Blight", "Stalk Rot")
+
+disease_colors <- c("blsb_monthly_average_incidence" = "blueviolet",
+                    "rust_monthly_average_incidence" = "mediumvioletred",
+                    "southrust_monthly_average_incidence" = "olivedrab",
+                    "mildew_monthly_average_incidence" ="orange3",
+                    "brown_monthly_average_incidence" = "palevioletred1",
+                    "leaf_monthly_average_incidence" = "deepskyblue",
+                    "blight_monthly_average_incidence" = "gray37",
+                    "stalk_monthly_average_incidence" = "tomato4"
+                    )
+
+diseases_ts_df %>%
+  pivot_longer(cols = !month, values_to = "monthly_incidence", names_to = "disease_incidence") %>%
+  ggplot(aes(month, monthly_incidence, color = disease_incidence)) +
+  geom_line(size = line_size) +
+  scale_x_date(date_labels = format("%b-%Y"),
+               date_breaks = "1 month") +
+  scale_color_manual(values = disease_colors, labels = diseases) +
+  # facet_grid(. ~ year(ymd(month)), scale = "free_x") +
+  # scale_x_yearmonth(date_labels = "%Y",
+  #                   date_breaks = "1 year") +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   vjust = 0.5, 
+                                   hjust = 0.5,
+                                   size = 14),
+        axis.text.y = element_text(vjust = 0.5, 
+                                   size = 14, 
+                                    margin = margin(t = 0, r = 10, b = 0, l = 10)),
+        axis.title.x = element_text(size = 15, 
+                                    margin = margin(t = 10, r = 20, b = 0, l = 0)),
+        axis.title.y = element_text(size = 15),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15)) +
+  labs(x = "Time Period (May 2020 - Aug 2023)",
+       y = "Average monthly Diseases Percent Incidence",
+       color = "Diseases") 
+```
+

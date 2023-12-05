@@ -14,7 +14,7 @@ library(tidyverse)
 library(stringr)
 library(dplyr)
 library(lubridate)
-
+library(stats)
 
 # Leyte
 alangalang_weather    <- read_csv("../weather_data/Alangalang Weather.csv")
@@ -74,7 +74,7 @@ daily_weather_averages <-
 
 number_sampled_plants <- 20
 percent_100 <- 100
-sample_size_corr <- 2528 
+sample_size_corr <- 2898   
 decimal_places <- 5
 
 
@@ -93,11 +93,130 @@ monthly_averages <-
             median_wind = median(`Wind (km/h)`),
             median_humid = median(`Humidity (%)`)
             ) 
-
-insect_raw <- read_csv("pest.csv")
+detach("package:stats", unload = TRUE)
+insect_raw <- read_csv("pests.csv")
 insect_raw$Variety %>% unique()
+
 ```
 
+
+
+```January - June 2023 additional weather data and dates```
+```{r}
+# Leyte
+alangalang_weather_aug2023    <- read_csv("../weather_data/Alangalang Weather August 2023.csv")
+abuyog_weather_aug2023        <- read_csv("../weather_data/Abuyog Weather August 2023.csv")
+dulag_weather_aug2023         <- read_csv("../weather_data/Dulag Weather August 2023.csv")
+
+
+# Southern Leyte
+maasin_weather_aug2023        <- read_csv("../weather_data/Maasin Weather August 2023.csv")
+# tomasoppus_weather    <- read_csv("../weather_data/Tomas Oppus Weather.csv")
+malitbog_weather_aug2023      <- read_csv("../weather_data/Malitbog Weather August 2023.csv")
+bontoc_weather_aug2023        <- read_csv("../weather_data/Bontoc Weather August 2023.csv")
+
+# Samar
+basey_weather_aug2023         <- read_csv("../weather_data/Basey Weather August 2023.csv")
+pinabacdao_weather_aug2023    <- read_csv("../weather_data/Pinabacdao Weather August 2023.csv")
+paranas_weather_aug2023       <- read_csv("../weather_data/Paranas Weather.csv")
+
+alangalang_weather_aug2023$Date <- as.Date(alangalang_weather_aug2023$Date, "%d/%m/%Y")
+abuyog_weather_aug2023$Date <- as.Date(abuyog_weather_aug2023$Date, "%d/%m/%Y")
+dulag_weather_aug2023$Date <- as.Date(dulag_weather_aug2023$Date, "%d/%m/%Y")
+
+maasin_weather_aug2023$Date <- as.Date(maasin_weather_aug2023$Date, "%d/%m/%Y")
+malitbog_weather_aug2023$Date <- as.Date(malitbog_weather_aug2023$Date, "%d/%m/%Y")
+bontoc_weather_aug2023$Date <- as.Date(bontoc_weather_aug2023$Date, "%d/%m/%Y")
+
+basey_weather_aug2023$Date <- as.Date(basey_weather_aug2023$Date, "%d/%m/%Y")
+pinabacdao_weather_aug2023$Date <- as.Date(pinabacdao_weather_aug2023$Date, "%d/%m/%Y")
+paranas_weather_aug2023$Date <- as.Date(paranas_weather_aug2023$Date, "%d/%m/%Y")
+
+
+area_dates_2023 <- 
+  area_dates %>% 
+    full_join(alangalang_weather_aug2023) %>%
+    full_join(abuyog_weather_aug2023) %>%
+    full_join(dulag_weather_aug2023) %>%
+    full_join(maasin_weather_aug2023) %>%
+    full_join(malitbog_weather_aug2023) %>%
+    full_join(bontoc_weather_aug2023) %>%
+    full_join(basey_weather_aug2023) %>%
+    full_join(pinabacdao_weather_aug2023) %>%
+    full_join(paranas_weather_aug2023) 
+
+
+daily_weather_2023avg <-
+  area_dates_2023 %>%
+  group_by(Date) %>%
+  summarise(mean_daily_temp = mean(`Temperature (C)`),
+            mean_daily_wind = mean(`Wind (km/h)`),
+            mean_daily_humid = mean(`Humidity (%)`),
+            mean_daily_rainfall = mean(`Rainfall (mm)`),
+            
+            median_daily_temp = median(`Temperature (C)`),
+            median_daily_rain = median(`Rainfall (mm)`),
+            median_daily_wind = median(`Wind (km/h)`),
+            median_daily_humid = median(`Humidity (%)`)
+            )
+
+monthly_avg2023 <- 
+  area_dates_2023 %>% 
+  mutate(Year = year(Date), Month = month(Date)) %>%
+  group_by(Year, Month) %>%
+  summarise(# arithmetic means
+            mean_temp = mean(`Temperature (C)`),
+            mean_rain = mean(`Rainfall (mm)`),
+            mean_wind = mean(`Wind (km/h)`),
+            mean_humid = mean(`Humidity (%)`),
+            # median
+            median_temp = median(`Temperature (C)`),
+            median_rain = median(`Rainfall (mm)`),
+            median_wind = median(`Wind (km/h)`),
+            median_humid = median(`Humidity (%)`)
+            )
+```
+
+
+```{r}
+
+```
+
+
+```Data for QGIS Training to CSV```
+```{r}
+disease_raw_2023 <-
+  disease_raw %>%
+  mutate(collection_date = mdy(`Collection Date`)) %>%
+  filter(collection_date > "2023-01-01")
+
+
+diseases_raw_2023 <-
+  diseases_raw %>%
+  mutate(collection_date = mdy(`Collection Date`)) %>%
+  filter(collection_date > "2023-01-01")
+
+
+disease_raw_2022 <-
+  disease_raw %>%
+  mutate(collection_date = mdy(`Collection Date`)) %>%
+  filter(collection_date > "2022-01-01" & collection_date < "2022-12-31")
+
+
+diseases_raw_2022 <-
+  diseases_raw %>%
+  mutate(collection_date = mdy(`Collection Date`)) %>%
+  filter(collection_date > "2022-01-01" & collection_date < "2022-12-31")
+
+write.csv(disease_raw_2023, "../QGIS_Training_Data/Insects_2023.csv")
+write.csv(diseases_raw_2023, "../QGIS_Training_Data/Diseases_2023.csv")
+write.csv(disease_raw_2022, "../QGIS_Training_Data/Insects_2022.csv")
+write.csv(diseases_raw_2022, "../QGIS_Training_Data/Diseases_2022.csv")
+
+write.csv(disease_raw, "../QGIS_Training_Data/Original_Insects_Data.csv")
+write.csv(diseases_raw, "../QGIS_Training_Data/Original_Diseases_Data.csv")
+
+```
 
 
 ```{r}

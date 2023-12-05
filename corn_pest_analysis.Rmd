@@ -21,6 +21,8 @@ library("dunn.test")
 library("fuzzyjoin")
 library("stringdist")
 
+total_in_bpi <- 2898 # no. of validated entries
+
 letters_height <- 64
 mean_height <- 66
 crop_growth_stages <- c("emergence", "single_leaf", "seedling", "early_whorl", "mid_whorl", 
@@ -29,7 +31,7 @@ stage_labels <- c("Emergence", "Single leaf", "Seedling", "Early Whorl", "Mid wh
                         "Late whorl", "Tasseling", "Silking", "Maturity")
 
 plot_width <- 4
-plot_height <- 3
+plot_height <- 7
 plot_dpi <- 250
 
 set.seed(123)
@@ -78,7 +80,7 @@ insect_variety_edit$variety %>% unique()
 # Corn borer
 borer_df_ev <- 
   insect_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Corn Borer - Damage Rating ")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Corn Borer - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 borer_df_ev$collect_date <- 
@@ -123,7 +125,8 @@ View(borer_joined_ev)
 
 summary_borer <-
   borer_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,
+           Barangay, Treatment, `Crop Stage`) %>%
   select(-`Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_borer = n() * number_sampled_plants,
@@ -539,7 +542,7 @@ detach("package:stats", unload = TRUE)
 # Semi-looper
 semilooper_df_ev <- 
   insect_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Semi-looper - Damage Rating ")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Semi-looper - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 semilooper_df_ev$collect_date <- 
@@ -568,7 +571,8 @@ View(semilooper_joined_ev)
 
 summary_semilooper <-
   semilooper_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,             
+           Barangay, Treatment, `Crop Stage`) %>%
   select(-`Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_semilooper = n() * number_sampled_plants,
@@ -944,7 +948,7 @@ detach("package:stats", unload = TRUE)
 # Corn earworm
 earworm_df_ev <- 
   insect_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Corn Earworm - Damage Rating ")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Corn Earworm - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 earworm_df_ev$collect_date <- 
@@ -973,7 +977,8 @@ View(earworm_joined_ev)
 
 summary_earworm <-
   earworm_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,             
+           Barangay, Treatment, `Crop Stage`) %>%
   select(-`Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_earworm = n() * number_sampled_plants,
@@ -1381,7 +1386,7 @@ detach("package:stats", unload = TRUE)
 # Hopper
 hopper_df_ev <- 
   insect_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Corn Plant Hopper - Damage Rating ")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Corn Plant Hopper - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 hopper_df_ev$collect_date <- 
@@ -1410,7 +1415,8 @@ View(hopper_joined_ev)
 
 summary_hopper <-
   hopper_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,             
+           Barangay, Treatment, `Crop Stage`) %>%
   select(-`Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_hopper = n() * number_sampled_plants,
@@ -1816,7 +1822,7 @@ detach("package:stats", unload = TRUE)
 # Cutworm
 cutworm_df_ev <- 
   insect_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Cutworm - Damage Rating ")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Cutworm - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 cutworm_df_ev$collect_date <- 
@@ -1845,7 +1851,8 @@ View(cutworm_joined_ev)
 
 summary_cutworm <-
   cutworm_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,             
+           Barangay, Treatment, `Crop Stage`) %>%
   select(-`Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_cutworm = n() * number_sampled_plants,
@@ -2235,7 +2242,7 @@ detach("package:stats", unload = TRUE)
 # Corn leaf feeders: Armyworm
 armyworm_df_ev <- 
   insect_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, starts_with("Armyworm - Damage Rating ")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, starts_with("Armyworm - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 armyworm_df_ev$collect_date <- 
@@ -2266,7 +2273,8 @@ View(armyworm_joined_ev)
 
 summary_armyworm <-
   armyworm_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,             
+           Barangay, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_armyworm = n() * number_sampled_plants,
             sum_avg_dmg_armyworm = sum(average_damage_armyworm),
@@ -2277,18 +2285,18 @@ summary_armyworm <-
 View(summary_armyworm)
 
 
-summary_armyworm %>%
-  ggplot(aes(sum_incidence_armyworm)) +
-  geom_density()
-
-summary_armyworm %>%
-  ggplot(aes(sum_incidence_armyworm)) +
-  geom_histogram()
-
-summary_armyworm %>%
-  ggplot(aes(sample=sum_incidence_armyworm)) +
-  stat_qq() +
-  stat_qq_line()
+# summary_armyworm %>%
+#   ggplot(aes(sum_incidence_armyworm)) +
+#   geom_density()
+# 
+# summary_armyworm %>%
+#   ggplot(aes(sum_incidence_armyworm)) +
+#   geom_histogram()
+# 
+# summary_armyworm %>%
+#   ggplot(aes(sample=sum_incidence_armyworm)) +
+#   stat_qq() +
+#   stat_qq_line()
 
 summary_armyworm$crop_stage <- 
   factor(summary_armyworm$`Crop Stage`, 
@@ -2551,12 +2559,14 @@ summary_armyworm %>%
   geom_boxplot(aes(fill = order_treat), show.legend = FALSE) +
   geom_text(data = summary_armyworm_fert_bp, aes(label = treatment_cld,
                 y = w + sd$ymax), hjust = -1, vjust = -1, color="red", size = 5) +
-  geom_text(data = summary_armyworm_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -2, hjust = -1, alpha = 0.75, color = "darkblue") +
+  geom_text(data = summary_armyworm_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -3, hjust = -1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Armyworm",
        title = "Effect of Fertilizer Treatment Rate on Armyworm Incidence") + 
-  theme_classic()
-ggsave(path = "../pests_fertilizer_rate", filename = "Armyworm Percent Incidence vs Fertilizer Treatment.png")
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  scale_fill_brewer(palette = "Pastel1") 
+ggsave(path = "../ggplot_files/pests_fertilizer_rate", filename = "Armyworm Percent Incidence vs Fertilizer Treatment.png")
 
 # by province
 # kruskall-wallis test by province
@@ -2674,7 +2684,7 @@ detach("package:stats", unload = TRUE)
 # Aphids
 aphids_df_ev <- 
   insect_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, starts_with("Aphids - Damage Rating ")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, starts_with("Aphids - Damage Rating ")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus") 
 
 aphids_df_ev$collect_date <- 
@@ -2700,11 +2710,12 @@ aphids_joined_ev <-
            incidence_aphids = ((sum(c_across(sum_light:sum_high))) * percent_100) / number_sampled_plants,
            )
 
-View(aphids_joined_ev)
+#View(aphids_joined_ev)
 
 summary_aphids <-
   aphids_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`, 
+           Barangay, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_aphids = n() * number_sampled_plants,
             sum_avg_dmg_aphids = sum(average_damage_aphids),
@@ -2712,21 +2723,21 @@ summary_aphids <-
             sum_incidence_aphids = sum(incidence_aphids),
             percent_incidence_aphids = (sum_incidence_aphids / total_count_samples_aphids) * percent_100)
 
-View(summary_aphids)
-
-
-summary_aphids %>%
-  ggplot(aes(sum_incidence_aphids)) +
-  geom_density()
-
-summary_aphids %>%
-  ggplot(aes(sum_incidence_aphids)) +
-  geom_histogram()
-
-summary_aphids %>%
-  ggplot(aes(sample=sum_incidence_aphids)) +
-  stat_qq() +
-  stat_qq_line()
+# View(summary_aphids)
+# 
+# 
+# summary_aphids %>%
+#   ggplot(aes(sum_incidence_aphids)) +
+#   geom_density()
+# 
+# summary_aphids %>%
+#   ggplot(aes(sum_incidence_aphids)) +
+#   geom_histogram()
+# 
+# summary_aphids %>%
+#   ggplot(aes(sample=sum_incidence_aphids)) +
+#   stat_qq() +
+#   stat_qq_line()
 
 summary_aphids$crop_stage <- 
   factor(summary_aphids$`Crop Stage`, 
@@ -2736,7 +2747,8 @@ summary_aphids$crop_stage <-
                     "silking", "single_leaf", "tasseling", "emergence"))
 
 summary_aphids$order_treat <- ordered(summary_aphids$Treatment,
-                         levels = c("BRFR", "RFR", "ARFR"))
+                         levels = c("BRFR", "RFR", "ARFR"),
+                         labels = c("B", "R", "A"))
 
 summary_aphids$factor_corn <- factor(labels=c("N", "G"), levels=c("Non - GM Corn", "GM CORN"), summary_aphids$`Corn Type`)
 
@@ -3104,7 +3116,7 @@ detach("package:stats", unload = TRUE)
 # Fall Armyworm
 faw_df_ev <- 
   insect_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Fall Armyworm - Damage Rating"))%>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Fall Armyworm - Damage Rating"))%>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus") 
 
 faw_df_ev$collect_date <- 
@@ -3137,7 +3149,8 @@ View(faw_joined_ev)
 
 summary_faw <-
   faw_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,             
+           Barangay, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_faw = n() * number_sampled_plants,
             sum_avg_dmg_faw = sum(average_damage_faw),
@@ -3147,18 +3160,18 @@ summary_faw <-
 
 View(summary_faw)
 
-summary_faw %>%
-  ggplot(aes(percent_incidence_faw)) +
-  geom_density()
-
-summary_faw %>%
-  ggplot(aes(percent_incidence_faw)) +
-  geom_histogram()
-
-summary_faw %>%
-  ggplot(aes(sample=percent_incidence_faw)) +
-  stat_qq() +
-  stat_qq_line()
+# summary_faw %>%
+#   ggplot(aes(percent_incidence_faw)) +
+#   geom_density()
+# 
+# summary_faw %>%
+#   ggplot(aes(percent_incidence_faw)) +
+#   geom_histogram()
+# 
+# summary_faw %>%
+#   ggplot(aes(sample=percent_incidence_faw)) +
+#   stat_qq() +
+#   stat_qq_line()
 
 summary_faw$crop_stage <- 
   factor(summary_faw$`Crop Stage`, 
@@ -3168,7 +3181,8 @@ summary_faw$crop_stage <-
                     "silking", "single_leaf", "tasseling", "emergence"))
 
 summary_faw$order_treat <- ordered(summary_faw$Treatment,
-                         levels = c("BRFR", "RFR", "ARFR"))
+                         levels = c("BRFR", "RFR", "ARFR"),
+                         labels = c("B", "R", "A"))
 
 summary_faw$factor_corn <- factor(labels=c("N", "G"), levels=c("Non - GM Corn", "GM CORN"), summary_faw$`Corn Type`)
 
@@ -3517,7 +3531,160 @@ detach("package:DescTools", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
 
-``` Correlation: Incidence vs Weather Parameters```
+```Insect Pests Summary```
+```{r}
+insects_summary <-
+  summary_borer %>%
+  full_join(summary_semilooper) %>%
+  full_join(summary_cutworm) %>%
+  full_join(summary_earworm) %>%
+  full_join(summary_hopper) %>%
+  full_join(summary_armyworm) %>%
+  full_join(summary_aphids) %>%
+  full_join(summary_faw)
+
+write.csv(insects_summary, "../Insects Summary Corn.csv")
+
+
+# municipality summaries
+# borer
+municipality_borer_summary <-
+  insects_summary %>%
+  select(Year, Municipality, percent_incidence_borer) %>%
+  group_by(Year, Municipality)
+
+municipality_borer_mean_summary <- 
+  municipality_borer_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_borer)) 
+
+municipality_yearly_incidence_summary_borer <-
+  municipality_borer_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+# semilooper
+municipality_semilooper_summary <-
+  insects_summary %>%
+  select(Year, Municipality, percent_incidence_semilooper) %>%
+  group_by(Year, Municipality)
+
+municipality_semilooper_mean_summary <- 
+  municipality_semilooper_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_semilooper)) 
+
+municipality_yearly_incidence_summary_semilooper <-
+  municipality_semilooper_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+# cutworm
+municipality_cutworm_summary <-
+  insects_summary %>%
+  select(Year, Municipality, percent_incidence_cutworm) %>%
+  group_by(Year, Municipality)
+
+municipality_cutworm_mean_summary <- 
+  municipality_cutworm_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_cutworm)) 
+
+municipality_yearly_incidence_summary_cutworm <-
+  municipality_cutworm_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+# earworm
+municipality_earworm_summary <-
+  insects_summary %>%
+  select(Year, Municipality, percent_incidence_earworm) %>%
+  group_by(Year, Municipality)
+
+municipality_earworm_mean_summary <- 
+  municipality_earworm_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_earworm)) 
+
+municipality_yearly_incidence_summary_earworm <-
+  municipality_earworm_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+# hopper
+municipality_hopper_summary <-
+  insects_summary %>%
+  select(Year, Municipality, percent_incidence_hopper) %>%
+  group_by(Year, Municipality)
+
+municipality_hopper_mean_summary <- 
+  municipality_hopper_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_hopper)) 
+
+municipality_yearly_incidence_summary_hopper <-
+  municipality_hopper_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+# armyworm
+municipality_armyworm_summary <-
+  insects_summary %>%
+  select(Year, Municipality, percent_incidence_armyworm) %>%
+  group_by(Year, Municipality)
+
+municipality_armyworm_mean_summary <- 
+  municipality_armyworm_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_armyworm)) 
+
+municipality_yearly_incidence_summary_armyworm <-
+  municipality_armyworm_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+
+# aphids
+municipality_aphids_summary <-
+  insects_summary %>%
+  select(Year, Municipality, percent_incidence_aphids) %>%
+  group_by(Year, Municipality)
+
+municipality_aphids_mean_summary <- 
+  municipality_aphids_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_aphids)) 
+
+municipality_yearly_incidence_summary_aphids <-
+  municipality_aphids_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+
+# faw
+municipality_faw_summary <-
+  insects_summary %>%
+  select(Year, Municipality, percent_incidence_faw) %>%
+  group_by(Year, Municipality)
+
+municipality_faw_mean_summary <- 
+  municipality_faw_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_faw)) 
+
+municipality_yearly_incidence_summary_faw <-
+  municipality_faw_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+```
+
+
+```{r}
+barangay_hopper_summary <-
+  insects_summary %>%
+  select(Municipality, Barangay, percent_incidence_hopper) %>%
+  group_by(Municipality, Barangay) 
+
+barangay_hopper_mean_summary <-
+  barangay_hopper_summary %>%
+  summarise(barangay_incidence = mean(percent_incidence_hopper)) %>%
+  arrange(desc(barangay_incidence)) 
+
+
+barangay_hopper_count_summary <- 
+  barangay_hopper_summary %>%
+  summarise(incidence_count = n()) %>%
+  arrange(desc(incidence_count))
+
+```
+
+
+``` Correlation: Pest Incidence vs Weather Parameters```
 ```{r}
 # faw, hopper, cutworm, armyworm, aphids, borer, earworm, semilooper
 library("correlation")

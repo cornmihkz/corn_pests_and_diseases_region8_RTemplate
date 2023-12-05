@@ -34,7 +34,7 @@ plot_height <- 3
 plot_dpi <- 250
 
 set.seed(123)
-diseases_raw <- read_csv("../diseases/diseases.csv")
+diseases_raw <- read_csv("../disease_raw_data/diseases.csv")
 ```
 
 ```Banded Leaf and Sheath Blight```
@@ -42,7 +42,7 @@ diseases_raw <- read_csv("../diseases/diseases.csv")
 # BandedLeaf and Sheath Blight 
 blsb_df_ev <- 
   diseases_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("BandedLeaf and Sheath Blight")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("BandedLeaf and Sheath Blight")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 blsb_df_ev$collect_date <- 
@@ -73,7 +73,8 @@ View(blsb_joined_ev)
 
 summary_blsb <-
   blsb_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,            
+           Barangay, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_blsb = n() * number_sampled_plants,
             sum_avg_dmg_blsb = sum(average_damage_blsb),
@@ -345,10 +346,10 @@ summary_blsb_fert_bp$treatment_cld <-
 
 summary_blsb %>%
   ggplot(aes(order_treat, percent_incidence_blsb)) + 
-  geom_boxplot() +
+  geom_boxplot(aes(fill=order_treat), show.legend = FALSE) +
   geom_text(data = summary_blsb_fert_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_blsb_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
+                y = w + sd$ymax), hjust = -1, color="red", size = 5) +
+  geom_text(data = summary_blsb_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -3, hjust = -1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence BLSB",
        title = "Effect of Fertilizer Treatment Rate on BLSB Incidence") + 
@@ -472,7 +473,7 @@ detach("package:stats", unload = TRUE)
 # Common Rust 
 rust_df_ev <- 
   diseases_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Common Rust")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Common Rust")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 rust_df_ev$collect_date <- 
@@ -503,7 +504,8 @@ View(rust_joined_ev)
 
 summary_rust <-
   rust_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,            
+           Barangay, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_rust = n() * number_sampled_plants,
             sum_avg_dmg_rust = sum(average_damage_rust),
@@ -637,7 +639,7 @@ lm_temp_rust  <- lm(incidence_rust ~ mean_temp, data = rust_joined_ev)
 
 
 temp_rust_eqn <- sprintf(
-    "italic(y) == %.3g %.3g * italic(x) * ',' ~~ r ~ '=' ~ %.2g",
+    "italic(y) == %.3g + %.3g * italic(x) * ',' ~~ r ~ '=' ~ %.2g",
     coef(lm_temp_rust)[1],
     coef(lm_temp_rust)[2],
     round(cor_rust_temp_incidence, 3)
@@ -773,10 +775,10 @@ summary_rust_fert_bp$treatment_cld <-
 
 summary_rust %>%
   ggplot(aes(order_treat, percent_incidence_rust)) + 
-  geom_boxplot() +
+  geom_boxplot(aes(fill=order_treat), show.legend = FALSE) +
   geom_text(data = summary_rust_fert_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_rust_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
+                y = w + sd$ymax), hjust = -1, color="red", size = 5) +
+  geom_text(data = summary_rust_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -3, hjust = -1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Common Rust",
        title = "Effect of Fertilizer Treatment Rate on Common Rust Incidence") + 
@@ -883,7 +885,7 @@ summary_rust %>%
   theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), ) +
   scale_fill_brewer(palette = "Pastel1")
-ggsave(path = "../stage", filename = "Common Rust Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
+ggsave(path = "../diseases_crop_stage", filename = "Common Rust Percent Incidence vs Crop Growth Stages.png", dpi=plot_dpi)
 
 detach("package:agricolae", unload = TRUE)
 detach("package:rcompanion", unload = TRUE)
@@ -897,7 +899,7 @@ detach("package:stats", unload = TRUE)
 # Southern Rust 
 southrust_df_ev <- 
   diseases_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Southern Rust")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Southern Rust")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 southrust_df_ev$collect_date <- 
@@ -928,7 +930,8 @@ View(southrust_joined_ev)
 
 summary_southrust <-
   southrust_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,            
+           Barangay, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_southrust = n() * number_sampled_plants,
             sum_avg_dmg_southrust = sum(average_damage_southrust),
@@ -1199,10 +1202,10 @@ summary_southrust_fert_bp$treatment_cld <-
 
 summary_southrust %>%
   ggplot(aes(order_treat, percent_incidence_southrust)) + 
-  geom_boxplot() +
+  geom_boxplot(aes(fill=order_treat), show.legend = FALSE) +
   geom_text(data = summary_southrust_fert_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_southrust_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
+                y = w + sd$ymax), vjust = -1, hjust = -1, color="red", size = 5) +
+  geom_text(data = summary_southrust_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -1, hjust = -1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Southern Rust",
        title = "Effect of Fertilizer Treatment Rate on Southern Rust Incidence") + 
@@ -1324,7 +1327,7 @@ detach("package:stats", unload = TRUE)
 # Downy Mildew 
 mildew_df_ev <- 
   diseases_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Downy Mildew")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Downy Mildew")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 mildew_df_ev$collect_date <- 
@@ -1355,7 +1358,8 @@ View(mildew_joined_ev)
 
 summary_mildew <-
   mildew_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,            
+           Barangay, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_mildew = n() * number_sampled_plants,
             sum_avg_dmg_mildew = sum(average_damage_mildew),
@@ -1626,10 +1630,10 @@ summary_mildew_fert_bp$treatment_cld <-
 
 summary_mildew %>%
   ggplot(aes(order_treat, percent_incidence_mildew)) + 
-  geom_boxplot() +
+  geom_boxplot(aes(fill=order_treat), show.legend = FALSE) +
   geom_text(data = summary_mildew_fert_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_mildew_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
+                y = w + sd$ymax), hjust = -1, color="red", size = 5) +
+  geom_text(data = summary_mildew_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -3, hjust = -1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Downy Mildew",
        title = "Effect of Fertilizer Treatment Rate on Downy Mildew Incidence") + 
@@ -1752,7 +1756,7 @@ detach("package:stats", unload = TRUE)
 # Brown Spot 
 brown_df_ev <- 
   diseases_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Brown Spot")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Brown Spot")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 brown_df_ev$collect_date <- 
@@ -1783,7 +1787,8 @@ View(brown_joined_ev)
 
 summary_brown <-
   brown_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,            
+           Barangay, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_brown = n() * number_sampled_plants,
             sum_avg_dmg_brown = sum(average_damage_brown),
@@ -2055,10 +2060,10 @@ summary_brown_fert_bp$treatment_cld <-
 
 summary_brown %>%
   ggplot(aes(order_treat, percent_incidence_brown)) + 
-  geom_boxplot() +
+  geom_boxplot(aes(fill=order_treat), show.legend = FALSE) +
   geom_text(data = summary_brown_fert_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_brown_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
+                y = w + sd$ymax), hjust = -1, color="red", size = 5) +
+  geom_text(data = summary_brown_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -3, hjust = -1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Brown Spot",
        title = "Effect of Fertilizer Treatment Rate on Brown Spot Incidence") + 
@@ -2179,7 +2184,7 @@ detach("package:stats", unload = TRUE)
 # Leaf Spot 
 leaf_df_ev <- 
   diseases_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Leaf Spot")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Leaf Spot")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 leaf_df_ev$collect_date <- 
@@ -2210,7 +2215,8 @@ View(leaf_joined_ev)
 
 summary_leaf <-
   leaf_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,            
+           Barangay, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_leaf = n() * number_sampled_plants,
             sum_avg_dmg_leaf = sum(average_damage_leaf),
@@ -2369,7 +2375,7 @@ wind_leaf_eqn <- sprintf(
 
 
 humid_leaf_eqn <- sprintf(
-    "italic(y) == %.3g %.3g * italic(x) * ',' ~~ r ~ '=' ~ %.2g",
+    "italic(y) == %.3g + %.3g * italic(x) * ',' ~~ r ~ '=' ~ %.2g",
     coef(lm_humid_leaf)[1],
     coef(lm_humid_leaf)[2],
     round(cor_leaf_humid_incidence, 3)
@@ -2482,10 +2488,10 @@ summary_leaf_fert_bp$treatment_cld <-
 
 summary_leaf %>%
   ggplot(aes(order_treat, percent_incidence_leaf)) + 
-  geom_boxplot() +
+  geom_boxplot(aes(fill=order_treat), show.legend = FALSE) +
   geom_text(data = summary_leaf_fert_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_leaf_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
+                y = w + sd$ymax), hjust = -1, color="red", size = 5) +
+  geom_text(data = summary_leaf_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -3, hjust = -1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Leaf Spot",
        title = "Effect of Fertilizer Treatment Rate on Leaf Spot Incidence") + 
@@ -2606,7 +2612,7 @@ detach("package:stats", unload = TRUE)
 # Leaf Blight 
 blight_df_ev <- 
   diseases_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Leaf Blight")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Leaf Blight")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 blight_df_ev$collect_date <- 
@@ -2637,7 +2643,8 @@ View(blight_joined_ev)
 
 summary_blight <-
   blight_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,            
+           Barangay, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_blight = n() * number_sampled_plants,
             sum_avg_dmg_blight = sum(average_damage_blight),
@@ -2908,10 +2915,10 @@ summary_blight_fert_bp$treatment_cld <-
 
 summary_blight %>%
   ggplot(aes(order_treat, percent_incidence_blight)) + 
-  geom_boxplot() +
+  geom_boxplot(aes(fill=order_treat), show.legend = FALSE) +
   geom_text(data = summary_blight_fert_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_blight_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 0.1, alpha = 0.75, color = "darkblue") +
+                y = w + sd$ymax), vjust = 2, hjust = -1, color="red", size = 5) +
+  geom_text(data = summary_blight_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -6, hjust = -1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Leaf Blight",
        title = "Effect of Fertilizer Treatment Rate on Leaf Blight Incidence") + 
@@ -3034,7 +3041,7 @@ detach("package:stats", unload = TRUE)
 # Stalk Rot 
 stalk_df_ev <- 
   diseases_raw %>%
-  select(FarmID, `Collection Date`, Province, Municipality, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Stalk Rot")) %>%
+  select(FarmID, `Collection Date`, Province, Municipality, Barangay, `Crop Stage`, Treatment, `Corn Type`, Variety, contains("Stalk Rot")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
 stalk_df_ev$collect_date <- 
@@ -3065,7 +3072,8 @@ View(stalk_joined_ev)
 
 summary_stalk <-
   stalk_joined_ev %>%
-  group_by(Province, Municipality, `Corn Type`, Treatment, `Crop Stage`) %>%
+  group_by(Year, Month, Province, Municipality, `Corn Type`,            
+           Barangay, Treatment, `Crop Stage`) %>%
   remove_missing(na.rm=TRUE) %>%
   summarise(total_count_samples_stalk = n() * number_sampled_plants,
             sum_avg_dmg_stalk = sum(average_damage_stalk),
@@ -3337,10 +3345,10 @@ summary_stalk_fert_bp$treatment_cld <-
 
 summary_stalk %>%
   ggplot(aes(order_treat, percent_incidence_stalk)) + 
-  geom_boxplot() +
+  geom_boxplot(aes(fill=order_treat), show.legend = FALSE) +
   geom_text(data = summary_stalk_fert_bp, aes(label = treatment_cld,
-                y = w + sd$ymax), vjust = -0.5, color="red", size = 5) +
-  geom_text(data = summary_stalk_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = 2.3, alpha = 0.75, color = "darkblue") +
+                y = w + sd$ymax), hjust = -1, color="red", size = 5) +
+  geom_text(data = summary_stalk_fert_bp, aes(label = round(w, 2), y = sd$y), vjust = -3, hjust = -1, alpha = 0.75, color = "darkblue") +
   labs(x = "Fertilizer Treatment Rate", 
        y = "Percent Incidence Stalk Rot",
        title = "Effect of Fertilizer Treatment Rate on Stalk Rot Incidence") + 
@@ -3456,6 +3464,139 @@ detach("package:nortest", unload = TRUE)
 detach("package:DescTools", unload = TRUE)
 detach("package:stats", unload = TRUE)
 ```
+
+```By MUNICIPALITY Summaries```
+```{r}
+diseases_summary <-
+  summary_blsb %>%
+  full_join(summary_rust) %>%
+  full_join(summary_southrust) %>%
+  full_join(summary_mildew) %>%
+  full_join(summary_brown) %>%
+  full_join(summary_leaf) %>%
+  full_join(summary_blight) %>%
+  full_join(summary_stalk)
+
+write.csv(diseases_summary, "../Diseases Summary Corn.csv")
+
+
+# municipality summaries
+# blsb
+municipality_blsb_summary <-
+  diseases_summary %>%
+  select(Year, Municipality, percent_incidence_blsb) %>%
+  group_by(Year, Municipality)
+
+municipality_blsb_mean_summary <- 
+  municipality_blsb_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_blsb)) 
+
+municipality_yearly_incidence_summary_blsb <-
+  municipality_blsb_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+# rust
+municipality_rust_summary <-
+  diseases_summary %>%
+  select(Year, Municipality, percent_incidence_rust) %>%
+  group_by(Year, Municipality)
+
+municipality_rust_mean_summary <- 
+  municipality_rust_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_rust)) 
+
+municipality_yearly_incidence_summary_rust <-
+  municipality_rust_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+# southrust
+municipality_southrust_summary <-
+  diseases_summary %>%
+  select(Year, Municipality, percent_incidence_southrust) %>%
+  group_by(Year, Municipality)
+
+municipality_southrust_mean_summary <- 
+  municipality_southrust_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_southrust)) 
+
+municipality_yearly_incidence_summary_southrust <-
+  municipality_southrust_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+# mildew
+municipality_mildew_summary <-
+  diseases_summary %>%
+  select(Year, Municipality, percent_incidence_mildew) %>%
+  group_by(Year, Municipality)
+
+municipality_mildew_mean_summary <- 
+  municipality_mildew_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_mildew)) 
+
+municipality_yearly_incidence_summary_mildew <-
+  municipality_mildew_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+# brown
+municipality_brown_summary <-
+  diseases_summary %>%
+  select(Year, Municipality, percent_incidence_brown) %>%
+  group_by(Year, Municipality)
+
+municipality_brown_mean_summary <- 
+  municipality_brown_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_brown)) 
+
+municipality_yearly_incidence_summary_brown <-
+  municipality_brown_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+# leaf
+municipality_leaf_summary <-
+  diseases_summary %>%
+  select(Year, Municipality, percent_incidence_leaf) %>%
+  group_by(Year, Municipality)
+
+municipality_leaf_mean_summary <- 
+  municipality_leaf_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_leaf)) 
+
+municipality_yearly_incidence_summary_leaf <-
+  municipality_leaf_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+
+# blight
+municipality_blight_summary <-
+  diseases_summary %>%
+  select(Year, Municipality, percent_incidence_blight) %>%
+  group_by(Year, Municipality)
+
+municipality_blight_mean_summary <- 
+  municipality_blight_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_blight)) 
+
+municipality_yearly_incidence_summary_blight <-
+  municipality_blight_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+
+# stalk
+municipality_stalk_summary <-
+  diseases_summary %>%
+  select(Year, Municipality, percent_incidence_stalk) %>%
+  group_by(Year, Municipality)
+
+municipality_stalk_mean_summary <- 
+  municipality_stalk_summary %>%
+  summarise(municipality_mean_incidence = mean(percent_incidence_stalk)) 
+
+municipality_yearly_incidence_summary_stalk <-
+  municipality_stalk_mean_summary %>%
+  arrange(desc(municipality_mean_incidence))
+
+```
+
 
 ``` Correlation: Incidence vs Weather Parameters```
 ```{r}
