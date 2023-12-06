@@ -1,7 +1,7 @@
 ---
 title: "disease_forecast"
 author: "Mihkail Cornell"
-date: "2023-12-05"
+date: "-12-05"
 output: html_document
 ---
 
@@ -15,20 +15,22 @@ library(lubridate)
 library(tidymodels)
 library(scales)
 library(forecast)
+library(dplyr)
+library(datawizard)
 ```
 
 ```{r}
 blsb_joined_ev %>%
-  select(collect_date, incidence_blsb) %>%
+  select(collect_date, `Crop Stage`, incidence_blsb) %>%
   ggplot(aes(collect_date, incidence_blsb)) +
   geom_smooth()
 
 
 blsb_ts_df <- blsb_joined_ev %>%
-  select(collect_date, incidence_blsb) %>%
+  select(collect_date, `Crop Stage`, incidence_blsb) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_blsb, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_blsb, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(blsb_monthly_average_incidence = mean(incidence_blsb)) 
 
 blsb_ts_df <-
@@ -37,16 +39,16 @@ blsb_ts_df <-
 
 
 rust_joined_ev %>%
-  select(collect_date, incidence_rust) %>%
+  select(collect_date, `Crop Stage`, incidence_rust) %>%
   ggplot(aes(collect_date, incidence_rust)) +
   geom_smooth()
 
 
 rust_ts_df <- rust_joined_ev %>%
-  select(collect_date, incidence_rust) %>%
+  select(collect_date, `Crop Stage`, incidence_rust) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_rust, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_rust, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(rust_monthly_average_incidence = mean(incidence_rust)) 
 
 rust_ts_df <-
@@ -55,16 +57,16 @@ rust_ts_df <-
           mean(rust_ts_df$rust_monthly_average_incidence, na.rm = TRUE))
 
 southrust_joined_ev %>%
-  select(collect_date, incidence_southrust) %>%
+  select(collect_date, `Crop Stage`, incidence_southrust) %>%
   ggplot(aes(collect_date, incidence_southrust)) +
   geom_smooth()
 
 
 southrust_ts_df <- southrust_joined_ev %>%
-  select(collect_date, incidence_southrust) %>%
+  select(collect_date, `Crop Stage`, incidence_southrust) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_southrust, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_southrust, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(southrust_monthly_average_incidence = mean(incidence_southrust)) 
 
 southrust_ts_df <-
@@ -72,16 +74,16 @@ southrust_ts_df <-
   replace(is.na(southrust_ts_df), mean(southrust_ts_df$southrust_monthly_average_incidence, na.rm = TRUE))
 
 mildew_joined_ev %>%
-  select(collect_date, incidence_mildew) %>%
+  select(collect_date, `Crop Stage`, incidence_mildew) %>%
   ggplot(aes(collect_date, incidence_mildew)) +
   geom_smooth()
 
 
 mildew_ts_df <- mildew_joined_ev %>%
-  select(collect_date, incidence_mildew) %>%
+  select(collect_date, `Crop Stage`, incidence_mildew) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_mildew, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_mildew, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(mildew_monthly_average_incidence = mean(incidence_mildew)) 
 
 mildew_ts_df <-
@@ -89,16 +91,16 @@ mildew_ts_df <-
   replace(is.na(mildew_ts_df), mean(mildew_ts_df$mildew_monthly_average_incidence, na.rm = TRUE))
 
 brown_joined_ev %>%
-  select(collect_date, incidence_brown) %>%
+  select(collect_date, `Crop Stage`, incidence_brown) %>%
   ggplot(aes(collect_date, incidence_brown)) +
   geom_smooth()
 
 
 brown_ts_df <- brown_joined_ev %>%
-  select(collect_date, incidence_brown) %>%
+  select(collect_date, `Crop Stage`, incidence_brown) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_brown, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_brown, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(brown_monthly_average_incidence = mean(incidence_brown)) 
 
 brown_ts_df <-
@@ -107,16 +109,16 @@ brown_ts_df <-
 
 
 leaf_joined_ev %>%
-  select(collect_date, incidence_leaf) %>%
+  select(collect_date, `Crop Stage`, incidence_leaf) %>%
   ggplot(aes(collect_date, incidence_leaf)) +
   geom_smooth()
 
 
 leaf_ts_df <- leaf_joined_ev %>%
-  select(collect_date, incidence_leaf) %>%
+  select(collect_date, `Crop Stage`, incidence_leaf) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_leaf, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_leaf, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(leaf_monthly_average_incidence = mean(incidence_leaf)) 
 
 leaf_ts_df <-
@@ -124,16 +126,16 @@ leaf_ts_df <-
   replace(is.na(leaf_ts_df), mean(leaf_ts_df$leaf_monthly_average_incidence, na.rm = TRUE))
 
 blight_joined_ev %>%
-  select(collect_date, incidence_blight) %>%
+  select(collect_date, `Crop Stage`, incidence_blight) %>%
   ggplot(aes(collect_date, incidence_blight)) +
   geom_smooth()
 
 
 blight_ts_df <- blight_joined_ev %>%
-  select(collect_date, incidence_blight) %>%
+  select(collect_date, `Crop Stage`, incidence_blight) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_blight, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_blight, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(blight_monthly_average_incidence = mean(incidence_blight)) 
 
 blight_ts_df <-
@@ -141,16 +143,16 @@ blight_ts_df <-
   replace(is.na(blight_ts_df), mean(blight_ts_df$blight_monthly_average_incidence, na.rm = TRUE))
 
 stalk_joined_ev %>%
-  select(collect_date, incidence_stalk) %>%
+  select(collect_date, `Crop Stage`, incidence_stalk) %>%
   ggplot(aes(collect_date, incidence_stalk)) +
   geom_smooth()
 
 
 stalk_ts_df <- stalk_joined_ev %>%
-  select(collect_date, incidence_stalk) %>%
+  select(collect_date, `Crop Stage`, incidence_stalk) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_stalk, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_stalk, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(stalk_monthly_average_incidence = mean(incidence_stalk)) 
 
 stalk_ts_df <-
@@ -168,8 +170,6 @@ diseases_ts_df <-
   full_join(blight_ts_df) %>%
   full_join(stalk_ts_df)
 ```
-
-
 
 ```{r setup, fig.width = 12, fig.height = 7}
 line_size <- 2
@@ -202,15 +202,78 @@ diseases_ts_df %>%
                                    hjust = 0.5,
                                    size = 14),
         axis.text.y = element_text(vjust = 0.5, 
-                                   size = 14, 
+                                   size = 16, 
                                     margin = margin(t = 0, r = 10, b = 0, l = 10)),
-        axis.title.x = element_text(size = 15, 
+        axis.title.x = element_text(size = 16, 
                                     margin = margin(t = 10, r = 20, b = 0, l = 0)),
         axis.title.y = element_text(size = 15),
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15)) +
-  labs(x = "Time Period (May 2020 - Aug 2023)",
-       y = "Average monthly Diseases Percent Incidence",
+  labs(x = "Time Period (May 2020 - Aug )",
+       y = "Average Monthly Diseases Percent Incidence",
        color = "Diseases") 
 ```
+
+
+```{r}
+#arrange(month, match(`Crop Stage`, crop_growth_stages_monthly)
+crop_growth_stages_monthly <- c("Emergence", "Single Leaf", 
+                                "Seedling (3 - 4 Leaves)", 
+                                "Early Whorl", "Mid Whorl", 
+                                "Late Whorl", "Tasseling", 
+                                "Silking", "Maturity")
+
+# first cropping 2020
+diseases_1stcrop_2020 <-
+  diseases_ts_df %>%
+  filter(year(ymd(month)) == "2020", month(ymd(month)) %in% c(5, 6, 7, 8)) %>% 
+  group_by(month, `Crop Stage`) %>%
+  # arrange(month, match(`Crop Stage`, crop_growth_stages_monthly)) %>%
+  ungroup() %>% 
+  data_unique(`Crop Stage`, keep = "first") %>%
+  arrange(month, match(`Crop Stage`, crop_growth_stages_monthly))
+
+
+# 2nd cropping 2020
+diseases_2ndcrop_2020 <-
+  diseases_ts_df %>%
+  filter(year(ymd(month)) == "2020", month(ymd(month)) %in% c(6, 7, 8, 9)) %>% 
+  group_by(month, `Crop Stage`) %>%
+  # arrange(month, match(`Crop Stage`, crop_growth_stages_monthly)) %>%
+  ungroup() %>% 
+  data_unique(`Crop Stage`, keep = "first") %>%
+  arrange(month, match(`Crop Stage`, crop_growth_stages_monthly))
+
+
+# 3rd cropping 2020
+diseases_3rdcrop_2020 <-
+  diseases_ts_df %>%
+  filter(year(ymd(month)) == "2020", month(ymd(month)) %in% c(8, 9, 10, 11)) %>% 
+  group_by(month, `Crop Stage`) %>%
+  # arrange(month, match(`Crop Stage`, crop_growth_stages_monthly)) %>%
+  ungroup() %>% 
+  data_unique(`Crop Stage`, keep = "first") %>%
+  arrange(month, match(`Crop Stage`, crop_growth_stages_monthly))
+```
+
+
+
+```{r}
+diseases_ts_df %>% 
+  filter(year(ymd(month)) == "2020") %>%
+  arrange()
+
+diseases_ts_df %>% 
+  filter(year(ymd(month)) == "2021") %>%
+  arrange()
+
+diseases_ts_df %>% 
+  filter(year(ymd(month)) == "2022") %>%
+  arrange()
+
+diseases_ts_df %>% 
+  filter(year(ymd(month)) == "2023") %>%
+  arrange()
+```
+
 

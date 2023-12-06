@@ -3661,6 +3661,10 @@ municipality_yearly_incidence_summary_faw <-
   municipality_faw_mean_summary %>%
   arrange(desc(municipality_mean_incidence))
 
+
+insects_summary %>%
+  summarise(mean(percent_incidence_borer))
+
 ```
 
 
