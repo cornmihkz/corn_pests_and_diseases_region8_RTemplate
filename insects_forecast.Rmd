@@ -21,16 +21,16 @@ library(tsibble)
 
 ```{r setup, include=FALSE, fig.width = 8, fig.height = 5}
 borer_joined_ev %>%
-  select(collect_date, incidence_borer) %>%
+  select(collect_date, `Crop Stage`, incidence_borer) %>%
   ggplot(aes(collect_date, incidence_borer)) +
   geom_smooth()
 
 
 borer_ts_df <- borer_joined_ev %>%
-  select(collect_date, incidence_borer) %>%
+  select(collect_date, `Crop Stage`, incidence_borer) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_borer, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_borer, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(borer_monthly_average_incidence = mean(incidence_borer)) 
 
 borer_ts_df <-
@@ -39,16 +39,16 @@ borer_ts_df <-
 
 
 semilooper_joined_ev %>%
-  select(collect_date, incidence_semilooper) %>%
+  select(collect_date, `Crop Stage`, incidence_semilooper) %>%
   ggplot(aes(collect_date, incidence_semilooper)) +
   geom_smooth()
 
 
 semilooper_ts_df <- semilooper_joined_ev %>%
-  select(collect_date, incidence_semilooper) %>%
+  select(collect_date, `Crop Stage`, incidence_semilooper) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_semilooper, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_semilooper, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(semilooper_monthly_average_incidence = mean(incidence_semilooper)) 
 
 semilooper_ts_df <-
@@ -57,16 +57,16 @@ semilooper_ts_df <-
           mean(semilooper_ts_df$semilooper_monthly_average_incidence, na.rm = TRUE))
 
 hopper_joined_ev %>%
-  select(collect_date, incidence_hopper) %>%
+  select(collect_date, `Crop Stage`, incidence_hopper) %>%
   ggplot(aes(collect_date, incidence_hopper)) +
   geom_smooth()
 
 
 hopper_ts_df <- hopper_joined_ev %>%
-  select(collect_date, incidence_hopper) %>%
+  select(collect_date, `Crop Stage`, incidence_hopper) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_hopper, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_hopper, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(hopper_monthly_average_incidence = mean(incidence_hopper)) 
 
 hopper_ts_df <-
@@ -74,16 +74,16 @@ hopper_ts_df <-
   replace(is.na(hopper_ts_df), mean(hopper_ts_df$hopper_monthly_average_incidence, na.rm = TRUE))
 
 earworm_joined_ev %>%
-  select(collect_date, incidence_earworm) %>%
+  select(collect_date, `Crop Stage`, incidence_earworm) %>%
   ggplot(aes(collect_date, incidence_earworm)) +
   geom_smooth()
 
 
 earworm_ts_df <- earworm_joined_ev %>%
-  select(collect_date, incidence_earworm) %>%
+  select(collect_date, `Crop Stage`, incidence_earworm) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_earworm, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_earworm, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(earworm_monthly_average_incidence = mean(incidence_earworm)) 
 
 earworm_ts_df <-
@@ -91,16 +91,16 @@ earworm_ts_df <-
   replace(is.na(earworm_ts_df), mean(earworm_ts_df$earworm_monthly_average_incidence, na.rm = TRUE))
 
 cutworm_joined_ev %>%
-  select(collect_date, incidence_cutworm) %>%
+  select(collect_date, `Crop Stage`, incidence_cutworm) %>%
   ggplot(aes(collect_date, incidence_cutworm)) +
   geom_smooth()
 
 
 cutworm_ts_df <- cutworm_joined_ev %>%
-  select(collect_date, incidence_cutworm) %>%
+  select(collect_date, `Crop Stage`, incidence_cutworm) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_cutworm, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_cutworm, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(cutworm_monthly_average_incidence = mean(incidence_cutworm)) 
 
 cutworm_ts_df <-
@@ -109,16 +109,16 @@ cutworm_ts_df <-
 
 
 armyworm_joined_ev %>%
-  select(collect_date, incidence_armyworm) %>%
+  select(collect_date, `Crop Stage`, incidence_armyworm) %>%
   ggplot(aes(collect_date, incidence_armyworm)) +
   geom_smooth()
 
 
 armyworm_ts_df <- armyworm_joined_ev %>%
-  select(collect_date, incidence_armyworm) %>%
+  select(collect_date, `Crop Stage`, incidence_armyworm) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_armyworm, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_armyworm, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(armyworm_monthly_average_incidence = mean(incidence_armyworm)) 
 
 armyworm_ts_df <-
@@ -126,16 +126,16 @@ armyworm_ts_df <-
   replace(is.na(armyworm_ts_df), mean(armyworm_ts_df$armyworm_monthly_average_incidence, na.rm = TRUE))
 
 aphids_joined_ev %>%
-  select(collect_date, incidence_aphids) %>%
+  select(collect_date, `Crop Stage`, incidence_aphids) %>%
   ggplot(aes(collect_date, incidence_aphids)) +
   geom_smooth()
 
 
 aphids_ts_df <- aphids_joined_ev %>%
-  select(collect_date, incidence_aphids) %>%
+  select(collect_date, `Crop Stage`, incidence_aphids) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_aphids, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_aphids, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(aphids_monthly_average_incidence = mean(incidence_aphids)) 
 
 aphids_ts_df <-
@@ -143,16 +143,16 @@ aphids_ts_df <-
   replace(is.na(aphids_ts_df), mean(aphids_ts_df$aphids_monthly_average_incidence, na.rm = TRUE))
 
 faw_joined_ev %>%
-  select(collect_date, incidence_faw) %>%
+  select(collect_date, `Crop Stage`, incidence_faw) %>%
   ggplot(aes(collect_date, incidence_faw)) +
   geom_smooth()
 
 
 faw_ts_df <- faw_joined_ev %>%
-  select(collect_date, incidence_faw) %>%
+  select(collect_date, `Crop Stage`, incidence_faw) %>%
   mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_faw, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
+  group_by(incidence_faw, `Crop Stage`, month = floor_date(Date, "month")) %>%
+  group_by(month, `Crop Stage`) %>%
   summarise(faw_monthly_average_incidence = mean(incidence_faw)) 
 
 faw_ts_df <-
@@ -171,6 +171,285 @@ insects_ts_df <-
   full_join(faw_ts_df)
 ```
 
+```By cropping```
+```{r}
+crop_growth_stages_monthly <- c("Emergence", "Single Leaf", 
+                                "Seedling (3 - 4 Leaves)", 
+                                "Early Whorl", "Mid Whorl", 
+                                "Late Whorl", "Tasseling", 
+                                "Silking", "Maturity")
+
+# first cropping 2020
+insects_1stcrop_2020 <-
+  insects_ts_df %>%
+  filter(year(ymd(month)) == "2020") %>% 
+  group_by(month, `Crop Stage`) %>%
+  arrange(month, match(`Crop Stage`, crop_growth_stages_monthly))
+
+# 2nd cropping 2021
+insects_2ndcrop_2021_july <-
+  insects_ts_df %>%
+    filter(year(ymd(month)) == "2021",
+           month(ymd(month)) == 7, 
+           `Crop Stage` %in% c("Late Whorl", "Tasseling", 
+                                "Silking", "Maturity"))
+
+insects_2ndcrop_2021 <-
+  insects_ts_df %>%
+    filter(year(ymd(month)) == "2021", month(ymd(month)) %in% seq(1, 7)) %>% 
+    group_by(month, `Crop Stage`) %>%
+    ungroup() %>% 
+    arrange(month, match(`Crop Stage`, crop_growth_stages_monthly)) %>%
+  full_join(insects_2ndcrop_2021_july)
+
+
+
+# 3rd cropping 2021 - 2022
+insects_3rdcrop_2021_july <-
+  insects_ts_df %>%
+    filter(year(ymd(month)) == "2021",
+           month(ymd(month)) == 7, 
+           `Crop Stage` %in% c("Single Leaf", 
+                                "Seedling (3 - 4 Leaves)", 
+                                "Early Whorl", "Mid Whorl"))
+insects_3rdcrop_2022_january <-
+  insects_ts_df %>%
+    filter(year(ymd(month)) == "2022" & month(ymd(month)) == 1)
+
+insects_3rdcrop_2021 <-
+  insects_ts_df %>%
+    filter(year(ymd(month)) == "2021" & month(ymd(month)) %in% seq(7, 9)) %>% 
+    group_by(month, `Crop Stage`) %>%
+    arrange(month, match(`Crop Stage`, crop_growth_stages_monthly)) %>%
+    full_join(insects_3rdcrop_2021_july) %>%
+    full_join(insects_3rdcrop_2022_january)
+
+
+
+# 4th cropping 2022
+insects_4thcrop_2022_may <-
+  insects_ts_df %>%
+    filter(year(ymd(month)) == "2022",
+           month(ymd(month)) == 5, 
+           `Crop Stage` %in% c("Late Whorl", "Tasseling", 
+                                "Silking", "Maturity"))
+
+insects_4thcrop_2022 <-
+  insects_ts_df %>%
+    filter(year(ymd(month)) == "2022", month(ymd(month)) %in% seq(2, 4)) %>% 
+    group_by(month, `Crop Stage`) %>%
+    arrange(month, match(`Crop Stage`, crop_growth_stages_monthly)) %>%
+  full_join(insects_4thcrop_2022_may)
+
+
+
+# 5th cropping 2022
+insects_5thcrop_2022_may <-
+  insects_ts_df %>%
+    filter(year(ymd(month)) == "2022",
+           month(ymd(month)) %in% c(4, 5),
+           `Crop Stage` %in% c("Single Leaf", 
+                                "Seedling (3 - 4 Leaves)", 
+                                "Early Whorl", "Mid Whorl"))
+
+insects_5thcrop_2023_january <-
+  insects_ts_df %>%
+     filter(year(ymd(month)) == "2023",
+            month(ymd(month)) %in% c(1, 2, 3), 
+           `Crop Stage` %in% c("Late Whorl", "Tasseling", 
+                                "Silking", "Maturity"))
+
+insects_5thcrop_2022 <-
+  insects_5thcrop_2022_may %>% 
+  full_join(
+    insects_ts_df %>%
+        filter(
+        year(ymd(month)) == "2022", 
+        month(ymd(month)) %in% seq(6, 12)) %>% 
+        group_by(month, `Crop Stage`) %>%
+        arrange(month, match(`Crop Stage`, crop_growth_stages_monthly))) %>%
+  full_join(insects_5thcrop_2023_january)
+
+
+
+
+
+
+
+# 6th cropping 2023
+insects_6thcrop_2023_february <-
+  insects_ts_df %>%
+    filter(year(ymd(month)) == "2023",
+           month(ymd(month)) %in% c(2, 3), 
+           `Crop Stage` %in% c("Single Leaf", 
+                                "Seedling (3 - 4 Leaves)", 
+                                "Early Whorl", "Mid Whorl"))
+
+
+insects_6thcrop_2023 <-
+  insects_ts_df %>%
+    filter(year(ymd(month)) == "2023", 
+           month(ymd(month)) %in% seq(4, 12)) %>% 
+    group_by(month, `Crop Stage`) %>%
+    arrange(month, match(`Crop Stage`, crop_growth_stages_monthly)) %>%
+    full_join(insects_6thcrop_2023_february)
+```
+
+
+
+
+```Monthly averages```
+```{r}
+borer_joined_ev %>%
+  select(collect_date,  incidence_borer) %>%
+  ggplot(aes(collect_date, incidence_borer)) +
+  geom_smooth()
+
+
+borer_monthly_average_df <- borer_joined_ev %>%
+  select(collect_date,  incidence_borer) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_borer,  month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(borer_monthly_average_incidence = mean(incidence_borer)) 
+
+borer_monthly_average_df <-
+  borer_monthly_average_df %>% 
+  replace(is.na(borer_monthly_average_df), mean(borer_monthly_average_df$borer_monthly_average_incidence, na.rm = TRUE))
+
+
+semilooper_joined_ev %>%
+  select(collect_date,  incidence_semilooper) %>%
+  ggplot(aes(collect_date, incidence_semilooper)) +
+  geom_smooth()
+
+
+semilooper_monthly_average_df <- semilooper_joined_ev %>%
+  select(collect_date,  incidence_semilooper) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_semilooper,  month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(semilooper_monthly_average_incidence = mean(incidence_semilooper)) 
+
+semilooper_monthly_average_df <-
+  semilooper_monthly_average_df %>% 
+  replace(is.na(semilooper_monthly_average_df), 
+          mean(semilooper_monthly_average_df$semilooper_monthly_average_incidence, na.rm = TRUE))
+
+hopper_joined_ev %>%
+  select(collect_date,  incidence_hopper) %>%
+  ggplot(aes(collect_date, incidence_hopper)) +
+  geom_smooth()
+
+
+hopper_monthly_average_df <- hopper_joined_ev %>%
+  select(collect_date,  incidence_hopper) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_hopper,  month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(hopper_monthly_average_incidence = mean(incidence_hopper)) 
+
+hopper_monthly_average_df <-
+  hopper_monthly_average_df %>% 
+  replace(is.na(hopper_monthly_average_df), mean(hopper_monthly_average_df$hopper_monthly_average_incidence, na.rm = TRUE))
+
+earworm_joined_ev %>%
+  select(collect_date,  incidence_earworm) %>%
+  ggplot(aes(collect_date, incidence_earworm)) +
+  geom_smooth()
+
+
+earworm_monthly_average_df <- earworm_joined_ev %>%
+  select(collect_date,  incidence_earworm) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_earworm,  month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(earworm_monthly_average_incidence = mean(incidence_earworm)) 
+
+earworm_monthly_average_df <-
+  earworm_monthly_average_df %>% 
+  replace(is.na(earworm_monthly_average_df), mean(earworm_monthly_average_df$earworm_monthly_average_incidence, na.rm = TRUE))
+
+cutworm_joined_ev %>%
+  select(collect_date,  incidence_cutworm) %>%
+  ggplot(aes(collect_date, incidence_cutworm)) +
+  geom_smooth()
+
+
+cutworm_monthly_average_df <- cutworm_joined_ev %>%
+  select(collect_date,  incidence_cutworm) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_cutworm,  month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(cutworm_monthly_average_incidence = mean(incidence_cutworm)) 
+
+cutworm_monthly_average_df <-
+  cutworm_monthly_average_df %>% 
+  replace(is.na(cutworm_monthly_average_df), mean(cutworm_monthly_average_df$cutworm_monthly_average_incidence, na.rm = TRUE))
+
+
+armyworm_joined_ev %>%
+  select(collect_date,  incidence_armyworm) %>%
+  ggplot(aes(collect_date, incidence_armyworm)) +
+  geom_smooth()
+
+
+armyworm_monthly_average_df <- armyworm_joined_ev %>%
+  select(collect_date,  incidence_armyworm) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_armyworm,  month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(armyworm_monthly_average_incidence = mean(incidence_armyworm)) 
+
+armyworm_monthly_average_df <-
+  armyworm_monthly_average_df %>% 
+  replace(is.na(armyworm_monthly_average_df), mean(armyworm_monthly_average_df$armyworm_monthly_average_incidence, na.rm = TRUE))
+
+aphids_joined_ev %>%
+  select(collect_date,  incidence_aphids) %>%
+  ggplot(aes(collect_date, incidence_aphids)) +
+  geom_smooth()
+
+
+aphids_monthly_average_df <- aphids_joined_ev %>%
+  select(collect_date,  incidence_aphids) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_aphids,  month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(aphids_monthly_average_incidence = mean(incidence_aphids)) 
+
+aphids_monthly_average_df <-
+  aphids_monthly_average_df %>% 
+  replace(is.na(aphids_monthly_average_df), mean(aphids_monthly_average_df$aphids_monthly_average_incidence, na.rm = TRUE))
+
+faw_joined_ev %>%
+  select(collect_date,  incidence_faw) %>%
+  ggplot(aes(collect_date, incidence_faw)) +
+  geom_smooth()
+
+
+faw_monthly_average_df <- faw_joined_ev %>%
+  select(collect_date,  incidence_faw) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_faw,  month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(faw_monthly_average_incidence = mean(incidence_faw)) 
+
+faw_monthly_average_df <-
+  faw_monthly_average_df %>% 
+  replace(is.na(faw_monthly_average_df), mean(faw_monthly_average_df$faw_monthly_average_incidence, na.rm = TRUE))
+
+
+insects_average_df_monthly <-
+  borer_monthly_average_df %>%
+  full_join(semilooper_monthly_average_df) %>%
+  full_join(hopper_monthly_average_df) %>%
+  full_join(earworm_monthly_average_df) %>%
+  full_join(cutworm_monthly_average_df) %>%
+  full_join(armyworm_monthly_average_df) %>%
+  full_join(aphids_monthly_average_df) %>%
+  full_join(faw_monthly_average_df)
+```
 
 ```{r setup, include=FALSE, fig.width = 12, fig.height = 7}
 # average monthly borer incidence plot
@@ -190,7 +469,7 @@ pest_colors <- c("borer_monthly_average_incidence" = "blueviolet",
 
 line_size <- 2
 
-insects_ts_df %>%
+insects_average_df_monthly %>%
   pivot_longer(cols = !month, values_to = "monthly_incidence", names_to = "pest_incidence") %>%
   ggplot(aes(month, monthly_incidence, color = pest_incidence)) +
   geom_line(size = line_size) +
@@ -212,7 +491,7 @@ insects_ts_df %>%
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15)) +
   labs(x = "Time Period (May 2020 - Aug 2023)",
-       y = "Average monthly Pest Percent Incidence",
+       y = "Average Monthly Pest Percent Incidence",
        color = "Pests") 
 
 
@@ -223,3 +502,7 @@ tsdiag(borer_arima_result)
 diff(borer_ts_df$monthly_average_incidence)
 plot(ts(borer_ts_df$monthly_average_incidence))
 ```
+
+
+
+
