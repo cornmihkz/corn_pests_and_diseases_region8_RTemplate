@@ -7,6 +7,13 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidymodels)
+library(tidyr)
+library(tidyverse)
+library(stringr)
+library(dplyr)
+library(lubridate)
+library(magrittr)
 ```
 
 ```Diseases incidences January - June ```
@@ -14,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ###  summaries ####
 # BLSB
 blsb <- 
-  diseases_raw_parsed %>%
+  diseases_raw %>%
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("BandedLeaf and Sheath Blight")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
@@ -53,7 +60,7 @@ summary_blsb <-
 
 # Common Rust
 rust <- 
-  diseases_raw_parsed %>%
+  diseases_raw %>%
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Common Rust")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
@@ -91,7 +98,7 @@ summary_rust <-
 
 # Southern Rust
 southrust <- 
-  diseases_raw_parsed %>%
+  diseases_raw %>%
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Southern Rust")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
@@ -130,7 +137,7 @@ summary_southrust <-
 
 # Downy Mildew
 mildew <- 
-  diseases_raw_parsed %>%
+  diseases_raw %>%
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Downy Mildew")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
@@ -168,7 +175,7 @@ summary_mildew <-
 
 # Brown Spot
 brown <- 
-  diseases_raw_parsed %>%
+  diseases_raw %>%
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Brown Spot")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
@@ -206,7 +213,7 @@ summary_brown <-
 
 # Leaf Spot
 leaf <- 
-  diseases_raw_parsed %>%
+  diseases_raw %>%
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Leaf Spot")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
@@ -244,7 +251,7 @@ summary_leaf <-
 
 # Leaf Blight
 blight <- 
-  diseases_raw_parsed %>%
+  diseases_raw %>%
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Leaf Blight")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
@@ -282,7 +289,7 @@ summary_blight <-
 
 # Stalk Rot
 stalk <- 
-  diseases_raw_parsed %>%
+  diseases_raw %>%
   select(FarmID, Region,`Collection Date`, Province, Municipality, `Crop Stage`, Treatment, Barangay, `Corn Type`, Variety, Region, contains("Stalk Rot")) %>%
   filter(Municipality != "Santa Rita" & Municipality != "Hilongos" & Municipality != "Tomas Oppus")
 
@@ -407,9 +414,12 @@ summary_diseases_region <-
 summary_diseases_region <-
   summary_diseases_region %>% 
   arrange(desc(Regional_Incidence))
-write.csv(summary_diseases_region, "../report_/Regional Top Diseases Percent Incidence.csv")
+write.csv(summary_diseases_region, "summary_diseases/Regional Top Diseases Percent Incidence.csv")
 #####
+```
 
+
+```{r}
 ##### by corn type ######
 summary_blsb_corntype <-
   summary_blsb %>%
@@ -511,13 +521,13 @@ summary_diseases_corntype_NGM <-
   summary_diseases_corntype %>% 
   select(Diseases, NGM.Percent.Incidence) %>%
   arrange(desc(NGM.Percent.Incidence))
-write.csv(summary_diseases_corntype_NGM, "../report_/Top Diseases NGM Corn Type Percent Incidence.csv")
+write.csv(summary_diseases_corntype_NGM, "summary_diseases/Top Diseases NGM Corn Type Percent Incidence.csv")
 
 summary_diseases_corntype_GM <-
   summary_diseases_corntype %>% 
   select(Diseases, GM.Percent.Incidence) %>%
   arrange(desc(GM.Percent.Incidence))
-write.csv(summary_diseases_corntype_GM, "../report_/Top Diseases GM Corn Type Percent Incidence.csv")
+write.csv(summary_diseases_corntype_GM, "summary_diseases/Top Diseases GM Corn Type Percent Incidence.csv")
 #####
 
 ###  by Province  #####
@@ -639,20 +649,20 @@ summary_diseases_Leyte <-
   summary_diseases_province %>% 
   select(Diseases, Leyte) %>%
   arrange(desc(Leyte))
-write.csv(summary_diseases_Leyte, "../report_/Top Diseases Leyte Percent Incidence.csv")
+write.csv(summary_diseases_Leyte, "summary_diseases/Top Diseases Leyte Percent Incidence.csv")
 
 
 summary_diseases_So_Leyte <-
   summary_diseases_province %>% 
   select(Diseases, Southern.Leyte) %>%
   arrange(desc(Southern.Leyte))
-write.csv(summary_diseases_So_Leyte, "../report_/Top Diseases Southern Leyte Percent Incidence.csv")
+write.csv(summary_diseases_So_Leyte, "summary_diseases/Top Diseases Southern Leyte Percent Incidence.csv")
 
 summary_diseases_Samar <-
   summary_diseases_province %>% 
   select(Diseases, Samar) %>%
   arrange(desc(Samar))
-write.csv(summary_diseases_Samar, "../report_/Top Diseases Samar Percent Incidence.csv")
+write.csv(summary_diseases_Samar, "summary_diseases/Top Diseases Samar Percent Incidence.csv")
 #######
 
 ####  by fertilizer  ######
@@ -774,21 +784,21 @@ summary_diseases_rfr_fertilizer <-
   summary_diseases_fertilizer %>% 
   select(Diseases, RFR) %>%
   arrange(desc(RFR))
-write.csv(summary_diseases_rfr_fertilizer, "../report_/Top Diseases by RFR Fertilizer Treatment Percent Incidence.csv")
+write.csv(summary_diseases_rfr_fertilizer, "summary_diseases/Top Diseases by RFR Fertilizer Treatment Percent Incidence.csv")
 
 
 summary_diseases_brfr_fertilizer <-
   summary_diseases_fertilizer %>% 
   select(Diseases, BRFR) %>%
   arrange(desc(BRFR))
-write.csv(summary_diseases_brfr_fertilizer, "../report_/Top Diseases by BRFR Fertilizer Treatment Percent Incidence.csv")
+write.csv(summary_diseases_brfr_fertilizer, "summary_diseases/Top Diseases by BRFR Fertilizer Treatment Percent Incidence.csv")
 
 
 summary_diseases_arfr_fertilizer <-
   summary_diseases_fertilizer %>% 
   select(Diseases, ARFR) %>%
   arrange(desc(ARFR))
-write.csv(summary_diseases_arfr_fertilizer, "../report_/Top Diseases by ARFR Fertilizer Treatment Percent Incidence.csv")
+write.csv(summary_diseases_arfr_fertilizer, "summary_diseases/Top Diseases by ARFR Fertilizer Treatment Percent Incidence.csv")
 #######
 
 ### by Crop stage ####
@@ -992,20 +1002,20 @@ summary_diseases_crop_stage <-
              )
     ) 
 
-write.csv(summary_diseases_crop_stage, "../report_/Summary of Corn Crop Stage Disease Incidences .csv")
+write.csv(summary_diseases_crop_stage, "summary_diseases/Summary of Corn Crop Stage Disease Incidences .csv")
 
 summary_diseases_single_leaf <-
   summary_diseases_crop_stage %>% 
   select(Diseases, Single_leaf) %>%
   arrange(desc(Single_leaf))
-write.csv(summary_diseases_single_leaf, "../report_/Top Diseases during Single leaf `Crop Stage` Percent Incidence.csv")
+write.csv(summary_diseases_single_leaf, "summary_diseases/Top Diseases during Single leaf `Crop Stage` Percent Incidence.csv")
 
 
 summary_diseases_mid_whorl <-
   summary_diseases_crop_stage %>% 
   select(Diseases, Mid_whorl) %>%
   arrange(desc(Mid_whorl))
-write.csv(summary_diseases_mid_whorl, "../report_/Top Diseases during Mid whorl `Crop Stage` Percent Incidence.csv")
+write.csv(summary_diseases_mid_whorl, "summary_diseases/Top Diseases during Mid whorl `Crop Stage` Percent Incidence.csv")
 
 
 
@@ -1013,7 +1023,7 @@ summary_diseases_early_whorl <-
   summary_diseases_crop_stage %>% 
   select(Diseases, Early_whorl) %>%
   arrange(desc(Early_whorl))
-write.csv(summary_diseases_early_whorl, "../report_/Top Diseases during Early whorl `Crop Stage` Percent Incidence.csv")
+write.csv(summary_diseases_early_whorl, "summary_diseases/Top Diseases during Early whorl `Crop Stage` Percent Incidence.csv")
 
 
 
@@ -1021,7 +1031,7 @@ summary_diseases_late_whorl <-
   summary_diseases_crop_stage %>% 
   select(Diseases, Late_whorl) %>%
   arrange(desc(Late_whorl))
-write.csv(summary_diseases_late_whorl, "../report_/Top Diseases during Late whorl `Crop Stage` Percent Incidence.csv")
+write.csv(summary_diseases_late_whorl, "summary_diseases/Top Diseases during Late whorl `Crop Stage` Percent Incidence.csv")
 
 
 
@@ -1029,7 +1039,7 @@ summary_diseases_seedling <-
   summary_diseases_crop_stage %>% 
   select(Diseases, Seedling) %>%
   arrange(desc(Seedling))
-write.csv(summary_diseases_seedling, "../report_/Top Diseases during Seedling `Crop Stage` Percent Incidence.csv")
+write.csv(summary_diseases_seedling, "summary_diseases/Top Diseases during Seedling `Crop Stage` Percent Incidence.csv")
 
 
 
@@ -1037,7 +1047,7 @@ summary_diseases_tasseling <-
   summary_diseases_crop_stage %>% 
   select(Diseases, Tasseling) %>%
   arrange(desc(Tasseling))
-write.csv(summary_diseases_tasseling, "../report_/Top Diseases during Tasseling `Crop Stage` Percent Incidence.csv")
+write.csv(summary_diseases_tasseling, "summary_diseases/Top Diseases during Tasseling `Crop Stage` Percent Incidence.csv")
 
 
 
@@ -1045,63 +1055,71 @@ summary_diseases_silking <-
   summary_diseases_crop_stage %>% 
   select(Diseases, Silking) %>%
   arrange(desc(Silking))
-write.csv(summary_diseases_silking, "../report_/Top Diseases during Silking `Crop Stage` Percent Incidence.csv")
+write.csv(summary_diseases_silking, "summary_diseases/Top Diseases during Silking `Crop Stage` Percent Incidence.csv")
 
 
 summary_diseases_maturity <-
   summary_diseases_crop_stage %>% 
   select(Diseases, Maturity) %>%
   arrange(desc(Maturity))
-write.csv(summary_diseases_maturity, "../report_/Top Diseases during Maturity `Crop Stage` Percent Incidence.csv")
+write.csv(summary_diseases_maturity, "summary_diseases/Top Diseases during Maturity `Crop Stage` Percent Incidence.csv")
 #####
 
 ## by Month ####
 stalk_monthly <-
   stalk %>%
-  select(Month, incidence_stalk, mean_temp) %>%
-  group_by(Month, mean_temp) %>%
+  mutate(Year = year(ymd(collect_date))) %>%
+  select(Year, Month, incidence_stalk, mean_temp) %>%
+  group_by(Year, Month, mean_temp) %>%
   summarise(monthly_incidence = mean(incidence_stalk))
 
 rust_monthly <-
   rust %>%
-  select(Month, incidence_rust, mean_temp) %>%
-  group_by(Month, mean_temp) %>%
+  mutate(Year = year(ymd(collect_date))) %>%
+  select(Year, Month, incidence_rust, mean_temp) %>%
+  group_by(Year, Month, mean_temp) %>%
   summarise(monthly_incidence = mean(incidence_rust))
 
 leaf_monthly <-
   leaf %>%
-  select(Month, incidence_leaf, mean_temp) %>%
-  group_by(Month, mean_temp) %>%
+  mutate(Year = year(ymd(collect_date))) %>%
+  select(Year, Month, incidence_leaf, mean_temp) %>%
+  group_by(Year, Month, mean_temp) %>%
   summarise(monthly_incidence = mean(incidence_leaf))
 
 southrust_monthly <-
   southrust %>%
-  select(Month, incidence_southrust, mean_temp) %>%
-  group_by(Month, mean_temp) %>%
+  mutate(Year = year(ymd(collect_date))) %>%
+  select(Year, Month, incidence_southrust, mean_temp) %>%
+  group_by(Year, Month, mean_temp) %>%
   summarise(monthly_incidence = mean(incidence_southrust))
 
 blight_monthly <-
   blight %>%
-  select(Month, incidence_blight, mean_temp) %>%
-  group_by(Month, mean_temp) %>%
+  mutate(Year = year(ymd(collect_date))) %>%
+  select(Year, Month, incidence_blight, mean_temp) %>%
+  group_by(Year, Month, mean_temp) %>%
   summarise(monthly_incidence = mean(incidence_blight))
 
 brown_monthly <-
   brown %>%
-  select(Month, incidence_brown, mean_temp) %>%
-  group_by(Month, mean_temp) %>%
+  mutate(Year = year(ymd(collect_date))) %>%
+  select(Year, Month, incidence_brown, mean_temp) %>%
+  group_by(Year, Month, mean_temp) %>%
   summarise(monthly_incidence = mean(incidence_brown))
 
 mildew_monthly <-
   mildew %>%
-  select(Month, incidence_mildew, mean_temp) %>%
-  group_by(Month, mean_temp) %>%
+  mutate(Year = year(ymd(collect_date))) %>%
+  select(Year, Month, incidence_mildew, mean_temp) %>%
+  group_by(Year, Month, mean_temp) %>%
   summarise(monthly_incidence = mean(incidence_mildew))
 
 stalk_monthly <-
   stalk %>%
-  select(Month, incidence_stalk, mean_temp) %>%
-  group_by(Month, mean_temp) %>%
+  mutate(Year = year(ymd(collect_date))) %>%
+  select(Year, Month, incidence_stalk, mean_temp) %>%
+  group_by(Year, Month, mean_temp) %>%
   summarise(monthly_incidence = mean(incidence_stalk))
 
 
@@ -1167,7 +1185,7 @@ summary_diseases_monthly <-
                 c(stalk_monthly %>% filter(Month == 6)) %$% monthly_incidence)
     )
 
-write.csv(summary_diseases_monthly, "../report_/Monthly Disease Incidence Jan-June .csv")
+write.csv(summary_diseases_monthly, "summary_diseases/Monthly Disease Incidence .csv")
 #####
 
 
@@ -1191,7 +1209,7 @@ summary_diseases_region %>%
                                   hjust = 0.5,
                                   vjust = -115),
         plot.margin = margin(t = 10, l = 10, b = 20))
-ggsave("../report_/Diseases Plots/Top 3 Diseases in Region 8.png", dpi = plot_dpi)
+ggsave("summary_diseases/Diseases Plots/Top 3 Diseases in Region 8.png", dpi = plot_dpi)
   
 
 top_diseases <-
@@ -1223,7 +1241,7 @@ summary_diseases_corntype %>%
                                   hjust = 0.5,
                                   vjust = -115),
         plot.margin = margin(t = 10, l = 10, b = 20))
-ggsave("../report_/Diseases Plots/Top 3 Diseases by Corn Type in Region 8.png", dpi = plot_dpi)
+ggsave("summary_diseases/Diseases Plots/Top 3 Diseases by Corn Type in Region 8.png", dpi = plot_dpi)
 #####
 
 #### by fertilizer treatment rates plots diseases ####
@@ -1249,7 +1267,7 @@ summary_diseases_fertilizer  %>%
                                   hjust = 0.5,
                                   vjust = -115),
         plot.margin = margin(t = 10, l = 10, b = 20))
-ggsave("../report_/Diseases Plots/Top 3 Diseases by Fertilizer Treatment Rate in Region 8.png", dpi = plot_dpi)
+ggsave("summary_diseases/Diseases Plots/Top 3 Diseases by Fertilizer Treatment Rate in Region 8.png", dpi = plot_dpi)
 #####
 
 #### by Province treatment rates plots diseases ######
@@ -1275,10 +1293,13 @@ summary_diseases_province %>%
                                   hjust = 0.5,
                                   vjust = -115),
         plot.margin = margin(t = 10, l = 10, b = 20))
-ggsave("../report_/Diseases Plots/Top 3 Diseases by Province in Region 8.png", dpi = plot_dpi)
+ggsave("summary_diseases/Diseases Plots/Top 3 Diseases by Province in Region 8.png", dpi = plot_dpi)
 
 ####################################################################
+```
 
+```Correlations```
+```{r}
 ### correlations ####
 library("correlation")
 
@@ -1419,7 +1440,7 @@ weather_disease_corr <-
 weather_disease_corr
 
 
-write.csv(weather_disease_corr, "../report_/Weather_Diseases_Correlation.csv")
+write.csv(weather_disease_corr, "summary_diseases/Weather_Diseases_Correlation.csv")
 
 ########
 ```
@@ -1427,7 +1448,6 @@ write.csv(weather_disease_corr, "../report_/Weather_Diseases_Correlation.csv")
 
 ``` Corn Crop Stage and Percent incidence Jan-Jun ```
 ```{r}
-
 # crop stage plot ####
 summary_pests_crop_stage$Emergence <- 0
 stage_levels <- c("Emergence", "Single_leaf", 
@@ -1466,9 +1486,7 @@ summary_pests_crop_stage_plot %>%
                                   hjust = 0.5,
                                   vjust = -133),
         plot.margin = margin(t = -10, l = 10, b = 20))
-ggsave("../report_/Summary of Pest Incidences Per Growth Stage from January - June .png", dpi = plot_dpi, height = plot_height)
-
-
+ggsave("summary_diseases/Summary of Pest Incidences Per Growth Stage from January - June .png", dpi = plot_dpi, height = plot_height)
 
 
 
@@ -1526,7 +1544,7 @@ summary_pests_monthly_plot %>%
                                   hjust = 0.5,
                                   vjust = -133),
         plot.margin = margin(t = -10, l = 10, b = 20))
-ggsave("../report_/Summary of Monthly Pest Incidences from January - June .png", dpi = plot_dpi, height = plot_height)
+ggsave("summary_diseases/Summary of Monthly Pest Incidences from January - June .png", dpi = plot_dpi, height = plot_height)
 ####
 ```
 
@@ -1571,7 +1589,7 @@ summary_diseases_crop_stage_plot %>%
                                   hjust = 0.5,
                                   vjust = -133),
         plot.margin = margin(t = -10, l = 10, b = 20))
-ggsave("../report_/Summary of Disease Incidences Per Growth Stage from January - June .png", dpi = plot_dpi, height = plot_height)
+ggsave("summary_diseases/Summary of Disease Incidences Per Growth Stage from January - June .png", dpi = plot_dpi, height = plot_height)
 
 
 
@@ -1628,5 +1646,5 @@ summary_diseases_monthly_plot %>%
                                   hjust = 0.5,
                                   vjust = -133),
         plot.margin = margin(t = -10, l = 10, b = 20))
-ggsave("../report_/Summary of Monthly Disase Incidences from January - June .png", dpi = plot_dpi, height = plot_height)
+ggsave("summary_diseases/Summary of Monthly Disase Incidences from January - June .png", dpi = plot_dpi, height = plot_height)
 ```
