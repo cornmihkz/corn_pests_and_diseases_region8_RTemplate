@@ -1,0 +1,62 @@
+---
+title: "arima_forecasting"
+author: "Mihkmihk"
+date: "2024-01-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(forecast)
+library(timeSeries)
+library(tseries)
+library(fpp2)
+library(lubridate)
+library(stats)
+
+disease_forecast_csv <- 
+  read_csv("top3_disease_mean_with_humidity.csv")
+
+pest_forecast_csv <- 
+  read_csv("top3_pests_mean_with_humidity.csv")
+
+
+# FAW
+faw_ts_data <- ts(pest_forecast_csv$faw, 
+                  start = c(2020, 5), 
+                  end = c(2023, 8),
+                  frequency = 12)
+
+# Brown Spot
+brown_ts_data <- ts(disease_forecast_csv$brown, 
+                  start = c(2020, 5), 
+                  end = c(2023, 8),
+                  frequency = 12)
+```
+
+```{r}
+# use 1st DIFFERENCING on faw because it is STATIONARY
+acf(diff(faw_ts_data), main = "ACF of Differenced FAW Data\n May 2020 - Aug 2023")
+pacf(diff(faw_ts_data), main = "PACF of Differenced FAW Data\n May 2020 - Aug 2023")
+adf.test(diff(faw_ts_data), alternative = "stationary", k=0)
+plot(diff(faw_ts_data))
+
+faw_auto_arima_model <- auto.arima(faw_ts_data, d = 1)
+print(summary(faw_auto_arima_model))
+checkresiduals(faw_auto_arima_model)
+
+
+faw_forecast <- forecast(faw_auto_arima_model, 
+                         level = c(95),
+                         h = 3 * 12)
+
+autoplot(faw_forecast)
+```
+
+```{r}
+# The Ljung-Box Q-test is a "portmanteau" test 
+# that assesses the null hypothesis that a series of 
+# residuals exhibits no autocorrelation for a fixed number of lags L 
+fit_faw_arima <- arima(faw_ts_data, order = c(2, 1, 1))
+checkresiduals(fit_faw_arima)
+```
+
