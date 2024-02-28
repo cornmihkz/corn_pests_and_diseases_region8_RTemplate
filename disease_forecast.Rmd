@@ -14,184 +14,598 @@ library(tseries)
 library(lubridate)
 library(tidymodels)
 library(scales)
-library(forecast)
+library(forcats)
 library(dplyr)
 library(datawizard)
+
+diseases_percent_incidence_with_weather_data <- 
+  read_csv("monthly_disease_prcnt_inc_with_weather_data.csv")
 ```
 
-
-```Monthly Averages```
+```By Corn Type Top 3 Diseases```
 ```{r}
-blsb_joined_ev %>%
-  select(collect_date, incidence_blsb) %>%
-  ggplot(aes(collect_date, incidence_blsb)) +
-  geom_smooth()
+diseases_labels <- c("Banded Leaf and Sheath Blight" = "BLSB",
+                  "Leaf Blight" = "Leaf Blight",
+                  "Brown Spot" = "Brown Spot"
+                  )
+disease_fills <- c(
+            "Banded Leaf and Sheath Blight" = "chartreuse3",
+            "Brown Spot"= "deepskyblue2",
+            "Leaf Blight" = "chocolate2"
+            )
 
 
-blsb_monthly_average_df <- blsb_joined_ev %>%
-  select(collect_date, incidence_blsb) %>%
-  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_blsb, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
-  summarise(blsb_monthly_average_incidence = mean(incidence_blsb)) 
-
-blsb_monthly_average_df <-
-  blsb_monthly_average_df %>% 
-  replace(is.na(blsb_monthly_average_df), mean(blsb_monthly_average_df$blsb_monthly_average_incidence, na.rm = TRUE))
-
-
-rust_joined_ev %>%
-  select(collect_date, incidence_rust) %>%
-  ggplot(aes(collect_date, incidence_rust)) +
-  geom_smooth()
+summary_diseases_corntype_corntype_df <-
+  diseases_percent_incidence_with_weather_data %>%
+  select(`Corn Type`, 
+         `Brown Spot`, 
+         `Banded Leaf and Sheath Blight`, 
+         `Leaf Blight`) %>%
+  pivot_longer(-c(`Corn Type`), 
+               names_to = "diseases", 
+               values_to = "incidences") %>%
+  group_by(`Corn Type`, diseases) %>%
+  summarise(mean_disease_incidences = mean(incidences))
 
 
-rust_monthly_average_df <- rust_joined_ev %>%
-  select(collect_date, incidence_rust) %>%
-  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_rust, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
-  summarise(rust_monthly_average_incidence = mean(incidence_rust)) 
-
-rust_monthly_average_df <-
-  rust_monthly_average_df %>% 
-  replace(is.na(rust_monthly_average_df), 
-          mean(rust_monthly_average_df$rust_monthly_average_incidence, na.rm = TRUE))
-
-southrust_joined_ev %>%
-  select(collect_date, incidence_southrust) %>%
-  ggplot(aes(collect_date, incidence_southrust)) +
-  geom_smooth()
 
 
-southrust_monthly_average_df <- southrust_joined_ev %>%
-  select(collect_date, incidence_southrust) %>%
-  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_southrust, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
-  summarise(southrust_monthly_average_incidence = mean(incidence_southrust)) 
-
-southrust_monthly_average_df <-
-  southrust_monthly_average_df %>% 
-  replace(is.na(southrust_monthly_average_df), mean(southrust_monthly_average_df$southrust_monthly_average_incidence, na.rm = TRUE))
-
-mildew_joined_ev %>%
-  select(collect_date, incidence_mildew) %>%
-  ggplot(aes(collect_date, incidence_mildew)) +
-  geom_smooth()
-
-
-mildew_monthly_average_df <- mildew_joined_ev %>%
-  select(collect_date, incidence_mildew) %>%
-  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_mildew, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
-  summarise(mildew_monthly_average_incidence = mean(incidence_mildew)) 
-
-mildew_monthly_average_df <-
-  mildew_monthly_average_df %>% 
-  replace(is.na(mildew_monthly_average_df), mean(mildew_monthly_average_df$mildew_monthly_average_incidence, na.rm = TRUE))
-
-brown_joined_ev %>%
-  select(collect_date, incidence_brown) %>%
-  ggplot(aes(collect_date, incidence_brown)) +
-  geom_smooth()
-
-
-brown_monthly_average_df <- brown_joined_ev %>%
-  select(collect_date, incidence_brown) %>%
-  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_brown, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
-  summarise(brown_monthly_average_incidence = mean(incidence_brown)) 
-
-brown_monthly_average_df <-
-  brown_monthly_average_df %>% 
-  replace(is.na(brown_monthly_average_df), mean(brown_monthly_average_df$brown_monthly_average_incidence, na.rm = TRUE))
-
-
-leaf_joined_ev %>%
-  select(collect_date, incidence_leaf) %>%
-  ggplot(aes(collect_date, incidence_leaf)) +
-  geom_smooth()
-
-
-leaf_monthly_average_df <- leaf_joined_ev %>%
-  select(collect_date, incidence_leaf) %>%
-  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_leaf, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
-  summarise(leaf_monthly_average_incidence = mean(incidence_leaf)) 
-
-leaf_monthly_average_df <-
-  leaf_monthly_average_df %>% 
-  replace(is.na(leaf_monthly_average_df), mean(leaf_monthly_average_df$leaf_monthly_average_incidence, na.rm = TRUE))
-
-blight_joined_ev %>%
-  select(collect_date, incidence_blight) %>%
-  ggplot(aes(collect_date, incidence_blight)) +
-  geom_smooth()
-
-
-blight_monthly_average_df <- blight_joined_ev %>%
-  select(collect_date, incidence_blight) %>%
-  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_blight, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
-  summarise(blight_monthly_average_incidence = mean(incidence_blight)) 
-
-blight_monthly_average_df <-
-  blight_monthly_average_df %>% 
-  replace(is.na(blight_monthly_average_df), mean(blight_monthly_average_df$blight_monthly_average_incidence, na.rm = TRUE))
-
-stalk_joined_ev %>%
-  select(collect_date, incidence_stalk) %>%
-  ggplot(aes(collect_date, incidence_stalk)) +
-  geom_smooth()
-
-
-stalk_monthly_average_df <- stalk_joined_ev %>%
-  select(collect_date, incidence_stalk) %>%
-  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
-  group_by(incidence_stalk, month = floor_date(Date, "month")) %>%
-  group_by(month) %>%
-  summarise(stalk_monthly_average_incidence = mean(incidence_stalk)) 
-
-stalk_monthly_average_df <-
-  stalk_monthly_average_df %>% 
-  replace(is.na(stalk_monthly_average_df), mean(stalk_monthly_average_df$stalk_monthly_average_incidence, na.rm = TRUE))
-
-
-diseases_monthly_average_df <-
-  blsb_monthly_average_df %>%
-  full_join(rust_monthly_average_df) %>%
-  full_join(southrust_monthly_average_df) %>%
-  full_join(mildew_monthly_average_df) %>%
-  full_join(brown_monthly_average_df) %>%
-  full_join(leaf_monthly_average_df) %>%
-  full_join(blight_monthly_average_df) %>%
-  full_join(stalk_monthly_average_df)
+summary_diseases_corntype_corntype_df %>%
+  ggplot(aes(fct_reorder(diseases,
+                         mean_disease_incidences,
+                         .desc = TRUE), 
+             mean_disease_incidences,
+             fill = diseases)) +
+  geom_col(show.legend = FALSE) +
+  geom_text(aes(label = round(mean_disease_incidences, 2)),
+                size = 5, color = "black", nudge_y = -3) +
+  facet_grid(~ `Corn Type`, 
+             scales = "free_x", 
+             # space = "free_x",
+             switch = "x") +
+  scale_x_discrete(labels = diseases_labels) +
+  scale_fill_manual(values = disease_fills) +
+  labs(title = "Disease Incidences on GM and Non-GM Corn Types",
+       x = NULL,
+       y = "Percent Incidences") +
+  theme(
+          plot.title.position = "panel",
+          plot.title = element_text(margin = margin(b=12),
+                                                    hjust = 0.5,
+                                                    vjust = -98,
+                                    size = plot_title_size + 2),
+          plot.margin = margin(t = -10, l = 10, b = 30),
+          aspect.ratio = 1,
+          strip.background = element_blank(),
+          strip.placement = "outside",
+          axis.text = element_text(size = 12,
+                                   color = "black",
+                                   face = "plain",
+                                   vjust = -0.75,
+                                   margin = margin(b = 10)), 
+          axis.title = element_text(size = 16),
+          strip.text.x =  element_text(size = 14)
+          )
+ggsave("../Graphs_for_TERMINAL_Report/Summary of Disease Incidences on GM and Non-GM Corn.png", 
+       dpi = 150, height = 5, width = 8)
 ```
+
+
+```Plot for Monthly Humidity```
+```{r}
+monthly_weather_disease_data <- read_csv("monthly_disease_prcnt_inc_with_weather_data.csv")
+
+color_diseases <- c("chartreuse3", "deepskyblue2", "chocolate2")
+color_labels <- c("Banded Leaf and Sheath Blight",
+                  "Brown Spot", 
+                  "Leaf Blight")
+
+monthly_diseases_percent_incidence_data <-
+  monthly_weather_disease_data %>%
+  dplyr::select("Banded Leaf and Sheath Blight", 
+                 "Brown Spot",
+                 "Leaf Blight",
+                Year, Month, mean_temp, mean_humid, mean_rain, mean_wind)
+
+
+monthly_diseases_humidity_pivot <-
+  monthly_diseases_percent_incidence_data %>%
+  select("Banded Leaf and Sheath Blight", 
+         "Brown Spot",
+         "Leaf Blight",
+         Year, Month, mean_humid) %>%
+  pivot_longer(c("Banded Leaf and Sheath Blight", 
+                 "Brown Spot",
+                 "Leaf Blight"), 
+               values_to = "incidence", 
+               names_to = "diseases") %>%
+  mutate(time_period = paste(Year, Month, sep = "-"),
+         time_period = ym(time_period)) %>%
+  ungroup() %>%
+  select(-Year, -Month)
+
+
+monthly_diseases_humidity_pivot %>% 
+  ggplot(aes(x = time_period, 
+             y = incidence,
+             order = mean_humid)) +
+    scale_y_continuous(
+               breaks = seq(0, 80, 1.75),
+               sec.axis = sec_axis(~. , name = "Monthly Humidity")) +
+    geom_line(aes(time_period, 
+                  incidence, 
+                  color = diseases),
+              linewidth = linewidth - 0.2,
+              position = position_dodge(1)) +
+    scale_x_date(date_labels = format("%b-%Y"),
+                 date_breaks = "1 month" ,
+                 breaks = month.breaks.vec) +
+    geom_line(aes(y = mean_humid,
+                  alpha = 0.9),
+                  linewidth = linewidth,
+                  show.legend = FALSE) +
+    geom_area(aes(fill = mean_humid),
+                  alpha = 0.3,
+                  show.legend = FALSE,
+                  position = "identity",
+                  fill = "gray") +
+    labs(y = "Percent Incidence",
+         x = "Cropping Months",
+         title = "Mean Monthly Disease Incidences and Mean Humidity from May 2020 - Aug 2023",
+         caption = "*Monthly average humidity is in GRAY") +
+    scale_color_manual(values = color_diseases) +
+    theme(
+          plot.title.position = "panel",
+          plot.title = element_text(margin = margin(t=14),
+                                    hjust = 0.5,
+                                    vjust = -126,
+                                    size = plot_title_size + 6),
+          plot.margin = margin(-0.8,1,1.5,1.2, "cm"),
+          plot.caption = element_text(hjust = 0.88),
+          panel.background = element_rect(fill = NA),
+          panel.grid.major = element_line(colour = "gray95"), 
+          axis.text.x = element_text(margin = margin(b = 10),
+                                     angle = 90, 
+                                     vjust = 0.5, 
+                                     size = axis_text_size + 2),
+          axis.ticks = element_blank(),
+          axis.text.y = element_text(margin = margin(b = 8, l = 4),
+                                     vjust = 1, 
+                                     hjust = 1, 
+                                     size = axis_text_size),
+          axis.title = element_text(size = title_text_size, face="bold",
+                                    margin = margin(t = 13)),
+          axis.ticks.y = element_blank(),
+          legend.title = element_blank(),
+          legend.position = c(0.6, 0.6), 
+          legend.justification = c(0.2, 1.1), 
+          legend.background = element_rect(fill = NA, colour = NA)
+          )
+ggsave("Summary of Monthly Mean Disease Incidences and Mean Humidity from May 2020 - Aug 2023.png", 
+       dpi = 150, height = 8, width = 12)
+
+```
+
+```Plot for Monthly Temperature```
+```{r}
+plot_title_size <- 18
+title_text_size <- 16
+axis_text_size <- 13
+
+monthly_diseases_temperature_pivot <-
+  monthly_diseases_percent_incidence_data %>%
+  select("Banded Leaf and Sheath Blight", 
+         "Brown Spot",
+         "Leaf Blight",
+         Year, Month, mean_temp) %>%
+  pivot_longer(c("Banded Leaf and Sheath Blight", 
+                 "Brown Spot",
+                 "Leaf Blight"), 
+               values_to = "incidence", 
+               names_to = "diseases") %>%
+  mutate(time_period = paste(Year, Month, sep = "-"),
+         time_period = ym(time_period)) %>%
+  ungroup() %>%
+  select(-Year, -Month)
+
+monthly_diseases_temperature_pivot  %>%
+    ggplot(aes(x = time_period, 
+               y = incidence,
+               order = mean_temp)) +
+    scale_y_continuous(limits = c(0, 35),
+               breaks = seq(0, 35, 0.85),
+               sec.axis = sec_axis(~. , name = "Monthly Temperature")) +
+    geom_line(aes(time_period, 
+                  incidence, 
+                  color = diseases),
+                  linewidth = linewidth,
+                  position = position_dodge(1)) +
+    scale_x_date(date_labels = format("%b-%Y"),
+                 date_breaks = "1 month",
+                 limits = c(myd("May-2020"), my("Aug-2023"))) +
+    geom_line(aes(y = mean_temp,
+                  alpha = 0.9),
+                  linewidth = linewidth,
+                  show.legend = FALSE) +
+    geom_area(alpha = 0.3,
+              show.legend = FALSE,
+              position = "identity",
+              fill = "gray") +
+    labs(y = "Percent Incidences",
+         x = "Cropping Months",
+         title = "Mean Monthly Disease Incidences and Mean Temperature from May 2020 - Aug 2023",
+         caption = "*Monthly average temperature is in GRAY") +
+    scale_color_manual(values = color_diseases) +
+    theme(
+          plot.title.position = "panel",
+          plot.title = element_text(margin = margin(t=14),
+                                    hjust = 0.5,
+                                    vjust = -124,
+                                    size = plot_title_size + 4),
+          plot.margin = margin(-0.8,1.2,1.6,1.2, "cm"),
+          plot.caption = element_text(hjust = 0.88),
+          panel.background = element_rect(fill = NA),
+          panel.grid.major = element_line(colour = "gray95"), 
+          axis.text.x = element_text(margin = margin(b = 10),
+                                     angle = 90, 
+                                     vjust = 0.5, 
+                                     size = axis_text_size + 2),
+          axis.ticks = element_blank(),
+          axis.text.y = element_text(margin = margin(b = 8, l = 4),
+                                     vjust = 1.1, 
+                                     hjust = 1, 
+                                     size = axis_text_size - 0.4),
+          axis.title = element_text(size = title_text_size, face="bold",
+                                    margin = margin(t = 13)),
+          axis.ticks.y = element_blank(),
+          legend.title = element_blank(),
+          legend.position = c(0.6, 0.6), 
+          legend.justification = c(0.2, 1.1), 
+          legend.background = element_rect(fill = NA, colour = NA)
+          )
+ggsave("Summary of Monthly Disease Incidences and Mean Temperature from May 2020 - Aug 2023.png", 
+       dpi = 150, width = 12, height = 8)
+
+
+```
+
+```Plot for Monthly Rainfall```
+```{r}
+plot_title_size <- 16
+title_text_size <- 15
+axis_text_size <- 12
+
+monthly_diseases_rainfall_pivot <-
+  monthly_diseases_percent_incidence_data %>%
+  select("Banded Leaf and Sheath Blight", 
+         "Brown Spot",
+         "Leaf Blight",
+         Year, Month, mean_rain) %>%
+  pivot_longer(c("Banded Leaf and Sheath Blight", 
+                 "Brown Spot",
+                 "Leaf Blight"), 
+               values_to = "incidence", 
+               names_to = "diseases") %>%
+  mutate(time_period = paste(Year, Month, sep = "-"),
+         time_period = ym(time_period)) %>%
+  ungroup() %>%
+  select(-Year, -Month)
+
+monthly_diseases_rainfall_pivot  %>%
+    ggplot(aes(x = time_period, 
+               y = incidence,
+               order = mean_rain)) +
+    scale_y_continuous(limits = c(0, 35),
+               breaks = seq(0, 35, 0.85),
+               sec.axis = sec_axis(~. , name = "Monthly Rainfall")) +
+    geom_line(aes(time_period, 
+                  incidence, 
+                  color = diseases),
+                  linewidth = linewidth,
+                  position = position_dodge(1)) +
+    scale_x_date(date_labels = format("%b-%Y"),
+                 date_breaks = "1 month",
+                 limits = c(myd("May-2020"), my("Aug-2023"))) +
+    geom_line(aes(y = mean_rain,
+                  alpha = 0.9),
+                  linewidth = linewidth,
+                  show.legend = FALSE) +
+    geom_area(alpha = 0.3,
+              show.legend = FALSE,
+              position = "identity",
+              fill = "gray") +
+    labs(y = "Percent Incidences",
+         x = "Cropping Months",
+         title = "Mean Monthly Disease Incidences and Mean Rainfall from May 2020 - Aug 2023",
+         caption = "*Monthly average rainfall is in GRAY") +
+    scale_color_manual(values = color_diseases) +
+    theme(
+          plot.title.position = "panel",
+          plot.title = element_text(margin = margin(t=14),
+                                    hjust = 0.5,
+                                    vjust = -140,
+                                    size = plot_title_size + 4),
+          plot.margin = margin(-0.8,1.2,1.6,1.2, "cm"),
+          plot.caption = element_text(hjust = 0.88),
+          panel.background = element_rect(fill = NA),
+          panel.grid.major = element_line(colour = "gray95"), 
+          axis.text.x = element_text(margin = margin(b = 10),
+                                     angle = 90, 
+                                     vjust = 0.5, 
+                                     size = axis_text_size + 2),
+          axis.ticks = element_blank(),
+          axis.text.y = element_text(margin = margin(b = 8, l = 4),
+                                     vjust = 1.1, 
+                                     hjust = 1, 
+                                     size = axis_text_size - 0.4),
+          axis.title = element_text(size = title_text_size, face="bold",
+                                    margin = margin(t = 13)),
+          axis.ticks.y = element_blank(),
+          legend.title = element_blank(),
+          legend.position = c(0.6, 0.6), 
+          legend.justification = c(0.2, 1.1), 
+          legend.background = element_rect(fill = NA, colour = NA)
+          )
+ggsave("Summary of Monthly Disease Incidences and Mean Rainfall from May 2020 - Aug 2023.png", 
+       dpi = 150, width = 12, height = 8)
+
+
+```
+
+```Plot for Monthly Wind Speed```
+```{r}
+plot_title_size <- 16
+title_text_size <- 15
+axis_text_size <- 12
+
+monthly_diseases_windspeed_pivot <-
+  monthly_diseases_percent_incidence_data %>%
+  select("Banded Leaf and Sheath Blight", 
+         "Brown Spot",
+         "Leaf Blight",
+         Year, Month, mean_wind) %>%
+  pivot_longer(c("Banded Leaf and Sheath Blight", 
+                 "Brown Spot",
+                 "Leaf Blight"), 
+               values_to = "incidence", 
+               names_to = "diseases") %>%
+  mutate(time_period = paste(Year, Month, sep = "-"),
+         time_period = ym(time_period)) %>%
+  ungroup() %>%
+  select(-Year, -Month)
+
+monthly_diseases_windspeed_pivot  %>%
+    ggplot(aes(x = time_period, 
+               y = incidence,
+               order = mean_wind)) +
+    scale_y_continuous(limits = c(0, 35),
+               breaks = seq(0, 35, 0.85),
+               sec.axis = sec_axis(~. , name = "Monthly Wind Speed")) +
+    geom_line(aes(time_period, 
+                  incidence, 
+                  color = diseases),
+                  linewidth = linewidth,
+                  position = position_dodge(1)) +
+    scale_x_date(date_labels = format("%b-%Y"),
+                 date_breaks = "1 month",
+                 limits = c(myd("May-2020"), my("Aug-2023"))) +
+    geom_line(aes(y = mean_wind,
+                  alpha = 0.9),
+                  linewidth = linewidth,
+                  show.legend = FALSE) +
+    geom_area(alpha = 0.3,
+              show.legend = FALSE,
+              position = "identity",
+              fill = "gray") +
+    labs(y = "Percent Incidences",
+         x = "Cropping Months",
+         title = "Mean Monthly Disease Incidences and Mean Wind Speed from May 2020 - Aug 2023",
+         caption = "*Monthly average wind speed is in GRAY") +
+    scale_color_manual(values = color_diseases) +
+    theme(
+          plot.title.position = "panel",
+          plot.title = element_text(margin = margin(t=14),
+                                    hjust = 0.5,
+                                    vjust = -140,
+                                    size = plot_title_size + 4),
+          plot.margin = margin(-0.8,1.2,1.6,1.2, "cm"),
+          plot.caption = element_text(hjust = 0.88),
+          panel.background = element_rect(fill = NA),
+          panel.grid.major = element_line(colour = "gray95"), 
+          axis.text.x = element_text(margin = margin(b = 10),
+                                     angle = 90, 
+                                     vjust = 0.5, 
+                                     size = axis_text_size + 2),
+          axis.ticks = element_blank(),
+          axis.text.y = element_text(margin = margin(b = 8, l = 4),
+                                     vjust = 1.1, 
+                                     hjust = 1, 
+                                     size = axis_text_size - 0.4),
+          axis.title = element_text(size = title_text_size, face="bold",
+                                    margin = margin(t = 13)),
+          axis.ticks.y = element_blank(),
+          legend.title = element_blank(),
+          legend.position = c(0.6, 0.6), 
+          legend.justification = c(0.2, 1.1), 
+          legend.background = element_rect(fill = NA, colour = NA)
+          )
+ggsave("Summary of Monthly Disease Incidences and Mean Wind Speed from May 2020 - Aug 2023.png", 
+       dpi = 150, width = 12, height = 8)
+
+
+```
+
+``` Heatmap Corn Type - Crop Stage```
+```{r}
+diseases_summary_overall <- diseases_prcnt_inc_df
+
+
+color_diseases <- c("chartreuse3", "deepskyblue2", "chocolate2")
+color_labels <- c("Banded Leaf and Sheath Blight",
+                  "Brown Spot", 
+                  "Leaf Blight")
+
+color_diseases <- c("deepskyblue2", "chartreuse3", "chocolate2")
+
+growth_stage <- c("Emergence", "Single Leaf", "Seedling (3 - 4 Leaves)",
+                  "Early Whorl", "Mid Whorl", "Late Whorl",
+                  "Tasseling", "Silking", "Maturity")
+
+summary_diseases_province_corntype_df <-
+  diseases_summary_overall %>%
+  select(`Crop Stage`, `Corn Type`, 
+         `Brown Spot`, 
+         `Banded Leaf and Sheath Blight`, 
+         `Leaf Blight`) %>%
+  pivot_longer(-c(`Crop Stage`, `Corn Type`), 
+               names_to = "diseases", 
+               values_to = "incidences") %>%
+  group_by(`Crop Stage`, `Corn Type`, diseases) %>%
+  summarise(mean_disease_incidences = mean(incidences))
+
+
+
+# brown
+summary_diseases_province_corntype_df %>%
+  dplyr::filter(diseases == "Brown Spot") %>%
+  ggplot(aes(x = factor(`Crop Stage`, level = growth_stage), 
+             y = factor(`Corn Type`, level = c("Non - GM Corn", "GM CORN")),
+             fill = mean_disease_incidences,
+             group = diseases)) + 
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "chartreuse3") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+  geom_text(aes(label = round(mean_disease_incidences, 2)), 
+            color = "black", size = 5) +
+  labs(x = "Crop Stages",
+       y = "Corn Types",
+       fill = "Brown Spot Mean \nPercent Incidence",
+       title = "Heatmap of Brown Spot Percent Incidence on Corn Types and Crop Stages") +
+  theme(
+        plot.margin = unit(c(0, 0, 2, 1), "cm"),
+        plot.title.position = "panel",
+        panel.background = element_blank(),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(margin = margin(b = -20),
+                                  hjust = 0.5,
+                                  vjust = -75,
+                                  size = 20),
+        axis.title = element_text(size = 14,
+                                  vjust = -1.8,
+                                  margin = margin(t = 25, b = 15)),
+        axis.text = element_text(color = "black",
+                                 face = "plain",
+                                 vjust = -0.75,
+                                 size = 9,
+                                 margin = margin(b = 8)),
+        axis.ticks.length=unit(.25, "cm")
+  )
+ggsave("Corn Types and Crop Stage Heat map Brown Spot.png", dpi = 150, width = 10)
+
+
+# blsb
+summary_diseases_province_corntype_df %>%
+  dplyr::filter(diseases == "Banded Leaf and Sheath Blight",
+         `Crop Stage` != "Emergence") %>%
+  ggplot(aes(x = factor(`Crop Stage`, level = growth_stage), 
+             y = factor(`Corn Type`, level = c("Non - GM Corn", "GM CORN")),
+             fill = mean_disease_incidences,
+             group = diseases)) + 
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "deepskyblue2") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+  geom_text(aes(label = round(mean_disease_incidences, 2)), 
+            color = "black", size = 5) +
+  labs(x = "Crop Stages",
+       y = "Corn Types",
+       fill = "BLSB Mean \nPercent Incidence",
+       title = "Heatmap of BLSB Percent Incidence on Corn Types and Crop Stages") +
+  theme(
+        plot.margin = unit(c(0, 0, 2, 1), "cm"),
+        plot.title.position = "panel",
+        panel.background = element_blank(),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(margin = margin(b = -20),
+                                  hjust = 0.5,
+                                  vjust = -75,
+                                  size = 20),
+        axis.title = element_text(size = 14,
+                                  vjust = -1.8,
+                                  margin = margin(t = 25, b = 15)),
+        axis.text = element_text(color = "black",
+                                 face = "plain",
+                                 vjust = -0.75,
+                                 size = 9,
+                                 margin = margin(b = 8)),
+        axis.ticks.length=unit(.25, "cm")
+  )
+ggsave("Corn Types and Crop Stage Heat map BLSB.png", dpi = 150, width = 10)
+
+
+# Leaf Blight
+summary_diseases_province_corntype_df %>%
+  dplyr::filter(diseases == "Leaf Blight",
+         `Crop Stage` != "Emergence") %>%
+  ggplot(aes(x = factor(`Crop Stage`, level = growth_stage), 
+             y = factor(`Corn Type`, level = c("Non - GM Corn", "GM CORN")),
+             fill = mean_disease_incidences,
+             group = diseases)) + 
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "chocolate2") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2)) +
+  geom_text(aes(label = round(mean_disease_incidences, 2)), 
+            color = "black", size = 5) +
+  labs(x = "Crop Stages",
+       y = "Corn Types",
+       fill = "Leaf Blight Mean \nPercent Incidence",
+       title = "Heatmap of Leaf Blight Percent Incidence on Corn Types and Crop Stages") +
+  theme(
+        plot.margin = unit(c(0, 0, 2, 1), "cm"),
+        plot.title.position = "panel",
+        panel.background = element_blank(),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(margin = margin(b = -20),
+                                  hjust = 0.5,
+                                  vjust = -75,
+                                  size = 20),
+        axis.title = element_text(size = 14,
+                                  vjust = -1.8,
+                                  margin = margin(t = 25, b = 15)),
+        axis.text = element_text(color = "black",
+                                 face = "plain",
+                                 vjust = -0.75,
+                                 size = 9,
+                                 margin = margin(b = 8)),
+        axis.ticks.length=unit(.25, "cm")
+  )
+ggsave("Corn Types and Crop Stage Heat map Leaf Blight.png", dpi = 150, width = 10)
+```
+
 
 ```Monthly Averages Graph```
 ```{r setup, fig.width = 12, fig.height = 7}
 line_size <- 2
 
-diseases <- c("BLSB", "Common Rust", "Southern Rust", "Downy Mildew", 
+diseases <- c("BLSB", "Common Rust", "Southern Rust", "Leaf Blight", 
               "Brown Spot", "Leaf Spot", "Leaf Blight", "Stalk Rot")
 
-disease_colors <- c("blsb_monthly_average_incidence" = "blueviolet",
-                    "rust_monthly_average_incidence" = "mediumvioletred",
-                    "southrust_monthly_average_incidence" = "olivedrab",
-                    "mildew_monthly_average_incidence" ="orange3",
-                    "brown_monthly_average_incidence" = "palevioletred1",
-                    "leaf_monthly_average_incidence" = "deepskyblue",
-                    "blight_monthly_average_incidence" = "gray37",
-                    "stalk_monthly_average_incidence" = "tomato4"
+disease_colors <- c("blsb" = "blueviolet",
+                    "rust" = "mediumvioletred",
+                    "southrust" = "olivedrab",
+                    "mildew" ="orange3",
+                    `brown` = "palevioletred1",
+                    "leaf" = "deepskyblue",
+                    "blight" = "gray37",
+                    "stalk" = "tomato4"
                     )
 
-  diseases_monthly_average_df %>%
-    pivot_longer(cols = !month, values_to = "monthly_incidence", names_to = "disease_incidence") %>%
+diseases_monthly_average_df %>%
+    pivot_longer(cols = !month, 
+                 values_to = "monthly_incidence", 
+                 names_to = "disease_incidence") %>%
     ggplot(aes(month, monthly_incidence, color = disease_incidence)) +
     geom_line(size = line_size) +
     scale_x_date(date_labels = format("%b-%Y"),
@@ -213,8 +627,8 @@ disease_colors <- c("blsb_monthly_average_incidence" = "blueviolet",
           legend.text = element_text(size = 12),
           legend.title = element_text(size = 15)) +
     labs(x = "Time Period (May 2020 - Aug 2023)",
-         y = "Average Monthly Diseases Percent Incidence",
-         color = "Diseases") 
+         y = "Average Monthly diseases Percent Incidence",
+         color = "diseases") 
 ```
 
 
@@ -630,3 +1044,179 @@ diseases_8thcrop_2022 <-
 ```
 
 
+
+```Monthly Averages```
+```{r}
+blsb_joined_ev %>%
+  select(collect_date, incidence_blsb) %>%
+  ggplot(aes(collect_date, incidence_blsb)) +
+  geom_smooth()
+
+
+blsb_monthly_average_df <- blsb_joined_ev %>%
+  select(collect_date, incidence_blsb) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_blsb, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(blsb_monthly_average_incidence = mean(incidence_blsb)) 
+
+blsb_monthly_average_df <-
+  blsb_monthly_average_df %>% 
+  replace(is.na(blsb_monthly_average_df), mean(blsb_monthly_average_df$blsb_monthly_average_incidence, na.rm = TRUE))
+
+
+rust_joined_ev %>%
+  select(collect_date, incidence_rust) %>%
+  ggplot(aes(collect_date, incidence_rust)) +
+  geom_smooth()
+
+
+rust_monthly_average_df <- rust_joined_ev %>%
+  select(collect_date, incidence_rust) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_rust, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(rust_monthly_average_incidence = mean(incidence_rust)) 
+
+rust_monthly_average_df <-
+  rust_monthly_average_df %>% 
+  replace(is.na(rust_monthly_average_df), 
+          mean(rust_monthly_average_df$rust_monthly_average_incidence, na.rm = TRUE))
+
+southrust_joined_ev %>%
+  select(collect_date, incidence_southrust) %>%
+  ggplot(aes(collect_date, incidence_southrust)) +
+  geom_smooth()
+
+
+southrust_monthly_average_df <- southrust_joined_ev %>%
+  select(collect_date, incidence_southrust) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_southrust, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(southrust_monthly_average_incidence = mean(incidence_southrust)) 
+
+southrust_monthly_average_df <-
+  southrust_monthly_average_df %>% 
+  replace(is.na(southrust_monthly_average_df), mean(southrust_monthly_average_df$southrust_monthly_average_incidence, na.rm = TRUE))
+
+mildew_joined_ev %>%
+  select(collect_date, incidence_mildew) %>%
+  ggplot(aes(collect_date, incidence_mildew)) +
+  geom_smooth()
+
+
+mildew_monthly_average_df <- mildew_joined_ev %>%
+  select(collect_date, incidence_mildew) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_mildew, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(mildew_monthly_average_incidence = mean(incidence_mildew)) 
+
+mildew_monthly_average_df <-
+  mildew_monthly_average_df %>% 
+  replace(is.na(mildew_monthly_average_df), mean(mildew_monthly_average_df$mildew_monthly_average_incidence, na.rm = TRUE))
+
+brown_joined_ev %>%
+  select(collect_date, incidence_brown) %>%
+  ggplot(aes(collect_date, incidence_brown)) +
+  geom_smooth()
+
+
+brown_monthly_average_df <- brown_joined_ev %>%
+  select(collect_date, incidence_brown) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_brown, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(brown_monthly_average_incidence = mean(incidence_brown)) 
+
+brown_monthly_average_df <-
+  brown_monthly_average_df %>% 
+  replace(is.na(brown_monthly_average_df), mean(brown_monthly_average_df$brown_monthly_average_incidence, na.rm = TRUE))
+
+
+leaf_joined_ev %>%
+  select(collect_date, incidence_leaf) %>%
+  ggplot(aes(collect_date, incidence_leaf)) +
+  geom_smooth()
+
+
+leaf_monthly_average_df <- leaf_joined_ev %>%
+  select(collect_date, incidence_leaf) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_leaf, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(leaf_monthly_average_incidence = mean(incidence_leaf)) 
+
+leaf_monthly_average_df <-
+  leaf_monthly_average_df %>% 
+  replace(is.na(leaf_monthly_average_df), mean(leaf_monthly_average_df$leaf_monthly_average_incidence, na.rm = TRUE))
+
+blight_joined_ev %>%
+  select(collect_date, incidence_blight) %>%
+  ggplot(aes(collect_date, incidence_blight)) +
+  geom_smooth()
+
+
+blight_monthly_average_df <- blight_joined_ev %>%
+  select(collect_date, incidence_blight) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_blight, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(blight_monthly_average_incidence = mean(incidence_blight)) 
+
+blight_monthly_average_df <-
+  blight_monthly_average_df %>% 
+  replace(is.na(blight_monthly_average_df), mean(blight_monthly_average_df$blight_monthly_average_incidence, na.rm = TRUE))
+
+stalk_joined_ev %>%
+  select(collect_date, incidence_stalk) %>%
+  ggplot(aes(collect_date, incidence_stalk)) +
+  geom_smooth()
+
+
+stalk_monthly_average_df <- stalk_joined_ev %>%
+  select(collect_date, incidence_stalk) %>%
+  mutate(Date = as.Date(collect_date, format = "%Y-%m-%d")) %>%
+  group_by(incidence_stalk, month = floor_date(Date, "month")) %>%
+  group_by(month) %>%
+  summarise(stalk_monthly_average_incidence = mean(incidence_stalk)) 
+
+stalk_monthly_average_df <-
+  stalk_monthly_average_df %>% 
+  replace(is.na(stalk_monthly_average_df), mean(stalk_monthly_average_df$stalk_monthly_average_incidence, na.rm = TRUE))
+
+
+diseases_monthly_average_df <-
+  blsb_monthly_average_df %>%
+  full_join(rust_monthly_average_df) %>%
+  full_join(southrust_monthly_average_df) %>%
+  full_join(mildew_monthly_average_df) %>%
+  full_join(brown_monthly_average_df) %>%
+  full_join(leaf_monthly_average_df) %>%
+  full_join(blight_monthly_average_df) %>%
+  full_join(stalk_monthly_average_df)
+```
+
+
+```{r setup, include=FALSE}
+monthly_disease <- read.csv("../overall_summary/diseases_monthly_percent_incidence_averages_with_temp.csv")
+
+
+monthly_disease_df <- 
+  monthly_disease %>%
+  select(brown, blsb, mildew, Year, Month, temperature) %>%
+  mutate(time_period = paste(Year, Month, sep = "-"),
+         time_period = ym(time_period),
+         incidence_brown = brown,
+         incidence_blsb = blsb,
+         incidence_mildew = mildew) %>%
+  ungroup()  %>% 
+  select(-c(brown, blsb, mildew)) %>%
+  pivot_longer(starts_with("incidence_"), names_to = "diseases", values_to = "incidence")
+
+
+color_diseases <- c("brown" = "chocolate2", 
+                  "blsb"= "deepskyblue2", 
+                  "mildew" =   "chartreuse3")
+```

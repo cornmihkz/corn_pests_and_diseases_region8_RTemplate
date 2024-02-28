@@ -1,0 +1,51 @@
+---
+title: "recomputed_disease_incidences"
+author: "Mihkmihk"
+date: "2024-02-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(lubridate)
+library(dplyr)
+
+disease_percent_incidences_data <- read_csv("Diseases Percent Incidences with Weather Dataset.csv")
+
+diseases_prcnt_inc_df <-
+  disease_percent_incidences_data %>%
+  ungroup()
+
+#write.csv(diseases_prcnt_inc_df, "Diseases Percent Incidences with Weather Dataset.csv")
+#diseases_prcnt_inc_df %>% summarise(across(starts_with("Percent"), mean))
+```
+
+```{r}
+diseases_monthly_percent_incidence <-
+  diseases_prcnt_inc_df %>%
+  select(Year, Month, `Banded Leaf and Sheath Blight`, `Brown Spot`, `Leaf Blight`) %>%
+  group_by(Year, Month) %>%
+  summarise(across(c(`Banded Leaf and Sheath Blight`, `Brown Spot`, `Leaf Blight`), 
+                   list(mean = mean)))
+
+# write.csv(diseases_monthly_percent_incidence, "diseases_monthly_percent_incidence.csv")
+
+
+diseases_monthly_percent_incidence_weather_data <-
+  read_csv("diseases_monthly_percent_incidence.csv") 
+
+monthly_disease_prcnt_inc_with_weather_data <- 
+  diseases_monthly_percent_incidence_weather_data %>%
+  left_join(monthly_averages, by = c("Year", "Month")) %>%
+  ungroup()
+
+
+write.csv(monthly_disease_prcnt_inc_with_weather_data,
+          "monthly_disease_prcnt_inc_with_weather_data.csv")
+```
+
+
+```{r}
+
+```
+

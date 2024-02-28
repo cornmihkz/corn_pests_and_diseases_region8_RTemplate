@@ -6,41 +6,44 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+library(tidyverse)
 library(forecast)
 library(timeSeries)
 library(tseries)
 library(fpp2)
 library(lubridate)
 library(stats)
+library(dplyr)
 
 disease_forecast_csv <- 
-  read_csv("top3_disease_mean_with_humidity.csv")
+  read_csv("Mean Monthly Disease Percent Incidence.csv")
 
-pest_forecast_csv <- 
-  read_csv("top3_pests_mean_with_humidity.csv")
 
+pest_forecast_data <- 
+  read_csv("pests_forecast_dataset.csv")
 
 # FAW
-faw_ts_data <- ts(pest_forecast_csv$faw, 
+faw_ts_data <- ts(pest_forecast_data$`Fall Armyworm`, 
                   start = c(2020, 5), 
-                  end = c(2023, 8),
+                  end = c(2023, 7),
                   frequency = 12)
 
-# Brown Spot
-brown_ts_data <- ts(disease_forecast_csv$brown, 
+# Leaf Blight
+blight_ts_data <- ts(disease_forecast_csv$leafblight, 
                   start = c(2020, 5), 
-                  end = c(2023, 8),
+                  end = c(2023, 7),
                   frequency = 12)
+
 ```
 
 ```{r}
-# use 1st DIFFERENCING on faw because it is STATIONARY
-acf(diff(faw_ts_data), main = "ACF of Differenced FAW Data\n May 2020 - Aug 2023")
-pacf(diff(faw_ts_data), main = "PACF of Differenced FAW Data\n May 2020 - Aug 2023")
-adf.test(diff(faw_ts_data), alternative = "stationary", k=0)
-plot(diff(faw_ts_data))
+# NO DIFFERENCING on faw because it is STATIONARY
+acf(faw_ts_data, main = "ACF of FAW Data\n May 2020 - Aug 2023")
+pacf(faw_ts_data, main = "PACF of FAW Data\n May 2020 - Aug 2023")
+adf.test(faw_ts_data, alternative = "stationary", k=0)
+plot(faw_ts_data)
 
-faw_auto_arima_model <- auto.arima(faw_ts_data, d = 1)
+faw_auto_arima_model <- auto.arima(faw_ts_data)
 print(summary(faw_auto_arima_model))
 checkresiduals(faw_auto_arima_model)
 
@@ -50,6 +53,7 @@ faw_forecast <- forecast(faw_auto_arima_model,
                          h = 3 * 12)
 
 autoplot(faw_forecast)
+# write.csv(faw_forecast, "FAW_Forecast.csv")
 ```
 
 ```{r}
@@ -59,4 +63,44 @@ autoplot(faw_forecast)
 fit_faw_arima <- arima(faw_ts_data, order = c(2, 1, 1))
 checkresiduals(fit_faw_arima)
 ```
+
+
+
+
+```{r}
+# use 1st DIFFERENCING on Leaf Blight because it is STATIONARY
+acf(diff(blight_ts_data), main = "ACF of Differenced Leaf Blight Data May 2020 - Aug 2023")
+pacf(diff(blight_ts_data), main = "PACF of Differenced Leaf Blight Data May 2020 - Aug 2023")
+adf.test(diff(blight_ts_data), alternative = "stationary", k=0)
+plot(diff(blight_ts_data))
+
+blightSpot_auto_arima_model <- auto.arima(blight_ts_data, d = 1)
+print(summary(blightSpot_auto_arima_model))
+checkresiduals(blightSpot_auto_arima_model)
+
+
+blightSpot_forecast <- forecast(blightSpot_auto_arima_model, 
+                         level = c(95),
+                         h = 3 * 12)
+
+autoplot(blightSpot_forecast)
+
+# write.csv(blightSpot_forecast, "Leaf_Blight_ARIMA_Forecast.csv")
+
+
+Box.test(blightSpot_forecast$residuals, lag = 5, type = "Ljung-Box")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
