@@ -15,15 +15,28 @@ library(lubridate)
 library(stats)
 library(dplyr)
 
+# Leaf Blight, Brown spot, BLSB
 disease_forecast_csv <- 
   read_csv("Mean Monthly Disease Percent Incidence.csv")
 
-
+# FAW, Armyworm, Earworm
 pest_forecast_data <- 
   read_csv("pests_forecast_dataset.csv")
 
 # FAW
 faw_ts_data <- ts(pest_forecast_data$`Fall Armyworm`, 
+                  start = c(2020, 5), 
+                  end = c(2023, 7),
+                  frequency = 12)
+
+# Earworm
+earworm_ts_data <- ts(pest_forecast_data$Earworm, 
+                  start = c(2020, 5), 
+                  end = c(2023, 7),
+                  frequency = 12)
+
+# Armyworm
+armyworm_ts_data <- ts(pest_forecast_data$Armyworm, 
                   start = c(2020, 5), 
                   end = c(2023, 7),
                   frequency = 12)
@@ -34,8 +47,62 @@ blight_ts_data <- ts(disease_forecast_csv$leafblight,
                   end = c(2023, 7),
                   frequency = 12)
 
+# Brown Spot
+brown_ts_data <- ts(disease_forecast_csv$brownspot, 
+                  start = c(2020, 5), 
+                  end = c(2023, 7),
+                  frequency = 12)
+
+# BLSB
+blsb_ts_data <- ts(disease_forecast_csv$blsb, 
+                  start = c(2020, 5), 
+                  end = c(2023, 7),
+                  frequency = 12)
+
+
+
+months_vector <- c(as.Date("2020-05-01"),
+               seq(from = as.Date("2020-06-01"), 
+                   to = as.Date("2023-06-01"),
+                 by = "month"),
+               as.Date("2023-07-01")) %>% as.array()
+
+
+forecast_months_vector <- c(as.Date("2023-08-01"),
+               seq(from = as.Date("2023-09-01"), 
+                   to = as.Date("2025-06-01"),
+                 by = "month"),
+               as.Date("2025-07-01")) %>% as.array()
+
+months_break <- c(as.Date("2020-05-01"),
+               seq(from = as.Date("2020-08-01"), 
+                   to = as.Date("2025-08-01"),
+                 by = "month"),
+               as.Date("2025-07-01"))
+
+# # ndiffs function to check how many differences 
+# ndiffs(faw_ts_data) # 0
+# ndiffs(earworm_ts_data) # 0
+# ndiffs(armyworm_ts_data) # 1
+# ndiffs(blight_ts_data) # 0
+# ndiffs(brown_ts_data) # 1
+# ndiffs(blsb_ts_data) # 0
+
+color_diseases <- c("chartreuse3", "deepskyblue2", "chocolate2")
+color_labels <- c("Banded Leaf and Sheath Blight",
+                  "Brown Spot", 
+                  "Leaf Blight")
+
+faw_ts_data_color <- "chocolate2"
+armyworm_ts_data_color <- "chartreuse3"
+earworm_ts_data_color <- "deepskyblue2"
+
+blsb_ts_data_color <- "chartreuse3"
+
 ```
 
+
+```FAW Forecasting ARIMA``
 ```{r}
 # NO DIFFERENCING on faw because it is STATIONARY
 acf(faw_ts_data, main = "ACF of FAW Data\n May 2020 - Aug 2023")
@@ -65,8 +132,82 @@ checkresiduals(fit_faw_arima)
 ```
 
 
+```Armyworm Forecasting ARIMA``
+```{r}
+adf.test(armyworm_ts_data, alternative = "stationary", k=0)
+
+armyworm_auto_arima_model <- 
+  auto.arima(armyworm_ts_data, 
+             d = 1, 
+             D = 1, 
+             seasonal = TRUE)
+print(summary(armyworm_auto_arima_model))
+checkresiduals(armyworm_auto_arima_model)
+
+armyworm_forecast <- forecast(armyworm_auto_arima_model, 
+                         level = c(95),
+                         h = 2 * 12)
+
+autoplot(armyworm_forecast, 
+         y = "Armyworm Percent Incidence", 
+         x = "Years")
 
 
+armyworm_df <- 
+  tibble(
+    months = months_vector,
+    armyworm_percent_incidence = array(armyworm_ts_data),
+    armyworm_lo_mean = NULL,
+    armyworm_up_mean = NULL
+    )
+
+
+armyworm_forecast_df <- 
+  tibble(
+    months = forecast_months_vector,
+    armyworm_forecast_percent_incidence = armyworm_forecast$mean,
+    armyworm_lo_mean = armyworm_forecast$lower[,"95%"],
+    armyworm_up_mean = armyworm_forecast$upper[,"95%"]
+    )
+
+armyworm_arima_data <-
+  armyworm_df %>% full_join(armyworm_forecast_df, by = c("months"))
+
+
+
+armyworm_arima_data %>%
+    ggplot(aes(x = months, y = armyworm_percent_incidence)) +
+    geom_line(color = "chartreuse3", alpha = 2, size = 2) +
+    geom_line(aes(y = armyworm_forecast_percent_incidence),
+              color = "lightseagreen", alpha = 3, size = 2.2) +
+    geom_ribbon(aes(ymin = 0, 
+                    ymax = armyworm_up_mean),
+                    alpha = 0.3,
+                    fill = "grey20") +
+    expand_limits(y=-2) +
+    geom_hline(yintercept = 0, show.legend = FALSE) +
+    scale_x_date(date_labels = format("%b-%Y"),
+                 date_breaks = "1 month",
+                 limits = c(min(months_break), max(months_break))) +
+    theme_classic() +
+    theme(
+      axis.text.x = element_text(margin = margin(b = 10),
+                                     angle = 90, 
+                                     vjust = 0.5, 
+                                     size =  10)
+    )
+
+  
+```
+
+```Earworm Forecasting ARIMA``
+```{r}
+faw_forecast <- forecast(faw_auto_arima_model, 
+                         level = c(95),
+                         h = 3 * 12)
+```
+
+```Leaf Blight Forecasting ARIMA``
 ```{r}
 # use 1st DIFFERENCING on Leaf Blight because it is STATIONARY
 acf(diff(blight_ts_data), main = "ACF of Differenced Leaf Blight Data May 2020 - Aug 2023")
@@ -93,7 +234,16 @@ Box.test(blightSpot_forecast$residuals, lag = 5, type = "Ljung-Box")
 
 
 
+```Brown Spot Forecasting ARIMA``
+```{r}
 
+```
+
+
+```BLSB Forecasting ARIMA``
+```{r}
+
+```
 
 
 
